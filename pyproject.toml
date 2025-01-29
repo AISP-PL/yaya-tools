@@ -10,6 +10,43 @@ readme = "README.md"
 python = "^3.11"
 
 
+[tool.poetry.group.dev.dependencies]
+flake8 = "^7.1.1"
+mypy = "^1.14.1"
+pytest = "^8.3.4"
+isort = "^6.0.0"
+
+[tool.black]
+line-length = 120
+#Needed as of black 23.12.1 to properly split long stings
+preview = true
+exclude = '''
+/(
+    \.venv
+    | \.pytest_cache
+    | darknet\.py
+    | darknet
+    | yaya
+    | aisp-albumentations
+    | web
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+skip = ['.venv', '.pytest_cache', 'darknet.py', 'darknet', 'yaya', 'aisp-albumentations', 'images', 'web']
+
+[tool.flake8]
+max-line-length = 120
+extend-select = ['B950']
+# E203, E501, E701 are rules incompatiblie with black and are exclued as recommended by black documentation
+extend-ignore = ['E501', 'E701', 'E203']
+extend-exclude = ['.venv', '.pytest_cache', 'darknet.py', 'darknet', 'yaya', 'aisp-albumentations', 'images', 'web']
+
+[tool.mypy]
+exclude = ['.venv', '.pytest_cache', 'darknet.py', 'darknet', 'yaya', 'aisp-albumentations', 'images', 'web']
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

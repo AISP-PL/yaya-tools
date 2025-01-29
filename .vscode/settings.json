@@ -1,0 +1,50 @@
+{
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        },
+    },
+    "[toml]": {
+        "editor.formatOnSave": true
+    },
+    "files.trimTrailingWhitespace": true,
+    "[markdown]": {
+        "files.trimTrailingWhitespace": false
+    },
+    "mypy-type-checker.importStrategy": "fromEnvironment",
+    "mypy-type-checker.reportingScope": "workspace",
+    "mypy-type-checker.cwd": "${workspaceFolder}",
+    "cSpell.enabled": false,
+    "python.testing.pytestArgs": [
+        "tests/unit",
+        "-m not manual"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "flake8.importStrategy": "fromEnvironment",
+    "isort.importStrategy": "fromEnvironment",
+    "search.followSymlinks": false,
+    "files.exclude": {
+        "**/.git/objects/**": true,
+        "**/darknet/**": true,
+        "**/yaya/**": true,
+        "**/aisp-albumentations/**": true,
+    },
+    "files.watcherExclude": {
+            "**/.git/objects/**": true,
+            "**/.git/subtree-cache/**": true,
+            "**/darknet/**": true,
+            "**/yaya/**": true,
+            "**/aisp-albumentations/**": true,
+    },
+    "search.exclude": {
+            "**/.git/objects/**": true,
+            "**/.git/subtree-cache/**": true,
+            "**/darknet/**": true,
+            "**/yaya/**": true,
+            "**/aisp-albumentations/**": true,
+    },
+    "cmake.ignoreCMakeListsMissing": true,
+}
