@@ -1,12 +1,36 @@
+import argparse
 import logging
 import os
 from typing import Optional
 
 import numpy as np
 
+from yaya_tools import __version__
 from yaya_tools.helpers.files import is_image_file
 
 logger = logging.getLogger(__name__)
+
+
+def logging_terminal_setup() -> None:
+    """
+    Setup logging for the application.
+
+    Parameters
+    ----------
+    path_field : str
+        Field in the config file that contains the path to the log file.
+        Default is "path".
+    is_terminal : bool
+        If True, logs will be printed to the terminal.
+        Default is True.
+    """
+    logging.getLogger().setLevel("DEBUG")
+    formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s")
+    console = logging.StreamHandler()
+    console.setLevel(logging.DEBUG)
+    console.setFormatter(formatter)
+    logging.getLogger().addHandler(console)
+    logging.info("\n\n###### Logging start of terminal session ######\n")
 
 
 def main_test() -> None:
@@ -14,7 +38,7 @@ def main_test() -> None:
     print("yaya_tools package installed successfully!")
 
 
-def main_dataset(dataset_path: str, validation_recreate: bool = False, ratio: float = 0.2) -> None:
+def main_dataset() -> None:
     """
     Main function for dataset management
 
@@ -31,6 +55,15 @@ def main_dataset(dataset_path: str, validation_recreate: bool = False, ratio: fl
     -------
     None
     """
+    # Argument parser
+    parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
+    parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
+    parser.add_argument("-h", "--help", action="help", help="Show this help message and exit.")
+    parser.add_argument("-v", action="version", version=__version__, help="Show version and exit.")
+    args = parser.parse_args()
+
+    dataset_path = args.dataset_path
+
     # Training dataset file : Load the list of training images
     train_list: list[str] = []
     try:
@@ -72,11 +105,11 @@ def main_dataset(dataset_path: str, validation_recreate: bool = False, ratio: fl
     train_diff = len(train_list_orig) - len(train_list)
 
     # Training list : Logging
-    logger.info("Training images : Found %u", len(train_list))
+    logger.info("Training dataset: Found %u images.", len(train_list))
     if train_diff > 0:
-        logger.warning("Training images : Removed %u images in update.", train_diff)
+        logger.warning("Training dataset : Removed %u images in update.", train_diff)
     elif train_diff < 0:
-        logger.warning("Training images : Added %u images in update.", -train_diff)
+        logger.warning("Training dataset : Added %u images in update.", -train_diff)
 
     # Training file : Save the list of training images
     with open(os.path.join(dataset_path, "train.txt"), "w") as f:
@@ -107,5 +140,10 @@ def main_dataset(dataset_path: str, validation_recreate: bool = False, ratio: fl
         bar = "#" * int(pct // 2)
         logger.info("Class %s: %d (%.1f%%) %s", cls, cnt, pct, bar)
 
-    if validation_recreate:
+    if args.validation_recreate:
         dataset_to_validation()
+
+
+if __name__ == "__main__":
+    logging_terminal_setup()
+    main_dataset()

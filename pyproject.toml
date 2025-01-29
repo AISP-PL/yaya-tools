@@ -52,3 +52,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 yaya_test = "yaya_tools.main:main_test"
+yaya-dataset = "yaya_tools.main:main_dataset"

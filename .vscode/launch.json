@@ -13,5 +13,14 @@
             "console": "integratedTerminal",
             "justMyCode": false,
         },
+        {
+            "name": "Python: Run main_dataset",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/yaya_tools/main.py",
+            "args": ["--dataset_path", "tests/test_dataset"],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        }
     ],
 }
