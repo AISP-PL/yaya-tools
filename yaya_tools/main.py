@@ -6,6 +6,7 @@ from typing import Optional
 import numpy as np
 
 from yaya_tools import __version__
+from yaya_tools.helpers.dataset import dataset_load_as_sv, dataset_to_validation
 from yaya_tools.helpers.files import is_image_file
 
 logger = logging.getLogger(__name__)
@@ -117,28 +118,20 @@ def main_dataset() -> None:
 
     # Validation list : Check error
     if not validation_list:
-        logger.error("validation.txt is empty!")
+        logger.fatal("Validataion dataset is empty!")
 
     # Validation list : Check ratio too low
     val_ratio = len(validation_list) / max(1, len(train_list) + len(validation_list))
     if val_ratio < 0.1:
-        logger.warning("Validation ratio <10%%, use --validation_recreate and --ratio (default=20%%)")
+        logger.warning(
+            "Validation dataset to training ratio is lower <10%%! Please use --validation_recreate and --ratio (default=20%%)"
+        )
 
-    all_annotations = []
-    for file_name in images_existing:
-        annotation_path = os.path.join(dataset_path, os.path.splitext(file_name)[0] + ".txt")
-        with open(annotation_path, "r") as ann_file:
-            for line in ann_file:
-                class_id, *coords = line.split()
-                all_annotations.append((class_id, coords, file_name))
+    # Annotations : Update
+    annotations_sv = dataset_load_as_sv(images_annotations, dataset_path)
 
-    annotations_np = np.array(all_annotations, dtype=object)
-    unique_classes, counts = np.unique(annotations_np[:, 0], return_counts=True)
-    total_ann = counts.sum()
-    for cls, cnt in zip(unique_classes, counts):
-        pct = cnt / total_ann * 100 if total_ann else 0
-        bar = "#" * int(pct // 2)
-        logger.info("Class %s: %d (%.1f%%) %s", cls, cnt, pct, bar)
+    # Annotations : Logging
+    logger.info("Annotations: Found %u annotations.", len(annotations_sv.class_id))
 
     if args.validation_recreate:
         dataset_to_validation()
