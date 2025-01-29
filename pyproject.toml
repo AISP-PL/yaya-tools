@@ -79,4 +79,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-yaya-annotate = "yaya_tools.main:yaya_test"
+yaya_test = "yaya_tools.main:main_test"
