@@ -35,18 +35,48 @@ exclude = '''
 [tool.isort]
 profile = "black"
 line_length = 120
-skip = ['.venv', '.pytest_cache', 'darknet.py', 'darknet', 'yaya', 'aisp-albumentations', 'images', 'web']
+skip = [
+    '.venv',
+    '.pytest_cache',
+    'darknet.py',
+    'darknet',
+    'yaya',
+    'aisp-albumentations',
+    'images',
+    'web',
+]
 
 [tool.flake8]
 max-line-length = 120
 extend-select = ['B950']
 # E203, E501, E701 are rules incompatiblie with black and are exclued as recommended by black documentation
 extend-ignore = ['E501', 'E701', 'E203']
-extend-exclude = ['.venv', '.pytest_cache', 'darknet.py', 'darknet', 'yaya', 'aisp-albumentations', 'images', 'web']
+extend-exclude = [
+    '.venv',
+    '.pytest_cache',
+    'darknet.py',
+    'darknet',
+    'yaya',
+    'aisp-albumentations',
+    'images',
+    'web',
+]
 
 [tool.mypy]
-exclude = ['.venv', '.pytest_cache', 'darknet.py', 'darknet', 'yaya', 'aisp-albumentations', 'images', 'web']
+exclude = [
+    '.venv',
+    '.pytest_cache',
+    'darknet.py',
+    'darknet',
+    'yaya',
+    'aisp-albumentations',
+    'images',
+    'web',
+]
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+yaya-annotate = "yaya_tools.main:yaya_test"
