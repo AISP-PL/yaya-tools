@@ -4,6 +4,7 @@ from typing import Optional
 
 import numpy as np
 import supervision as sv  # type: ignore
+import tqdm
 from supervision.dataset.formats.yolo import yolo_annotations_to_detections
 from supervision.utils.file import read_txt_file
 
@@ -28,7 +29,7 @@ def annotations_load_as_sv(images_annotations: dict[str, Optional[str]], dataset
     """
     detections: sv.Detections = sv.Detections.empty()
 
-    for image_path, annotations_path in images_annotations.items():
+    for image_path, annotations_path in tqdm.tqdm(images_annotations.items(), desc="Loading annotations"):
         # Skip images without annotations
         if annotations_path is None:
             continue
