@@ -3,8 +3,6 @@ import logging
 import os
 from typing import Optional
 
-import numpy as np
-
 from yaya_tools import __version__
 from yaya_tools.helpers.annotations import annotations_load_as_sv, annotations_log_summary
 from yaya_tools.helpers.dataset import dataset_to_validation
@@ -26,7 +24,7 @@ def logging_terminal_setup() -> None:
         If True, logs will be printed to the terminal.
         Default is True.
     """
-    logging.getLogger().setLevel("DEBUG")
+    logging.getLogger().setLevel(logging.DEBUG)  # Ensure log level is set to DEBUG
     formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s")
     console = logging.StreamHandler()
     console.setLevel(logging.DEBUG)
@@ -60,6 +58,15 @@ def main_dataset() -> None:
     # Argument parser
     parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
     parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
+    parser.add_argument(
+        "--validation_recreate", action="store_true", help="Recreate the validation.txt file from the dataset folder"
+    )
+    parser.add_argument(
+        "--ratio",
+        type=float,
+        default=0.2,
+        help="Validation ratio (default=0.2)",
+    )
     parser.add_argument("-h", "--help", action="help", help="Show this help message and exit.")
     parser.add_argument("-v", action="version", version=__version__, help="Show version and exit.")
     args = parser.parse_args()

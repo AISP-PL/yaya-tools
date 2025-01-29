@@ -34,7 +34,8 @@ def annotations_load_as_sv(images_annotations: dict[str, Optional[str]], dataset
             continue
 
         # Annotations : Load the annotations
-        lines = read_txt_file(file_path=os.path.join(dataset_path, annotations_path), skip_empty=True)
+        annotations_path = os.path.join(dataset_path, annotations_path)
+        lines = read_txt_file(file_path=annotations_path, skip_empty=True)
         # sv.Detections : Create
         file_detections = yolo_annotations_to_detections(
             lines=lines,
@@ -42,6 +43,7 @@ def annotations_load_as_sv(images_annotations: dict[str, Optional[str]], dataset
             with_masks=False,
             is_obb=False,
         )
+        file_detections.data["filepaths"] = np.array([annotations_path] * len(file_detections.xyxy))
 
         # Merge
         detections = sv.Detections.merge([detections, file_detections])
