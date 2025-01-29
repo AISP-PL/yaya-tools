@@ -15,6 +15,9 @@ black = "^25.1.0"
 isort = "^6.0.0"
 flake8 = "^7.1.1"
 supervision = "^0.25.1"
+types-tqdm = "^4.67.0.20241221"
+flake8-pyproject = "^1.2.3"
+flake8-bugbear = "^24.12.12"
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.1.1"
 mypy = "^1.14.1"
@@ -37,11 +40,12 @@ profile = "black"
 line_length = 120
 skip = ['.venv', '.pytest_cache']
 
+
 [tool.flake8]
 max-line-length = 120
 extend-select = ['B950']
 # E203, E501, E701 are rules incompatiblie with black and are exclued as recommended by black documentation
-extend-ignore = ['E501', 'E701', 'E203']
+extend-ignore = ['E501', 'E701', 'E203', 'B950']
 extend-exclude = ['.venv', '.pytest_cache']
 
 [tool.mypy]
