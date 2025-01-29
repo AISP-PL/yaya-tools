@@ -6,7 +6,8 @@ from typing import Optional
 import numpy as np
 
 from yaya_tools import __version__
-from yaya_tools.helpers.dataset import dataset_load_as_sv, dataset_to_validation
+from yaya_tools.helpers.annotations import annotations_load_as_sv, annotations_log_summary
+from yaya_tools.helpers.dataset import dataset_to_validation
 from yaya_tools.helpers.files import is_image_file
 
 logger = logging.getLogger(__name__)
@@ -128,10 +129,10 @@ def main_dataset() -> None:
         )
 
     # Annotations : Update
-    annotations_sv = dataset_load_as_sv(images_annotations, dataset_path)
+    annotations_sv = annotations_load_as_sv(images_annotations, dataset_path)
 
     # Annotations : Logging
-    logger.info("Annotations: Found %u annotations.", len(annotations_sv.class_id))
+    annotations_log_summary(annotations_sv)
 
     if args.validation_recreate:
         dataset_to_validation()
