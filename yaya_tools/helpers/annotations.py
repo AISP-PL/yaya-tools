@@ -27,7 +27,7 @@ def annotations_load_as_sv(images_annotations: dict[str, Optional[str]], dataset
     dict[str, Optional[str]]
         Dictionary of images and their annotations
     """
-    detections: sv.Detections = sv.Detections.empty()
+    sv_detections_list: list[sv.Detections] = []
 
     for image_path, annotations_path in tqdm.tqdm(images_annotations.items(), desc="Loading annotations"):
         # Skip images without annotations
@@ -47,8 +47,9 @@ def annotations_load_as_sv(images_annotations: dict[str, Optional[str]], dataset
         file_detections.data["filepaths"] = np.array([annotations_path] * len(file_detections.xyxy))
 
         # Merge
-        detections = sv.Detections.merge([detections, file_detections])
+        sv_detections_list.append(file_detections)
 
+    detections = sv.Detections.merge(sv_detections_list)
     return detections
 
 
