@@ -51,5 +51,15 @@ def dataset_to_validation(annotations_sv: sv.Detections, negative_samples: list[
         np.random.shuffle(remaining_files)
         validation_files.update(remaining_files[:files_missing])
 
-    validation_files_list = list(validation_files)
-    return validation_files_list[:validation_size]
+    # Truncate : To the validation size
+    validation_files_list = list(validation_files)[:validation_size]
+
+    # Logging : Summary
+    logger.info(
+        "Calculated validation dataset size is %u. Resulted size is %u.", validation_size, len(validation_files_list)
+    )
+    logger.info("Calculated equal class representation size is %u.", class_size)
+    logger.info("For equal representation missed %u files and filled randomly.", max(0, files_missing))
+
+    # Return : List
+    return validation_files_list
