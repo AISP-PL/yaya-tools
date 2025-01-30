@@ -80,6 +80,8 @@ def load_file_to_list(file_path: str) -> list[str]:
     except FileNotFoundError:
         logger.error(f"{file_path} not found!")
 
+    # Sort : List
+    train_list = sorted(train_list)
     return train_list
 
 
@@ -87,8 +89,9 @@ def save_list_to_file(file_path: str, file_list: list[str]) -> None:
     """
     Save a list of strings to a text file
     """
+    files_sorted = sorted(file_list)
     with open(file_path, "w") as f:
-        f.write("\n".join(file_list))
+        f.write("\n".join(files_sorted))
 
 
 def load_directory_images_annotatations(dataset_path: str) -> dict[str, Optional[str]]:
