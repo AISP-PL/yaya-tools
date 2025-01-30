@@ -115,12 +115,18 @@ def main_dataset() -> None:
     train_list = [img_path for img_path in images_annotated if img_path not in validation_list]
     train_diff = len(train_list_orig) - len(train_list)
 
+    # Training annotations : Get
+    annotations_sv, negative_samples = annotations_load_as_sv(images_annotations, dataset_path)
+
     # Training list : Logging
     logger.info("Training dataset: Found %u images.", len(train_list))
     if train_diff > 0:
         logger.warning("Training dataset : Removed %u images in update.", train_diff)
     elif train_diff < 0:
         logger.warning("Training dataset : Added %u images in update.", -train_diff)
+
+    # Annotations : Logging
+    annotations_log_summary(annotations_sv, negative_samples)
 
     # Training file : Save the list of training images
     with open(os.path.join(dataset_path, "train.txt"), "w") as f:
@@ -137,15 +143,9 @@ def main_dataset() -> None:
             "Validation dataset to training ratio is lower <10%%! Please use --validation_force_create and --ratio (default=20%%)"
         )
 
-    # Annotations : Update
-    annotations_sv, negative_samples = annotations_load_as_sv(images_annotations, dataset_path)
-
-    # Annotations : Logging
-    annotations_log_summary(annotations_sv, negative_samples)
-
     # Validation : Recreate
     if args.validation_force_create:
-        dataset_to_validation(annotations_sv, negative_samples, ratio=args.ratio)
+        validation_list = dataset_to_validation(annotations_sv, negative_samples, ratio=args.ratio)
 
 
 if __name__ == "__main__":
