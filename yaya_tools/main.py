@@ -64,6 +64,7 @@ def main_dataset() -> None:
     # Argument parser
     parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
     parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
+    parser.add_argument("--train_all", action="store_true", help="Use all images for training dataset")
     parser.add_argument(
         "--validation_force_create",
         action="store_true",
@@ -98,6 +99,14 @@ def main_dataset() -> None:
         # Validation dataset  : Create as list of files
         validation_list = dataset_to_validation(all_annotations_sv, all_negatives, ratio=args.ratio)
 
+    # Training list : Set to all annotated images when --train_all is True, else remove validation images
+    train_list_orig = train_list.copy()
+    if args.train_all:
+        train_list = images_annotated
+    else:
+        train_list = [img_path for img_path in images_annotated if img_path not in validation_list]
+    train_diff = len(train_list_orig) - len(train_list)
+
     # Train and val annotations : Filter
     training_annotations_sv, training_negatives = annotations_filter_filenames(
         all_annotations_sv, all_negatives, train_list
@@ -105,11 +114,6 @@ def main_dataset() -> None:
     validations_sv, validation_negative = annotations_filter_filenames(
         all_annotations_sv, all_negatives, validation_list
     )
-
-    # Training list : Set to all annotated images without validation images
-    train_list_orig = train_list.copy()
-    train_list = [img_path for img_path in images_annotated if img_path not in validation_list]
-    train_diff = len(train_list_orig) - len(train_list)
 
     # Dataset : Logging
     dataset_log_summary(
@@ -126,7 +130,7 @@ def main_dataset() -> None:
     save_list_to_file(os.path.join(dataset_path, "validation.txt"), validation_list)
 
     # Training : Logging summary
-    annotations_log_summary("train", training_annotations_sv, training_negatives)
+    annotations_log_summary("Training", training_annotations_sv, training_negatives)
 
     # Validation list : Check error
     if not validation_list:
@@ -141,7 +145,7 @@ def main_dataset() -> None:
         )
 
     # Validation list : Logging
-    annotations_log_summary("valid", validations_sv, validation_negative)
+    annotations_log_summary("Valid", validations_sv, validation_negative)
 
 
 if __name__ == "__main__":

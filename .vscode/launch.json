@@ -20,7 +20,7 @@
             "program": "${workspaceFolder}/yaya_tools/main.py",
             "args": ["--dataset_path",
             "/home/spasz/python/model-traffic/images/",
-            "--validation_force_create"],
+            "--validation_force_create","--train_all"],
             "console": "integratedTerminal",
             "justMyCode": false
         }
