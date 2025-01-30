@@ -55,6 +55,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
     parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
     parser.add_argument("-o", "--output_path", type=str, required=True, help="Path to the output folder")
+    parser.add_argument("--width", type=int, default=640, help="Width of the resized image")
+    parser.add_argument("--height", type=int, default=640, help="Height of the resized image")
     parser.add_argument("-h", "--help", action="help", help="Show this help message and exit.")
     parser.add_argument("-v", action="version", version=__version__, help="Show version and exit.")
     args = parser.parse_args()
@@ -65,7 +67,11 @@ def main() -> None:
     images_annotated: list[str] = get_images_annotated(all_images_annotations)
 
     succes_files, failed_files = multiprocess_resize(
-        source_directory=args.dataset_path, target_directory=args.output_path, images_names=images_annotated
+        source_directory=args.dataset_path,
+        target_directory=args.output_path,
+        images_names=images_annotated,
+        new_width=args.width,
+        new_height=args.height,
     )
 
     logger.info(f"Successfully processed {len(succes_files)} files")
