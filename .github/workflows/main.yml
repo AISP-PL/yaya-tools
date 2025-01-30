@@ -88,8 +88,8 @@ jobs:
         with:
           version: 1.8.3
 
-      - name: Install dependencies
-        run: poetry install --no-interaction --no-ansi
+      - name: Install dependencies (not group dev)
+        run: poetry install --no-interaction --no-ansi --without dev
 
       - name: Build dist
         run: poetry build
