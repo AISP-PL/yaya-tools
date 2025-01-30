@@ -145,7 +145,12 @@ def main_dataset() -> None:
 
     # Validation : Recreate
     if args.validation_force_create:
+        # Validation dataset  : Create as list of files
         validation_list = dataset_to_validation(annotations_sv, negative_samples, ratio=args.ratio)
+
+        # Validation file : Save the list of validation images
+        with open(os.path.join(dataset_path, "validation.txt"), "w") as f:
+            f.write("\n".join(validation_list))
 
 
 if __name__ == "__main__":

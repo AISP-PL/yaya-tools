@@ -23,7 +23,6 @@ def dataset_to_validation(annotations_sv: sv.Detections, negative_samples: list[
     annotations_filepaths: np.ndarray = annotations_sv.data.get("filepaths", np.array([]))
     unique_classes = np.unique(annotations_sv.class_id)
     unique_files = set(annotations_filepaths.tolist())
-    total_annotations = len(annotations_sv.xyxy)
     total_files = len(unique_files) + len(negative_samples)
 
     # Split : number of samples for validation
@@ -52,4 +51,5 @@ def dataset_to_validation(annotations_sv: sv.Detections, negative_samples: list[
         np.random.shuffle(remaining_files)
         validation_files.update(remaining_files[:files_missing])
 
-    return validation_files[:validation_size]
+    validation_files_list = list(validation_files)
+    return validation_files_list[:validation_size]
