@@ -41,13 +41,13 @@ def annotations_load_as_sv(
         if image_path in filter_filenames
     }
 
-    for image_path, annotations_path in tqdm.tqdm(filtered_images_annotations.items(), desc="Loading annotations"):
+    for image_name, annotations_name in tqdm.tqdm(filtered_images_annotations.items(), desc="Loading annotations"):
         # Skip images without annotations
-        if annotations_path is None:
+        if annotations_name is None:
             continue
 
         # Annotations : Load the annotations
-        annotations_path = os.path.join(dataset_path, annotations_path)
+        annotations_path = os.path.join(dataset_path, annotations_name)
         lines = read_txt_file(file_path=annotations_path, skip_empty=True)
         # sv.Detections : Create
         file_detections = yolo_annotations_to_detections(
@@ -59,11 +59,11 @@ def annotations_load_as_sv(
 
         # Negative samples : Check if empty
         if len(file_detections.xyxy) == 0:
-            negative_samples.append(image_path)
+            negative_samples.append(image_name)
             continue
 
         # Annotated sample : Add the file path
-        file_detections.data["filepaths"] = np.array([annotations_path] * len(file_detections.xyxy))
+        file_detections.data["filepaths"] = np.array([image_name] * len(file_detections.xyxy))
         sv_detections_list.append(file_detections)
 
     detections = sv.Detections.merge(sv_detections_list)

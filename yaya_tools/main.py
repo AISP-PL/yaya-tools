@@ -134,17 +134,6 @@ def main_dataset() -> None:
     with open(os.path.join(dataset_path, "train.txt"), "w") as f:
         f.write("\n".join(train_list))
 
-    # Validation list : Check error
-    if not validation_list:
-        logger.fatal("Validataion dataset is empty!")
-
-    # Validation list : Check ratio too low
-    val_ratio = len(validation_list) / max(1, len(train_list) + len(validation_list))
-    if val_ratio < 0.1:
-        logger.warning(
-            "Validation dataset to training ratio is lower <10%%! Please use --validation_force_create and --ratio (default=20%%)"
-        )
-
     # Validation : Recreate
     if args.validation_force_create:
         # Validation dataset  : Create as list of files
@@ -154,13 +143,25 @@ def main_dataset() -> None:
         with open(os.path.join(dataset_path, "validation.txt"), "w") as f:
             f.write("\n".join(validation_list))
 
+    # Validation list : Check error
+    if not validation_list:
+        logger.fatal("Validation dataset is empty!")
+
+    # Validation list : Check ratio too low
+    total_train_valid = len(images_annotated)
+    val_ratio = len(validation_list) / max(1, total_train_valid)
+    if val_ratio < 0.1:
+        logger.warning(
+            "Validation dataset to training ratio is lower <10%%! Please use --validation_force_create and --ratio (default=20%%)"
+        )
+
     # Validation annotations : Get
     validations_sv, validation_negative = annotations_load_as_sv(
         all_images_annotations, dataset_path, filter_filenames=set(validation_list)
     )
 
     # Validation list : Logging
-    logger.info("Validation dataset: Found %u images.", len(validation_list))
+    logger.info("Validation dataset: Found %u/%u (%.2f%%).", len(validation_list), total_train_valid, val_ratio * 100)
     annotations_log_summary(validations_sv, validation_negative)
 
 

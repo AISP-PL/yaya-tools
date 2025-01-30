@@ -38,7 +38,7 @@ def dataset_to_validation(annotations_sv: sv.Detections, negative_samples: list[
     for class_id in unique_classes:
         class_files = annotations_filepaths[annotations_sv.class_id == class_id]
         np.random.shuffle(class_files)
-        validation_files.update(class_files[:class_size])
+        validation_files.update(class_files[:class_size].tolist())
 
     # Samples : Add negative samples
     np.random.shuffle(negative_samples)
