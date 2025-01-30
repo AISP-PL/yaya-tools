@@ -92,23 +92,23 @@ def main_dataset() -> None:
         logger.error("validation.txt file not found!")
 
     # Images : List all images in the dataset folder
-    images_annotations: dict[str, Optional[str]] = {}
+    all_images_annotations: dict[str, Optional[str]] = {}
     for file_name in os.listdir(dataset_path):
         # Skip non-image files
         if not is_image_file(file_name):
             continue
 
         # Image : Exists, annotation to check
-        images_annotations[file_name] = None
+        all_images_annotations[file_name] = None
 
         # Annotation : Exists, overwrite the annotation file
         annotation_file = os.path.splitext(file_name)[0] + ".txt"
         if os.path.exists(os.path.join(dataset_path, annotation_file)):
-            images_annotations[file_name] = annotation_file
+            all_images_annotations[file_name] = annotation_file
 
     # Images annotated : Create list
     images_annotated: list[str] = [
-        img_path for img_path, annotation_path in images_annotations.items() if annotation_path is not None
+        img_path for img_path, annotation_path in all_images_annotations.items() if annotation_path is not None
     ]
     # Training list : Set to all annotated images without validation images
     train_list_orig = train_list.copy()
@@ -116,7 +116,9 @@ def main_dataset() -> None:
     train_diff = len(train_list_orig) - len(train_list)
 
     # Training annotations : Get
-    annotations_sv, negative_samples = annotations_load_as_sv(images_annotations, dataset_path)
+    training_annotations_sv, training_negatives = annotations_load_as_sv(
+        all_images_annotations, dataset_path, filter_filenames=set(train_list)
+    )
 
     # Training list : Logging
     logger.info("Training dataset: Found %u images.", len(train_list))
@@ -126,7 +128,7 @@ def main_dataset() -> None:
         logger.warning("Training dataset : Added %u images in update.", -train_diff)
 
     # Annotations : Logging
-    annotations_log_summary(annotations_sv, negative_samples)
+    annotations_log_summary(training_annotations_sv, training_negatives)
 
     # Training file : Save the list of training images
     with open(os.path.join(dataset_path, "train.txt"), "w") as f:
@@ -146,11 +148,20 @@ def main_dataset() -> None:
     # Validation : Recreate
     if args.validation_force_create:
         # Validation dataset  : Create as list of files
-        validation_list = dataset_to_validation(annotations_sv, negative_samples, ratio=args.ratio)
+        validation_list = dataset_to_validation(training_annotations_sv, training_negatives, ratio=args.ratio)
 
         # Validation file : Save the list of validation images
         with open(os.path.join(dataset_path, "validation.txt"), "w") as f:
             f.write("\n".join(validation_list))
+
+    # Validation annotations : Get
+    validations_sv, validation_negative = annotations_load_as_sv(
+        all_images_annotations, dataset_path, filter_filenames=set(validation_list)
+    )
+
+    # Validation list : Logging
+    logger.info("Validation dataset: Found %u images.", len(validation_list))
+    annotations_log_summary(validations_sv, validation_negative)
 
 
 if __name__ == "__main__":

@@ -12,7 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 def annotations_load_as_sv(
-    images_annotations: dict[str, Optional[str]], dataset_path: str
+    images_annotations: dict[str, Optional[str]],
+    dataset_path: str,
+    filter_filenames: set[str],
 ) -> tuple[sv.Detections, list[str]]:
     """
     Load the annotations from the dataset folder
@@ -32,7 +34,14 @@ def annotations_load_as_sv(
     sv_detections_list: list[sv.Detections] = []
     negative_samples: list[str] = []
 
-    for image_path, annotations_path in tqdm.tqdm(images_annotations.items(), desc="Loading annotations"):
+    # Filter : Filter only images_annotations with the filter_filenames
+    filtered_images_annotations = {
+        image_path: annotation_path
+        for image_path, annotation_path in images_annotations.items()
+        if image_path in filter_filenames
+    }
+
+    for image_path, annotations_path in tqdm.tqdm(filtered_images_annotations.items(), desc="Loading annotations"):
         # Skip images without annotations
         if annotations_path is None:
             continue
@@ -74,7 +83,7 @@ def annotations_log_summary(annotations_sv: sv.Detections, negative_samples: lis
     # Data : parse
     unique_classes = np.unique(annotations_sv.class_id)
     total_annotations = len(annotations_sv.xyxy)
-    total_files = np.unique(annotations_sv.data["filepaths"]).shape[0] + len(negative_samples)
+    total_files = np.unique(annotations_sv.data.get("filepaths", np.ndarray([]))).shape[0] + len(negative_samples)
 
     logger.info("Annotations: Found %u different annotations.", total_annotations)
     logger.info("Annotations dataset has %u classes.", len(unique_classes))
