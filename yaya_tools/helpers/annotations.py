@@ -11,7 +11,9 @@ from supervision.utils.file import read_txt_file
 logger = logging.getLogger(__name__)
 
 
-def annotations_load_as_sv(images_annotations: dict[str, Optional[str]], dataset_path: str) -> sv.Detections:
+def annotations_load_as_sv(
+    images_annotations: dict[str, Optional[str]], dataset_path: str
+) -> tuple[sv.Detections, list[str]]:
     """
     Load the annotations from the dataset folder
 
@@ -28,6 +30,7 @@ def annotations_load_as_sv(images_annotations: dict[str, Optional[str]], dataset
         Dictionary of images and their annotations
     """
     sv_detections_list: list[sv.Detections] = []
+    negative_samples: list[str] = []
 
     for image_path, annotations_path in tqdm.tqdm(images_annotations.items(), desc="Loading annotations"):
         # Skip images without annotations
@@ -46,14 +49,19 @@ def annotations_load_as_sv(images_annotations: dict[str, Optional[str]], dataset
         )
         file_detections.data["filepaths"] = np.array([annotations_path] * len(file_detections.xyxy))
 
+        # Negative samples : Check if empty
+        if len(file_detections.xyxy) == 0:
+            negative_samples.append(image_path)
+            continue
+
         # Merge
         sv_detections_list.append(file_detections)
 
     detections = sv.Detections.merge(sv_detections_list)
-    return detections
+    return detections, negative_samples
 
 
-def annotations_log_summary(annotations_sv: sv.Detections) -> None:
+def annotations_log_summary(annotations_sv: sv.Detections, negative_samples: list[str]) -> None:
     """
     Log a summary of the annotations, how many classes, how many annotations,
     For each class log count/all and %% of the total annotations, add horizontal bar
@@ -63,17 +71,28 @@ def annotations_log_summary(annotations_sv: sv.Detections) -> None:
         logger.info("Annotations dataset is empty.")
         return
 
+    # Data : parse
     unique_classes = np.unique(annotations_sv.class_id)
     total_annotations = len(annotations_sv.xyxy)
+    total_files = np.unique(annotations_sv.data["filepaths"]).shape[0]
+
     logger.info("Annotations: Found %u different annotations.", total_annotations)
     logger.info("Annotations dataset has %u classes.", len(unique_classes))
     for class_id in unique_classes:
         class_count = (annotations_sv.class_id == class_id).sum()
         class_ratio = class_count / total_annotations
         logger.info(
-            "Class %u : %u/%u (%.2f%%)",
+            " - Class %02u : %u/%u (%.2f%%) annotations",
             class_id,
             class_count,
             total_annotations,
             class_ratio * 100,
         )
+
+    # Negative samples : Logging
+    logger.info(
+        " - Negative : %u/%u (%.2f%%) files",
+        len(negative_samples),
+        total_files,
+        len(negative_samples) / total_files * 100,
+    )

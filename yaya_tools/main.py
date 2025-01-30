@@ -136,10 +136,10 @@ def main_dataset() -> None:
         )
 
     # Annotations : Update
-    annotations_sv = annotations_load_as_sv(images_annotations, dataset_path)
+    annotations_sv, negative_samples = annotations_load_as_sv(images_annotations, dataset_path)
 
     # Annotations : Logging
-    annotations_log_summary(annotations_sv)
+    annotations_log_summary(annotations_sv, negative_samples)
 
     if args.validation_recreate:
         dataset_to_validation()
