@@ -6,10 +6,12 @@ from typing import Optional
 from yaya_tools import __version__
 from yaya_tools.helpers.annotations import annotations_filter_filenames, annotations_load_as_sv, annotations_log_summary
 from yaya_tools.helpers.dataset import (
+    dataset_log_summary,
     dataset_to_validation,
     get_images_annotated,
     load_directory_images_annotatations,
     load_file_to_list,
+    save_list_to_file,
 )
 
 logger = logging.getLogger(__name__)
@@ -109,24 +111,22 @@ def main_dataset() -> None:
     train_list = [img_path for img_path in images_annotated if img_path not in validation_list]
     train_diff = len(train_list_orig) - len(train_list)
 
-    # Training list : Logging
-    logger.info("Directory has annotated %u of %u total images.", len(images_annotated), len(all_images_annotations))
-    logger.info("Training dataset has %u images.", len(train_list))
-    if train_diff > 0:
-        logger.warning("Training dataset deleted %u images in update.", train_diff)
-    elif train_diff < 0:
-        logger.warning("Training dataset added %u images in update.", -train_diff)
+    # Dataset : Logging
+    dataset_log_summary(
+        all_images=len(all_images_annotations),
+        all_images_annotated=len(images_annotated),
+        train_list_size=len(train_list),
+        valid_list_size=len(validation_list),
+        train_added=max(0, train_diff),
+        train_deleted=max(0, -train_diff),
+    )
 
-    # Annotations : Logging
-    annotations_log_summary(training_annotations_sv, training_negatives)
+    # Train and validation list : Save
+    save_list_to_file(os.path.join(dataset_path, "train.txt"), train_list)
+    save_list_to_file(os.path.join(dataset_path, "validation.txt"), validation_list)
 
-    # Training file : Save the list of training images
-    with open(os.path.join(dataset_path, "train.txt"), "w") as f:
-        f.write("\n".join(train_list))
-
-    # Validation file : Save the list of validation images
-    with open(os.path.join(dataset_path, "validation.txt"), "w") as f:
-        f.write("\n".join(validation_list))
+    # Training : Logging summary
+    annotations_log_summary("train", training_annotations_sv, training_negatives)
 
     # Validation list : Check error
     if not validation_list:
@@ -140,14 +140,8 @@ def main_dataset() -> None:
             "Validation dataset to training ratio is lower <10%%! Please use --validation_force_create and --ratio (default=20%%)"
         )
 
-    # Validation annotations : Get
-    validations_sv, validation_negative = annotations_load_as_sv(
-        all_images_annotations, dataset_path, filter_filenames=set(validation_list)
-    )
-
     # Validation list : Logging
-    logger.info("Validation dataset: Found %u/%u (%.2f%%).", len(validation_list), total_train_valid, val_ratio * 100)
-    annotations_log_summary(validations_sv, validation_negative)
+    annotations_log_summary("valid", validations_sv, validation_negative)
 
 
 if __name__ == "__main__":

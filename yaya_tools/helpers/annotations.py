@@ -74,14 +74,14 @@ def annotations_load_as_sv(
     return detections, negative_samples
 
 
-def annotations_log_summary(annotations_sv: sv.Detections, negative_samples: list[str]) -> None:
+def annotations_log_summary(dataset_name: str, annotations_sv: sv.Detections, negative_samples: list[str]) -> None:
     """
     Log a summary of the annotations, how many classes, how many annotations,
     For each class log count/all and %% of the total annotations, add horizontal bar
     """
     # Check : Empty
     if annotations_sv.class_id is None:
-        logger.info("Annotations dataset is empty.")
+        logger.info("%s dataset is empty.", dataset_name)
         return
 
     # Data : parse
@@ -89,8 +89,8 @@ def annotations_log_summary(annotations_sv: sv.Detections, negative_samples: lis
     total_annotations = len(annotations_sv.xyxy)
     total_files = np.unique(annotations_sv.data.get("filepaths", np.ndarray([]))).shape[0] + len(negative_samples)
 
-    logger.info("Annotations: Found %u different annotations.", total_annotations)
-    logger.info("Annotations dataset has %u classes.", len(unique_classes))
+    logger.info("%s has %u different annotations.", dataset_name, total_annotations)
+    logger.info("%s dataset has %u classes.", dataset_name, len(unique_classes))
     for class_id in unique_classes:
         class_count = (annotations_sv.class_id == class_id).sum()
         class_ratio = class_count / total_annotations

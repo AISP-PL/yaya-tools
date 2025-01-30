@@ -83,6 +83,14 @@ def load_file_to_list(file_path: str) -> list[str]:
     return train_list
 
 
+def save_list_to_file(file_path: str, file_list: list[str]) -> None:
+    """
+    Save a list of strings to a text file
+    """
+    with open(file_path, "w") as f:
+        f.write("\n".join(file_list))
+
+
 def load_directory_images_annotatations(dataset_path: str) -> dict[str, Optional[str]]:
     """Load all images and their annotations from the dataset directory"""
 
@@ -112,3 +120,29 @@ def get_images_annotated(all_images_annotations: dict[str, Optional[str]]) -> li
 def get_images_not_annotated(all_images_annotations: dict[str, Optional[str]]) -> list[str]:
     """Get a list of images that do not have annotations"""
     return [img_path for img_path, annotation_path in all_images_annotations.items() if annotation_path is None]
+
+
+def dataset_log_summary(
+    all_images: int,
+    all_images_annotated: int,
+    train_list_size: int,
+    valid_list_size: int,
+    train_added: int,
+    train_deleted: int,
+) -> None:
+    """Log dataset information"""
+    annotated_ratio = all_images_annotated / all_images if all_images > 0 else 0
+    logger.info(
+        "Directory has annotated %u/%u images (%.2f%%).", all_images_annotated, all_images, annotated_ratio * 100
+    )
+    logger.info(
+        "Training [%u images] + Validation [%u images] = Total [%u images].",
+        train_list_size,
+        valid_list_size,
+        train_list_size + valid_list_size,
+    )
+    if train_added > 0:
+        logger.warning("Training dataset added %u new images.", train_added)
+
+    if train_deleted > 0:
+        logger.warning("Training dataset removed %u missing images.", train_deleted)
