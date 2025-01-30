@@ -90,6 +90,12 @@ def main_dataset() -> None:
 
     # All annotations as SV : Get
     all_annotations_sv, all_negatives = annotations_load_as_sv(all_images_annotations, dataset_path)
+
+    # Validation : Recreate
+    if args.validation_force_create:
+        # Validation dataset  : Create as list of files
+        validation_list = dataset_to_validation(all_annotations_sv, all_negatives, ratio=args.ratio)
+
     # Train and val annotations : Filter
     training_annotations_sv, training_negatives = annotations_filter_filenames(
         all_annotations_sv, all_negatives, train_list
@@ -118,14 +124,9 @@ def main_dataset() -> None:
     with open(os.path.join(dataset_path, "train.txt"), "w") as f:
         f.write("\n".join(train_list))
 
-    # Validation : Recreate
-    if args.validation_force_create:
-        # Validation dataset  : Create as list of files
-        validation_list = dataset_to_validation(training_annotations_sv, training_negatives, ratio=args.ratio)
-
-        # Validation file : Save the list of validation images
-        with open(os.path.join(dataset_path, "validation.txt"), "w") as f:
-            f.write("\n".join(validation_list))
+    # Validation file : Save the list of validation images
+    with open(os.path.join(dataset_path, "validation.txt"), "w") as f:
+        f.write("\n".join(validation_list))
 
     # Validation list : Check error
     if not validation_list:
