@@ -39,12 +39,7 @@ def logging_terminal_setup() -> None:
     logging.info("\n\n###### Logging start of terminal session ######\n")
 
 
-def main_test() -> None:
-    """Test function for package installation tests"""
-    print("yaya_tools package installed successfully!")
-
-
-def main_dataset() -> None:
+def main() -> None:
     """
     Main function for dataset management
 
@@ -150,4 +145,4 @@ def main_dataset() -> None:
 
 if __name__ == "__main__":
     logging_terminal_setup()
-    main_dataset()
+    main()
