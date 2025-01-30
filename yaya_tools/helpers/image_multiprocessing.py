@@ -10,6 +10,23 @@ import cv2  # types: ignore
 logger = logging.getLogger(__name__)
 
 
+def threaded_resize_image(args: tuple[str, str, str, int, int, int]) -> tuple[str, bool]:
+    image_name, source_directory, target_directory, new_width, new_height, interpolation = args
+    """Threded Resize image"""
+    try:
+        image = cv2.imread(f"{source_directory}/{image_name}")
+        if image is None:
+            logger.error(f"Could not read image {image_name}")
+            return image_name, False
+        resized_image = cv2.resize(image, (new_width, new_height), interpolation=interpolation)
+        cv2.imwrite(f"{target_directory}/{image_name}", resized_image)
+        return image_name, True
+
+    except Exception as e:
+        logger.error(f"Error resizing image {image_name}: {e}")
+        return image_name, False
+
+
 def multiprocess_resize(
     source_directory: str,
     target_directory: str,
@@ -38,28 +55,19 @@ def multiprocess_resize(
         List of successfully processed files and list of errors.
     """
 
-    def threaded_resize_image(image_name: str) -> tuple[str, bool]:
-        """Threded Resize image"""
-        try:
-            image = cv2.imread(f"{source_directory}/{image_name}")
-            if image is None:
-                logger.error(f"Could not read image {image_name}")
-                return image_name, False
-            resized_image = cv2.resize(image, (new_width, new_height), interpolation=interpolation)
-            cv2.imwrite(f"{target_directory}/{image_name}", resized_image)
-            return image_name, True
-
-        except Exception as e:
-            logger.error(f"Error resizing image {image_name}: {e}")
-            return image_name, False
-
     # Initialize lists
     sucess_files: list[str] = []
     failed_files: list[str] = []
 
     # Pool : Start a pool of workers
     with Pool(pool_size) as pool:
-        results = pool.map(threaded_resize_image, images_names)
+        results = pool.map(
+            threaded_resize_image,
+            [
+                (image_name, source_directory, target_directory, new_width, new_height, interpolation)
+                for image_name in images_names
+            ],
+        )
 
     # Results : Get results
     for image_name, success in results:
