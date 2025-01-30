@@ -68,6 +68,10 @@ def main() -> None:
         source_directory=args.dataset_path, target_directory=args.output_path, images_names=images_annotated
     )
 
+    logger.info(f"Successfully processed {len(succes_files)} files")
+    if failed_files:
+        logger.error(f"Failed to process {','.join(failed_files)}")
+
 
 if __name__ == "__main__":
     logging_terminal_setup()

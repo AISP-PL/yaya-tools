@@ -6,6 +6,7 @@ import logging
 from multiprocessing import Pool
 
 import cv2  # types: ignore
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -61,12 +62,17 @@ def multiprocess_resize(
 
     # Pool : Start a pool of workers
     with Pool(pool_size) as pool:
-        results = pool.map(
-            threaded_resize_image,
-            [
-                (image_name, source_directory, target_directory, new_width, new_height, interpolation)
-                for image_name in images_names
-            ],
+        results = list(
+            tqdm(
+                pool.imap(
+                    threaded_resize_image,
+                    [
+                        (image_name, source_directory, target_directory, new_width, new_height, interpolation)
+                        for image_name in images_names
+                    ],
+                ),
+                total=len(images_names),
+            )
         )
 
     # Results : Get results
