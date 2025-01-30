@@ -18,7 +18,7 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/yaya_tools/main.py",
-            "args": ["--dataset_path", "tests/test_dataset"],
+            "args": ["--dataset_path", "tests/test_dataset", "--validation_force_create"],
             "console": "integratedTerminal",
             "justMyCode": false
         }

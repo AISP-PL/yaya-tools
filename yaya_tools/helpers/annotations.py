@@ -47,14 +47,14 @@ def annotations_load_as_sv(
             with_masks=False,
             is_obb=False,
         )
-        file_detections.data["filepaths"] = np.array([annotations_path] * len(file_detections.xyxy))
 
         # Negative samples : Check if empty
         if len(file_detections.xyxy) == 0:
             negative_samples.append(image_path)
             continue
 
-        # Merge
+        # Annotated sample : Add the file path
+        file_detections.data["filepaths"] = np.array([annotations_path] * len(file_detections.xyxy))
         sv_detections_list.append(file_detections)
 
     detections = sv.Detections.merge(sv_detections_list)
@@ -74,7 +74,7 @@ def annotations_log_summary(annotations_sv: sv.Detections, negative_samples: lis
     # Data : parse
     unique_classes = np.unique(annotations_sv.class_id)
     total_annotations = len(annotations_sv.xyxy)
-    total_files = np.unique(annotations_sv.data["filepaths"]).shape[0]
+    total_files = np.unique(annotations_sv.data["filepaths"]).shape[0] + len(negative_samples)
 
     logger.info("Annotations: Found %u different annotations.", total_annotations)
     logger.info("Annotations dataset has %u classes.", len(unique_classes))

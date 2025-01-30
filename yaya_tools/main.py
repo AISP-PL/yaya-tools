@@ -46,7 +46,7 @@ def main_dataset() -> None:
     ----------
     dataset_path : str
         Path to the dataset folder
-    validation_recreate : bool
+    validation_force_create : bool
         If True, recreate validation.txt file
     ratio : float
         Validation ratio (default=0.2)
@@ -59,7 +59,9 @@ def main_dataset() -> None:
     parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
     parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
     parser.add_argument(
-        "--validation_recreate", action="store_true", help="Recreate the validation.txt file from the dataset folder"
+        "--validation_force_create",
+        action="store_true",
+        help="Recreate the validation.txt file from the dataset folder",
     )
     parser.add_argument(
         "--ratio",
@@ -132,7 +134,7 @@ def main_dataset() -> None:
     val_ratio = len(validation_list) / max(1, len(train_list) + len(validation_list))
     if val_ratio < 0.1:
         logger.warning(
-            "Validation dataset to training ratio is lower <10%%! Please use --validation_recreate and --ratio (default=20%%)"
+            "Validation dataset to training ratio is lower <10%%! Please use --validation_force_create and --ratio (default=20%%)"
         )
 
     # Annotations : Update
@@ -141,8 +143,9 @@ def main_dataset() -> None:
     # Annotations : Logging
     annotations_log_summary(annotations_sv, negative_samples)
 
-    if args.validation_recreate:
-        dataset_to_validation()
+    # Validation : Recreate
+    if args.validation_force_create:
+        dataset_to_validation(annotations_sv, negative_samples, ratio=args.ratio)
 
 
 if __name__ == "__main__":
