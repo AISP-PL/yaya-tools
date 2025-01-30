@@ -4,9 +4,13 @@ import os
 from typing import Optional
 
 from yaya_tools import __version__
-from yaya_tools.helpers.annotations import annotations_load_as_sv, annotations_log_summary
-from yaya_tools.helpers.dataset import dataset_to_validation
-from yaya_tools.helpers.files import is_image_file
+from yaya_tools.helpers.annotations import annotations_filter_filenames, annotations_load_as_sv, annotations_log_summary
+from yaya_tools.helpers.dataset import (
+    dataset_to_validation,
+    get_images_annotated,
+    load_directory_images_annotatations,
+    load_file_to_list,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -75,50 +79,29 @@ def main_dataset() -> None:
 
     dataset_path = args.dataset_path
 
-    # Training dataset file : Load the list of training images
-    train_list: list[str] = []
-    try:
-        with open(os.path.join(dataset_path, "train.txt"), "r") as f:
-            train_list = [p.strip() for p in f if p.strip()]
-    except FileNotFoundError:
-        logger.error("train.txt file not found!")
+    # Training : List of filenames
+    train_list: list[str] = load_file_to_list(os.path.join(dataset_path, "train.txt"))
+    # Validation : List of filenames
+    validation_list: list[str] = load_file_to_list(os.path.join(dataset_path, "validation.txt"))
+    # All images : with optional annotation filename
+    all_images_annotations: dict[str, Optional[str]] = load_directory_images_annotatations(dataset_path)
+    # Images annotated : Filter only
+    images_annotated: list[str] = get_images_annotated(all_images_annotations)
 
-    # Validation dataset file : Load the list of validation images
-    validation_list: list[str] = []
-    try:
-        with open(os.path.join(dataset_path, "validation.txt"), "r") as f:
-            validation_list = [p.strip() for p in f if p.strip()]
-    except FileNotFoundError:
-        logger.error("validation.txt file not found!")
+    # All annotations as SV : Get
+    all_annotations_sv, all_negatives = annotations_load_as_sv(all_images_annotations, dataset_path)
+    # Train and val annotations : Filter
+    training_annotations_sv, training_negatives = annotations_filter_filenames(
+        all_annotations_sv, all_negatives, train_list
+    )
+    validations_sv, validation_negative = annotations_filter_filenames(
+        all_annotations_sv, all_negatives, validation_list
+    )
 
-    # Images : List all images in the dataset folder
-    all_images_annotations: dict[str, Optional[str]] = {}
-    for file_name in os.listdir(dataset_path):
-        # Skip non-image files
-        if not is_image_file(file_name):
-            continue
-
-        # Image : Exists, annotation to check
-        all_images_annotations[file_name] = None
-
-        # Annotation : Exists, overwrite the annotation file
-        annotation_file = os.path.splitext(file_name)[0] + ".txt"
-        if os.path.exists(os.path.join(dataset_path, annotation_file)):
-            all_images_annotations[file_name] = annotation_file
-
-    # Images annotated : Create list
-    images_annotated: list[str] = [
-        img_path for img_path, annotation_path in all_images_annotations.items() if annotation_path is not None
-    ]
     # Training list : Set to all annotated images without validation images
     train_list_orig = train_list.copy()
     train_list = [img_path for img_path in images_annotated if img_path not in validation_list]
     train_diff = len(train_list_orig) - len(train_list)
-
-    # Training annotations : Get
-    training_annotations_sv, training_negatives = annotations_load_as_sv(
-        all_images_annotations, dataset_path, filter_filenames=set(train_list)
-    )
 
     # Training list : Logging
     logger.info("Directory has annotated %u of %u total images.", len(images_annotated), len(all_images_annotations))

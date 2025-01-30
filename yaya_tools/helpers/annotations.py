@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def annotations_load_as_sv(
     images_annotations: dict[str, Optional[str]],
     dataset_path: str,
-    filter_filenames: set[str],
+    filter_filenames: Optional[set[str]] = None,
 ) -> tuple[sv.Detections, list[str]]:
     """
     Load the annotations from the dataset folder
@@ -25,6 +25,8 @@ def annotations_load_as_sv(
         Dictionary of images and their annotations
     dataset_path : str
         Path to the dataset folder
+    filter_filenames : set[str]
+        Set of filenames to filter the images_annotations, if empty use all
 
     Returns
     -------
@@ -34,12 +36,14 @@ def annotations_load_as_sv(
     sv_detections_list: list[sv.Detections] = []
     negative_samples: list[str] = []
 
-    # Filter : Filter only images_annotations with the filter_filenames
-    filtered_images_annotations = {
-        image_path: annotation_path
-        for image_path, annotation_path in images_annotations.items()
-        if image_path in filter_filenames
-    }
+    # Filter : Filter only images_annotations with the filter_filenames, only if filter_filenames is not empty
+    filtered_images_annotations = images_annotations
+    if filter_filenames is not None:
+        filtered_images_annotations = {
+            image_path: annotation_path
+            for image_path, annotation_path in images_annotations.items()
+            if image_path in filter_filenames
+        }
 
     for image_name, annotations_name in tqdm.tqdm(filtered_images_annotations.items(), desc="Loading annotations"):
         # Skip images without annotations
@@ -105,3 +109,17 @@ def annotations_log_summary(annotations_sv: sv.Detections, negative_samples: lis
         total_files,
         len(negative_samples) / total_files * 100,
     )
+
+
+def annotations_filter_filenames(
+    annotations: sv.Detections, negatives: list[str], filenames: list[str]
+) -> tuple[sv.Detections, list[str]]:
+    """Filter only the annotations from files in the filenames list"""
+    # Filter : Get the indexes of the filenames
+    filter_indexes = np.isin(annotations.data.get("filepaths", np.array([])), filenames)
+    annotations_filtered = annotations[filter_indexes]
+
+    # Filter : Negative samples
+    negatives_filtered = [neg for neg in negatives if neg in filenames]
+
+    return annotations_filtered, negatives_filtered

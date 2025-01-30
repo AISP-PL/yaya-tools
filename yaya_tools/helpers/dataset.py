@@ -3,9 +3,13 @@ This module contains helper functions for dataset management
 """
 
 import logging
+import os
+from typing import Optional
 
 import numpy as np
-import supervision as sv  # type: ignore
+import supervision as sv
+
+from yaya_tools.helpers.files import is_image_file  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -63,3 +67,48 @@ def dataset_to_validation(annotations_sv: sv.Detections, negative_samples: list[
 
     # Return : List
     return validation_files_list
+
+
+def load_file_to_list(file_path: str) -> list[str]:
+    """
+    Load a text file to a list of strings
+    """
+    train_list: list[str] = []
+    try:
+        with open(file_path, "r") as f:
+            train_list = [p.strip() for p in f if p.strip()]
+    except FileNotFoundError:
+        logger.error(f"{file_path} not found!")
+
+    return train_list
+
+
+def load_directory_images_annotatations(dataset_path: str) -> dict[str, Optional[str]]:
+    """Load all images and their annotations from the dataset directory"""
+
+    # Images : List all images in the dataset folder
+    all_images_annotations: dict[str, Optional[str]] = {}
+    for file_name in os.listdir(dataset_path):
+        # Skip non-image files
+        if not is_image_file(file_name):
+            continue
+
+        # Image : Exists, annotation to check
+        all_images_annotations[file_name] = None
+
+        # Annotation : Exists, overwrite the annotation file
+        annotation_file = os.path.splitext(file_name)[0] + ".txt"
+        if os.path.exists(os.path.join(dataset_path, annotation_file)):
+            all_images_annotations[file_name] = annotation_file
+
+    return all_images_annotations
+
+
+def get_images_annotated(all_images_annotations: dict[str, Optional[str]]) -> list[str]:
+    """Get a list of images that have annotations"""
+    return [img_path for img_path, annotation_path in all_images_annotations.items() if annotation_path is not None]
+
+
+def get_images_not_annotated(all_images_annotations: dict[str, Optional[str]]) -> list[str]:
+    """Get a list of images that do not have annotations"""
+    return [img_path for img_path, annotation_path in all_images_annotations.items() if annotation_path is None]
