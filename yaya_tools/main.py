@@ -121,11 +121,12 @@ def main_dataset() -> None:
     )
 
     # Training list : Logging
-    logger.info("Training dataset: Found %u images.", len(train_list))
+    logger.info("Directory has annotated %u of %u total images.", len(images_annotated), len(all_images_annotations))
+    logger.info("Training dataset has %u images.", len(train_list))
     if train_diff > 0:
-        logger.warning("Training dataset : Removed %u images in update.", train_diff)
+        logger.warning("Training dataset deleted %u images in update.", train_diff)
     elif train_diff < 0:
-        logger.warning("Training dataset : Added %u images in update.", -train_diff)
+        logger.warning("Training dataset added %u images in update.", -train_diff)
 
     # Annotations : Logging
     annotations_log_summary(training_annotations_sv, training_negatives)
