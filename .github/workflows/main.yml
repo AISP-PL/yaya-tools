@@ -97,11 +97,9 @@ jobs:
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          # Must include token to avoid "Parameter token or opts.auth is required"
-          token: ${{ secrets.GITHUB_TOKEN }}
-          # "github.ref_name" gives you the tag name (e.g. "v1.2.3"),
-          # without the "refs/tags/" prefix.
           tag_name: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}
           draft: false
