@@ -1,35 +1,49 @@
-
 name: CI
 
+# Required for creating & uploading release assets
+permissions:
+  contents: write
+
 on:
+  # 1) Run on any push to main
   push:
     branches: [ main ]
+    # 2) Also run on pushes to tags (like v1.0.0)
+    tags:
+      - 'v*'
+
+  # 3) Run on any pull request to main
   pull_request:
     branches: [ main ]
 
-  # Allows you to run this workflow manually from the Actions tab
+  # Allows manual triggering from Actions tab
   workflow_dispatch:
 
-
 jobs:
-
-  # Part : Tests
+  # ─────────────────────────────────────────────────────────────
+  # 1) Build & Test Job
+  #    Runs for:
+  #      - push to main branch
+  #      - pull request to main
+  #      - push of new tag
+  # ─────────────────────────────────────────────────────────────
   build-test:
     runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
         os: [ubuntu-22.04]
-        python-version: [ "3.11"]
+        python-version: [ "3.11" ]
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
         with:
           lfs: true
+
       - run: git fetch --prune --unshallow
 
-      - name: Setup python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -45,6 +59,38 @@ jobs:
       - name: Run tests
         run: poetry run pytest --verbose
 
+  # ─────────────────────────────────────────────────────────────
+  # 2) Release Job
+  #    Runs only if the push is on a tag (e.g. refs/tags/v1.2.3).
+  #    Depends on the tests passing in `build-test`.
+  # ─────────────────────────────────────────────────────────────
+  release:
+    needs: build-test
+    runs-on: ubuntu-22.04
+    # Only run this job if we're on a tag push
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - run: git fetch --prune --unshallow
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.3
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-ansi
+
       - name: Build dist
         run: poetry build
 
@@ -52,17 +98,23 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          # Must include token to avoid "Parameter token or opts.auth is required"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # "github.ref_name" gives you the tag name (e.g. "v1.2.3"),
+          # without the "refs/tags/" prefix.
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Assets
         uses: svenstaro/upload-release-action@v2
         with:
+          # Must include repo_token for authentication
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: dist/*
           file_glob: true
-          tag: ${{ github.ref }}
+          # Same tag name as above
+          tag: ${{ github.ref_name }}
           overwrite: true
+
