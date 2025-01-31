@@ -9,6 +9,7 @@ from typing import Optional
 
 import numpy as np
 import supervision as sv
+import tqdm
 
 from yaya_tools.helpers.files import is_image_file  # type: ignore
 
@@ -79,7 +80,7 @@ def dataset_copy_to(dataset_path: str, files_to_copy: list[str], destination_pat
     os.makedirs(destination_path, exist_ok=True)
 
     success_copies: int = 0
-    for file_name in files_to_copy:
+    for file_name in tqdm.tqdm(files_to_copy, desc="Copying files"):
         source_file = os.path.join(dataset_path, file_name)
         destination_file = os.path.join(destination_path, file_name)
         try:
