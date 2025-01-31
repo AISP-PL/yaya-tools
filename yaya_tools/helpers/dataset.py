@@ -4,6 +4,7 @@ This module contains helper functions for dataset management
 
 import logging
 import os
+from shutil import copyfile
 from typing import Optional
 
 import numpy as np
@@ -14,7 +15,9 @@ from yaya_tools.helpers.files import is_image_file  # type: ignore
 logger = logging.getLogger(__name__)
 
 
-def dataset_to_validation(annotations_sv: sv.Detections, negative_samples: list[str], ratio: float = 0.20) -> list[str]:
+def dataset_create_validation(
+    annotations_sv: sv.Detections, negative_samples: list[str], ratio: float = 0.20
+) -> list[str]:
     """
     Create a validation files list from basing on all annotations
     """
@@ -67,6 +70,26 @@ def dataset_to_validation(annotations_sv: sv.Detections, negative_samples: list[
 
     # Return : List
     return validation_files_list
+
+
+def dataset_copy_to(dataset_path: str, files_to_copy: list[str], destination_path: str) -> None:
+    """
+    Copy files from the dataset to the destination folder
+    """
+    os.makedirs(destination_path, exist_ok=True)
+
+    success_copies: int = 0
+    for file_name in files_to_copy:
+        source_file = os.path.join(dataset_path, file_name)
+        destination_file = os.path.join(destination_path, file_name)
+        try:
+            copyfile(source_file, destination_file)
+            success_copies += 1
+        except Exception as e:
+            logger.error(f"Error copying {source_file} to {destination_file}: {e}")
+            continue
+
+    logger.info("Copied %u files to %s.", success_copies, destination_path)
 
 
 def load_file_to_list(file_path: str) -> list[str]:

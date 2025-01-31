@@ -6,8 +6,9 @@ from typing import Optional
 from yaya_tools import __version__
 from yaya_tools.helpers.annotations import annotations_filter_filenames, annotations_load_as_sv, annotations_log_summary
 from yaya_tools.helpers.dataset import (
+    dataset_copy_to,
+    dataset_create_validation,
     dataset_log_summary,
-    dataset_to_validation,
     get_images_annotated,
     load_directory_images_annotatations,
     load_file_to_list,
@@ -43,15 +44,6 @@ def main() -> None:
     """
     Main function for dataset management
 
-    Arguments
-    ----------
-    dataset_path : str
-        Path to the dataset folder
-    validation_force_create : bool
-        If True, recreate validation.txt file
-    ratio : float
-        Validation ratio (default=0.2)
-
     Returns
     -------
     None
@@ -59,6 +51,7 @@ def main() -> None:
     # Argument parser
     parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
     parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
+    parser.add_argument("--copy_negatives_to", type=str, help="Path to copy the negative samples only")
     parser.add_argument("--train_all", action="store_true", help="Use all images for training dataset")
     parser.add_argument(
         "--validation_force_create",
@@ -89,10 +82,14 @@ def main() -> None:
     # All annotations as SV : Get
     all_annotations_sv, all_negatives = annotations_load_as_sv(all_images_annotations, dataset_path)
 
+    # Negatives : Extract
+    if args.copy_negatives_to:
+        dataset_copy_to(args.dataset_path, all_negatives, args.copy_negatives_to)
+
     # Validation : Recreate
     if args.validation_force_create:
         # Validation dataset  : Create as list of files
-        validation_list = dataset_to_validation(all_annotations_sv, all_negatives, ratio=args.ratio)
+        validation_list = dataset_create_validation(all_annotations_sv, all_negatives, ratio=args.ratio)
 
     # Training list : Set to all annotated images when --train_all is True, else remove validation images
     train_list_orig = train_list.copy()
