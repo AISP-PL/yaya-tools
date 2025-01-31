@@ -117,9 +117,9 @@ def annotations_filter_filenames(
     """Filter only the annotations from files in the filenames list"""
     # Filter : Get the indexes of the filenames
     filter_indexes = np.isin(annotations.data.get("filepaths", np.array([])), filenames)
-    annotations_filtered = annotations[filter_indexes]
+    annotations_filtered: sv.Detections = annotations[filter_indexes]  # type: ignore
 
     # Filter : Negative samples
-    negatives_filtered = [neg for neg in negatives if neg in filenames]
+    negatives_filtered: list[str] = [neg for neg in negatives if neg in filenames]
 
     return annotations_filtered, negatives_filtered
