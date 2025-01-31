@@ -12,6 +12,7 @@ numpy = "^2.2.2"
 supervision = "^0.25.1"
 tqdm = "^4.67.1"
 
+albumentations = "^2.0.2"
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.1.1"
 flake8-pyproject = "^1.2.3"
