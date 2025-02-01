@@ -1,17 +1,18 @@
 import logging
 import os
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
 import supervision as sv  # type: ignore
 import tqdm
-from supervision.dataset.formats.yolo import yolo_annotations_to_detections
+from supervision.dataset.formats.yolo import detections_to_yolo_annotations, yolo_annotations_to_detections
 from supervision.utils.file import read_txt_file
 
 logger = logging.getLogger(__name__)
 
 
-def file_annotations_to_sv(filepath: str) -> Optional[sv.Detections]:
+def file_annotations_to_sv(imagepath: str) -> Optional[sv.Detections]:
     """
     Load the annotations from the dataset folder
 
@@ -27,8 +28,11 @@ def file_annotations_to_sv(filepath: str) -> Optional[sv.Detections]:
     Optional[sv.Detections]
         Annotations as sv.Detections object
     """
+    # Imagepath to .txt filepath
+    annotation_path = Path(imagepath).with_suffix(".txt")
+
     # Annotations : Load the annotations
-    lines = read_txt_file(file_path=filepath, skip_empty=True)
+    lines = read_txt_file(file_path=annotation_path, skip_empty=True)
 
     # sv.Detections : Create
     file_detections = yolo_annotations_to_detections(
@@ -38,10 +42,13 @@ def file_annotations_to_sv(filepath: str) -> Optional[sv.Detections]:
         is_obb=False,
     )
 
+    # Image name : Add the file path
+    file_detections.data["filepaths"] = np.array([imagepath] * len(file_detections.xyxy))
+
     return file_detections
 
 
-def annotations_sv_to_yolo_file(filepath: str, annotations_sv: sv.Detections) -> None:
+def annotations_sv_to_yolo_file(imagepath: str, annotations_sv: sv.Detections) -> None:
     """
     Save the annotations to the dataset folder
 
@@ -59,19 +66,15 @@ def annotations_sv_to_yolo_file(filepath: str, annotations_sv: sv.Detections) ->
         logger.error("No annotations found!")
         return
 
+    # Image path to .txt filepath
+    annotations_path = Path(imagepath).with_suffix(".txt")
+
+    # Lines : Convert the annotations to YOLO format
+    lines: list[str] = detections_to_yolo_annotations(annotations_sv, image_shape=(1, 1, 3))
+
     # Annotations : Save the annotations
-    with open(filepath, "w") as file:
-        for index in range(len(annotations_sv.xyxy)):
-            line = " ".join(
-                [
-                    str(annotations_sv.class_id[index]),
-                    str(annotations_sv.xyxy[index][0]),
-                    str(annotations_sv.xyxy[index][1]),
-                    str(annotations_sv.xyxy[index][2]),
-                    str(annotations_sv.xyxy[index][3]),
-                ]
-            )
-            file.write(line + "\n")
+    with open(str(annotations_path), "w") as file:
+        file.write("\n".join(lines))
 
 
 def annotations_load_as_sv(
@@ -214,8 +217,8 @@ def annotations_diff(
     common_files = np.intersect1d(source_files_unique, dest_files_unique)
 
     # Filter : Only common files
-    source_annotations_filtered = source_annotations[np.isin(source_files, common_files)]
-    dest_annotations_filtered = dest_annotations[np.isin(dest_files, common_files)]
+    source_annotations_filtered: sv.Detections = source_annotations[np.isin(source_files, common_files)]  # type: ignore
+    dest_annotations_filtered: sv.Detections = dest_annotations[np.isin(dest_files, common_files)]  # type: ignore
 
     source_filtered_files = source_annotations_filtered.data.get("filepaths", np.array([]))
     dest_filtered_files = dest_annotations_filtered.data.get("filepaths", np.array([]))
@@ -224,8 +227,8 @@ def annotations_diff(
     source_new_annotations: list[sv.Detections] = []
     source_removed_annotations: list[sv.Detections] = []
     for file_path in tqdm.tqdm(common_files, desc="Calculating annotations diff"):
-        source_annotations_file = source_annotations_filtered[source_filtered_files == file_path]
-        dest_annotations_file = dest_annotations_filtered[dest_filtered_files == file_path]
+        source_annotations_file: sv.Detections = source_annotations_filtered[source_filtered_files == file_path]  # type: ignore
+        dest_annotations_file: sv.Detections = dest_annotations_filtered[dest_filtered_files == file_path]  # type: ignore
 
         # Check : Empty
         if source_annotations_file.xyxy.size == 0:
@@ -243,10 +246,10 @@ def annotations_diff(
         dest_iou_max = iou.max(axis=0)
 
         # Source : New annotations
-        source_new_annotations.append(source_annotations_file[sources_iou_max < 0.40])
+        source_new_annotations.append(source_annotations_file[sources_iou_max < 0.40])  # type: ignore
 
         # Source : Removed annotations
-        source_removed_annotations.append(dest_annotations_file[dest_iou_max < 0.40])
+        source_removed_annotations.append(dest_annotations_file[dest_iou_max < 0.40])  # type: ignore
 
     # Merge : Return
     return sv.Detections.merge(source_new_annotations), sv.Detections.merge(source_removed_annotations)
@@ -261,8 +264,7 @@ def annotations_append(dataset_path: str, new_annotations: sv.Detections) -> Non
     unique_files = np.unique(annotations_files)
     for filename in tqdm.tqdm(unique_files, desc="Appending annotations"):
         # Dataset : Load annotations from this file inside dataset, fallback to empty
-        annotations_path = os.path.join(dataset_path, filename)
-        file_annotations_sv = file_annotations_to_sv(filepath=annotations_path)
+        file_annotations_sv = file_annotations_to_sv(imagepath=os.path.join(dataset_path, filename))
         if file_annotations_sv is None:
             file_annotations_sv = sv.Detections.empty()
 
@@ -278,4 +280,4 @@ def annotations_append(dataset_path: str, new_annotations: sv.Detections) -> Non
         )
 
         # Save : Annotations
-        annotations_sv_to_yolo_file(filepath=annotations_path, annotations_sv=file_annotations_sv)
+        annotations_sv_to_yolo_file(imagepath=os.path.join(dataset_path, filename), annotations_sv=file_annotations_sv)
