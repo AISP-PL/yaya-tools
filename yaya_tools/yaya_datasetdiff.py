@@ -9,6 +9,7 @@ from yaya_tools.helpers.annotations import (
     annotations_log_summary,
 )
 from yaya_tools.helpers.dataset import (
+    images_annotations_log,
     load_directory_images_annotatations,
 )
 
@@ -59,12 +60,16 @@ def main() -> None:
     # Source images : with optional annotation filename, filter annotated
     source_images_annotations: dict[str, Optional[str]] = load_directory_images_annotatations(args.source)
     source_annotations_sv, source_negatives = annotations_load_as_sv(source_images_annotations, args.source)
+    images_annotations_log(dataset_path=args.source, all_images_annotations=source_images_annotations)
+    annotations_log_summary("Source", source_annotations_sv, source_negatives)
 
     # Destination images : with optional annotation filename
     destination_images_annotations: dict[str, Optional[str]] = load_directory_images_annotatations(args.dest)
     destination_annotations_sv, destination_negatives = annotations_load_as_sv(
         destination_images_annotations, args.dest
     )
+    images_annotations_log(dataset_path=args.dest, all_images_annotations=destination_images_annotations)
+    annotations_log_summary("Destination", destination_annotations_sv, destination_negatives)
 
     # Diff : Create
     source_added, source_removed = annotations_diff(

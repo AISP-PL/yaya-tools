@@ -120,7 +120,6 @@ def save_list_to_file(file_path: str, file_list: list[str]) -> None:
 
 def load_directory_images_annotatations(dataset_path: str) -> dict[str, Optional[str]]:
     """Load all images and their annotations from the dataset directory"""
-
     # Images : List all images in the dataset folder
     all_images_annotations: dict[str, Optional[str]] = {}
     for file_name in os.listdir(dataset_path):
@@ -137,6 +136,13 @@ def load_directory_images_annotatations(dataset_path: str) -> dict[str, Optional
             all_images_annotations[file_name] = annotation_file
 
     return all_images_annotations
+
+
+def images_annotations_log(dataset_path: str, all_images_annotations: dict[str, Optional[str]]) -> None:
+    """Log images and their annotations"""
+    logger.info("Dataset %s has %u images.", dataset_path, len(all_images_annotations))
+    logger.info(" - %u images annotated,", len(get_images_annotated(all_images_annotations)))
+    logger.info(" - %u images only,", len(get_images_not_annotated(all_images_annotations)))
 
 
 def get_images_annotated(all_images_annotations: dict[str, Optional[str]]) -> list[str]:
