@@ -141,7 +141,7 @@ def annotations_diff(
     # Check : Empty
     if dest_annotations == sv.Detections.empty():
         logger.error("Destination dataset is empty!")
-        return source_annotations, sv.Detections()
+        return source_annotations, sv.Detections.empty()
 
     # Data : Get the unique files
     source_files = source_annotations.data.get("filepaths", np.array([]))
@@ -154,31 +154,36 @@ def annotations_diff(
     source_annotations_filtered = source_annotations[np.isin(source_files, common_files)]
     dest_annotations_filtered = dest_annotations[np.isin(dest_files, common_files)]
 
+    source_filtered_files = source_annotations_filtered.data.get("filepaths", np.array([]))
+    dest_filtered_files = dest_annotations_filtered.data.get("filepaths", np.array([]))
+
     # Diff : Find the difference
-    source_new_annotations = sv.Detections.empty()
-    source_removed_annotations = sv.Detections.empty()
+    source_new_annotations: list[sv.Detections] = []
+    source_removed_annotations: list[sv.Detections] = []
     for file_path in tqdm.tqdm(common_files, desc="Calculating annotations diff"):
-        source_annotations_file = source_annotations_filtered[source_files == file_path]
-        dest_annotations_file = dest_annotations_filtered[dest_files == file_path]
+        source_annotations_file = source_annotations_filtered[source_filtered_files == file_path]
+        dest_annotations_file = dest_annotations_filtered[dest_filtered_files == file_path]
 
         # Check : Empty
         if source_annotations_file.xyxy.size == 0:
-            source_removed_annotations = source_removed_annotations.append(dest_annotations_file)
+            source_removed_annotations.append(dest_annotations_file)
             continue
 
         # Check : Empty
         if dest_annotations_file.xyxy.size == 0:
-            source_new_annotations = source_new_annotations.append(source_annotations_file)
+            source_new_annotations.append(source_annotations_file)
             continue
 
         # IOU : Calculate
         iou = sv.box_iou_batch(source_annotations_file.xyxy, dest_annotations_file.xyxy)
-        iou_max = iou.max(axis=1)
+        sources_iou_max = iou.max(axis=1)
+        dest_iou_max = iou.max(axis=0)
 
         # Source : New annotations
-        source_new_annotations = source_new_annotations.append(source_annotations_file[iou_max < 0.5])
+        source_new_annotations.append(source_annotations_file[sources_iou_max < 0.40])
 
         # Source : Removed annotations
-        source_removed_annotations = source_removed_annotations.append(dest_annotations_file[iou_max < 0.5])
+        source_removed_annotations.append(dest_annotations_file[dest_iou_max < 0.40])
 
-    return source_new_annotations, source_removed_annotations
+    # Merge : Return
+    return sv.Detections.merge(source_new_annotations), sv.Detections.merge(source_removed_annotations)

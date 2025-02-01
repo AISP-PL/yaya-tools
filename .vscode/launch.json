@@ -32,6 +32,17 @@
             "args": ["-i","tests/test_dataset", "-o","tests/test_resized",],
             "console": "integratedTerminal",
             "justMyCode": false
-        }
+        },
+        {
+            "name": "Yaya-Dataset-diff",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/yaya_tools/yaya_datasetdiff.py",
+            "args": ["-s", "/home/spasz/python/aisp-imgdb/data/extgdkkia/",
+            "-d", "/home/spasz/python/model-traffic/images/",
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
     ],
 }
