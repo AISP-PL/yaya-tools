@@ -173,7 +173,7 @@ def annotations_log_summary(dataset_name: str, annotations_sv: sv.Detections, ne
         " - Negative : %u/%u (%.2f%%) files",
         len(negative_samples),
         total_files,
-        len(negative_samples) / total_files * 100,
+        (len(negative_samples) / (total_files + 0.0001)) * 100,
     )
 
 
