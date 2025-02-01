@@ -72,7 +72,7 @@ def main() -> None:
     annotations_log_summary("Destination", destination_annotations_sv, destination_negatives)
 
     # Diff : Create
-    source_added, source_removed = annotations_diff(
+    source_added, source_removed, source_fitting_bboxes = annotations_diff(
         source_annotations=source_annotations_sv, dest_annotations=destination_annotations_sv
     )
 

@@ -193,7 +193,7 @@ def annotations_filter_filenames(
 
 def annotations_diff(
     source_annotations: sv.Detections, dest_annotations: sv.Detections
-) -> tuple[sv.Detections, sv.Detections]:
+) -> tuple[sv.Detections, sv.Detections, sv.Detections]:
     """
     Find the difference between two annotations by comparing annotations IOU for only
     matched files between source and destination annotations. Then return two sv.Detections
@@ -202,12 +202,12 @@ def annotations_diff(
     # Check : Empty
     if source_annotations == sv.Detections.empty():
         logger.error("Source dataset is empty!")
-        return sv.Detections.empty(), dest_annotations
+        return sv.Detections.empty(), dest_annotations, sv.Detections.empty()
 
     # Check : Empty
     if dest_annotations == sv.Detections.empty():
         logger.error("Destination dataset is empty!")
-        return source_annotations, sv.Detections.empty()
+        return source_annotations, sv.Detections.empty(), sv.Detections.empty()
 
     # Data : Get the unique files
     source_files = source_annotations.data.get("filepaths", np.array([]))
@@ -226,6 +226,7 @@ def annotations_diff(
     # Diff : Find the difference
     source_new_annotations: list[sv.Detections] = []
     source_removed_annotations: list[sv.Detections] = []
+    source_fitting_annotations: list[sv.Detections] = []
     for file_path in tqdm.tqdm(common_files, desc="Calculating annotations diff"):
         source_annotations_file: sv.Detections = source_annotations_filtered[source_filtered_files == file_path]  # type: ignore
         dest_annotations_file: sv.Detections = dest_annotations_filtered[dest_filtered_files == file_path]  # type: ignore
@@ -245,6 +246,15 @@ def annotations_diff(
         sources_iou_max = iou.max(axis=1)
         dest_iou_max = iou.max(axis=0)
 
+        # @TODO : Rewrite this using linear_assignment() code.
+        # # Highly matching bboxes
+        # matching_iou_bboxes = sources_iou_max > 0.70
+
+        # # Source : Smaller bboxes, when IOU is high and area is smaller
+        # source_matching_areas = source_annotations_file[matching_iou_bboxes].area  # type: ignore
+        # dest_matching_areas = dest_annotations_file[matching_iou_bboxes].area  # type: ignore
+        # source_fitting_annotations.append(source_annotations_file[source_matching_areas < dest_matching_areas])  # type: ignore
+
         # Source : New annotations
         source_new_annotations.append(source_annotations_file[sources_iou_max < 0.40])  # type: ignore
 
@@ -252,7 +262,11 @@ def annotations_diff(
         source_removed_annotations.append(dest_annotations_file[dest_iou_max < 0.40])  # type: ignore
 
     # Merge : Return
-    return sv.Detections.merge(source_new_annotations), sv.Detections.merge(source_removed_annotations)
+    return (
+        sv.Detections.merge(source_new_annotations),
+        sv.Detections.merge(source_removed_annotations),
+        sv.Detections.merge(source_fitting_annotations),
+    )
 
 
 def annotations_append(dataset_path: str, new_annotations: sv.Detections) -> None:
