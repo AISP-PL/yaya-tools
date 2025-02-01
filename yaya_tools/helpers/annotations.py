@@ -11,6 +11,69 @@ from supervision.utils.file import read_txt_file
 logger = logging.getLogger(__name__)
 
 
+def file_annotations_to_sv(filepath: str) -> Optional[sv.Detections]:
+    """
+    Load the annotations from the dataset folder
+
+    Arguments
+    ----------
+    filename : str
+        Filename of the annotations
+    dataset_path : str
+        Path to the dataset folder
+
+    Returns
+    -------
+    Optional[sv.Detections]
+        Annotations as sv.Detections object
+    """
+    # Annotations : Load the annotations
+    lines = read_txt_file(file_path=filepath, skip_empty=True)
+
+    # sv.Detections : Create
+    file_detections = yolo_annotations_to_detections(
+        lines=lines,
+        resolution_wh=(1, 1),
+        with_masks=False,
+        is_obb=False,
+    )
+
+    return file_detections
+
+
+def annotations_sv_to_yolo_file(filepath: str, annotations_sv: sv.Detections) -> None:
+    """
+    Save the annotations to the dataset folder
+
+    Arguments
+    ----------
+    filename : str
+        Filename of the annotations
+    dataset_path : str
+        Path to the dataset folder
+    annotations_sv : sv.Detections
+        Annotations as sv.Detections object
+    """
+    # Check : Class_id is empty
+    if annotations_sv.class_id is None:
+        logger.error("No annotations found!")
+        return
+
+    # Annotations : Save the annotations
+    with open(filepath, "w") as file:
+        for index in range(len(annotations_sv.xyxy)):
+            line = " ".join(
+                [
+                    str(annotations_sv.class_id[index]),
+                    str(annotations_sv.xyxy[index][0]),
+                    str(annotations_sv.xyxy[index][1]),
+                    str(annotations_sv.xyxy[index][2]),
+                    str(annotations_sv.xyxy[index][3]),
+                ]
+            )
+            file.write(line + "\n")
+
+
 def annotations_load_as_sv(
     images_annotations: dict[str, Optional[str]],
     dataset_path: str,
@@ -187,3 +250,32 @@ def annotations_diff(
 
     # Merge : Return
     return sv.Detections.merge(source_new_annotations), sv.Detections.merge(source_removed_annotations)
+
+
+def annotations_append(dataset_path: str, new_annotations: sv.Detections) -> None:
+    """
+    For every unique annotations file, open path annotations .txt, append
+    new annotations to the end of the file and save it back.
+    """
+    annotations_files = new_annotations.data.get("filepaths", np.array([]))
+    unique_files = np.unique(annotations_files)
+    for filename in tqdm.tqdm(unique_files, desc="Appending annotations"):
+        # Dataset : Load annotations from this file inside dataset, fallback to empty
+        annotations_path = os.path.join(dataset_path, filename)
+        file_annotations_sv = file_annotations_to_sv(filepath=annotations_path)
+        if file_annotations_sv is None:
+            file_annotations_sv = sv.Detections.empty()
+
+        # Filter : File new annotations
+        file_new_annotations: sv.Detections = new_annotations[annotations_files == filename]  # type: ignore
+
+        # Merge : Append new annotations
+        file_annotations_sv = sv.Detections.merge(
+            [
+                file_annotations_sv,
+                file_new_annotations,
+            ]
+        )
+
+        # Save : Annotations
+        annotations_sv_to_yolo_file(filepath=annotations_path, annotations_sv=file_annotations_sv)

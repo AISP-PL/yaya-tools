@@ -39,7 +39,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/yaya_tools/yaya_datasetdiff.py",
             "args": ["-s", "/home/spasz/python/aisp-imgdb/data/extgdkkia/",
-            "-d", "/home/spasz/python/model-traffic/images/",
+            "-d", "/home/spasz/python/model-traffic/images/", "--add_new"
             ],
             "console": "integratedTerminal",
             "justMyCode": false

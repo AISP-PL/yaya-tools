@@ -4,6 +4,7 @@ from typing import Optional
 
 from yaya_tools import __version__
 from yaya_tools.helpers.annotations import (
+    annotations_append,
     annotations_diff,
     annotations_load_as_sv,
     annotations_log_summary,
@@ -50,9 +51,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
     parser.add_argument("-s", "--source", type=str, required=True, help="Path to the source dataset folder")
     parser.add_argument("-d", "--dest", type=str, required=True, help="Path to the destination dataset folder")
-    parser.add_argument(
-        "--copy_new_annotations", action="store_true", help="Copy only new annotations to the destination"
-    )
+    parser.add_argument("--add_new", action="store_true", help="Add only new annotations to the destination")
+    parser.add_argument("--remove_old", action="store_true", help="Remove only old annotations from the destination")
     parser.add_argument("-h", "--help", action="help", help="Show this help message and exit.")
     parser.add_argument("-v", action="version", version=__version__, help="Show version and exit.")
     args = parser.parse_args()
@@ -79,6 +79,14 @@ def main() -> None:
     # Logging : Summary
     annotations_log_summary("Source +new", source_added, [])
     annotations_log_summary("Source -removed", source_removed, [])
+
+    # Action : Copy only new annotations
+    if args.add_new:
+        annotations_append(dataset_path=args.dest, new_annotations=source_added)
+
+    # Action : Remove only old annotations
+    if args.remove_old:
+        pass
 
 
 if __name__ == "__main__":
