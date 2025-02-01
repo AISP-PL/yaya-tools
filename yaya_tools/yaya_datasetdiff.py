@@ -1,18 +1,15 @@
 import argparse
 import logging
-import os
 from typing import Optional
 
 from yaya_tools import __version__
-from yaya_tools.helpers.annotations import annotations_filter_filenames, annotations_load_as_sv, annotations_log_summary
+from yaya_tools.helpers.annotations import (
+    annotations_diff,
+    annotations_load_as_sv,
+    annotations_log_summary,
+)
 from yaya_tools.helpers.dataset import (
-    dataset_copy_to,
-    dataset_create_validation,
-    dataset_log_summary,
-    get_images_annotated,
     load_directory_images_annotatations,
-    load_file_to_list,
-    save_list_to_file,
 )
 
 logger = logging.getLogger(__name__)
@@ -61,15 +58,22 @@ def main() -> None:
 
     # Source images : with optional annotation filename, filter annotated
     source_images_annotations: dict[str, Optional[str]] = load_directory_images_annotatations(args.source)
-    source_images_annotated: list[str] = get_images_annotated(source_images_annotations)
     source_annotations_sv, source_negatives = annotations_load_as_sv(source_images_annotations, args.source)
 
     # Destination images : with optional annotation filename
     destination_images_annotations: dict[str, Optional[str]] = load_directory_images_annotatations(args.dest)
-    destination_images_annotated: list[str] = get_images_annotated(destination_images_annotations)
     destination_annotations_sv, destination_negatives = annotations_load_as_sv(
         destination_images_annotations, args.dest
     )
+
+    # Diff : Create
+    source_added, source_removed = annotations_diff(
+        source_annotations=source_annotations_sv, dest_annotations=destination_annotations_sv
+    )
+
+    # Logging : Summary
+    annotations_log_summary("Source new annotations", source_added, [])
+    annotations_log_summary("Source removed annotations", source_removed, [])
 
 
 if __name__ == "__main__":
