@@ -77,8 +77,8 @@ def main() -> None:
     )
 
     # Logging : Summary
-    annotations_log_summary("Source new annotations", source_added, [])
-    annotations_log_summary("Source removed annotations", source_removed, [])
+    annotations_log_summary("Source +new", source_added, [])
+    annotations_log_summary("Source -removed", source_removed, [])
 
 
 if __name__ == "__main__":

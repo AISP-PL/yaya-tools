@@ -141,8 +141,8 @@ def load_directory_images_annotatations(dataset_path: str) -> dict[str, Optional
 def images_annotations_log(dataset_path: str, all_images_annotations: dict[str, Optional[str]]) -> None:
     """Log images and their annotations"""
     logger.info("Dataset %s has %u images.", dataset_path, len(all_images_annotations))
-    logger.info(" - %u images annotated,", len(get_images_annotated(all_images_annotations)))
-    logger.info(" - %u images only,", len(get_images_not_annotated(all_images_annotations)))
+    logger.info(" - %u images+annotations,", len(get_images_annotated(all_images_annotations)))
+    logger.info(" - %u images,", len(get_images_not_annotated(all_images_annotations)))
 
 
 def get_images_annotated(all_images_annotations: dict[str, Optional[str]]) -> list[str]:
