@@ -6,6 +6,7 @@ from typing import Optional
 import numpy as np
 import supervision as sv  # type: ignore
 import tqdm
+from scipy.optimize import linear_sum_assignment as linear_assignment
 from supervision.dataset.formats.yolo import detections_to_yolo_annotations, yolo_annotations_to_detections
 from supervision.utils.file import read_txt_file
 
@@ -243,8 +244,10 @@ def annotations_diff(
 
         # IOU : Calculate
         iou = sv.box_iou_batch(source_annotations_file.xyxy, dest_annotations_file.xyxy)
-        sources_iou_max = iou.max(axis=1)
-        dest_iou_max = iou.max(axis=0)
+
+        source_assigned_idx, dest_assigned_idx = linear_assignment(iou, maximize=True)
+        sources_not_assigned_idx = np.setdiff1d(np.arange(len(source_annotations_file.xyxy)), source_assigned_idx)
+        dest_not_assigned_idx = np.setdiff1d(np.arange(len(dest_annotations_file.xyxy)), dest_assigned_idx)
 
         # @TODO : Rewrite this using linear_assignment() code.
         # # Highly matching bboxes
@@ -256,9 +259,11 @@ def annotations_diff(
         # source_fitting_annotations.append(source_annotations_file[source_matching_areas < dest_matching_areas])  # type: ignore
 
         # Source : New annotations
+        sources_iou_max = iou.max(axis=1)
         source_new_annotations.append(source_annotations_file[sources_iou_max < 0.40])  # type: ignore
 
         # Source : Removed annotations
+        dest_iou_max = iou.max(axis=0)
         source_removed_annotations.append(dest_annotations_file[dest_iou_max < 0.40])  # type: ignore
 
     # Merge : Return

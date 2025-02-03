@@ -13,6 +13,7 @@ supervision = "^0.25.1"
 tqdm = "^4.67.1"
 
 albumentations = "^2.0.2"
+scipy-stubs = "^1.15.1.0"
 [tool.poetry.group.dev.dependencies]
 flake8 = "^7.1.1"
 flake8-pyproject = "^1.2.3"
@@ -49,6 +50,7 @@ extend-exclude = ['.venv', '.pytest_cache']
 
 [tool.mypy]
 exclude = ['.venv', '.pytest_cache']
+
 
 [build-system]
 requires = ["poetry-core"]

@@ -849,6 +849,23 @@ numpy = [
 ]
 
 [[package]]
+name = "optype"
+version = "0.9.0"
+description = "Building blocks for precise & flexible type hints"
+optional = false
+python-versions = ">=3.10"
+files = [
+    {file = "optype-0.9.0-py3-none-any.whl", hash = "sha256:19dbbb71622961e903e60c12f370d910498e81bc4ae8b40d18c94dd106f4ce6b"},
+    {file = "optype-0.9.0.tar.gz", hash = "sha256:1c2f99b0708ab6e2625f52093a6e000f805a4346191f09bcce0459da84a265a9"},
+]
+
+[package.dependencies]
+typing-extensions = {version = ">=4.10", markers = "python_version < \"3.13\""}
+
+[package.extras]
+numpy = ["numpy (>=1.23.5)"]
+
+[[package]]
 name = "packaging"
 version = "24.2"
 description = "Core utilities for Python packages"
@@ -1332,6 +1349,23 @@ doc = ["intersphinx_registry", "jupyterlite-pyodide-kernel", "jupyterlite-sphinx
 test = ["Cython", "array-api-strict (>=2.0,<2.1.1)", "asv", "gmpy2", "hypothesis (>=6.30)", "meson", "mpmath", "ninja", "pooch", "pytest", "pytest-cov", "pytest-timeout", "pytest-xdist", "scikit-umfpack", "threadpoolctl"]
 
 [[package]]
+name = "scipy-stubs"
+version = "1.15.1.0"
+description = "Type annotations for SciPy"
+optional = false
+python-versions = ">=3.10"
+files = [
+    {file = "scipy_stubs-1.15.1.0-py3-none-any.whl", hash = "sha256:f6e8f8dfd2aaa343705c46ac1fdc69556ea8a0a9b0645cb3af4dd652665a452f"},
+    {file = "scipy_stubs-1.15.1.0.tar.gz", hash = "sha256:25756486635594025ed3249b6fb659c29dc5874c7b55565ad248b13a4ff4fa1c"},
+]
+
+[package.dependencies]
+optype = ">=0.8.0"
+
+[package.extras]
+scipy = ["scipy (>=1.15.1,<1.16)"]
+
+[[package]]
 name = "simsimd"
 version = "6.2.1"
 description = "Portable mixed-precision BLAS-like vector math library for x86 and ARM"
@@ -1725,4 +1759,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "5aff8e8636106348cdf5e89c736cddb30ebb26f691c4fa6decd9e7965d8f9cf0"
+content-hash = "7c121ff19fd2f9ca25abcc41742f2592d179d146fcbab64d529bb617a10b930d"
