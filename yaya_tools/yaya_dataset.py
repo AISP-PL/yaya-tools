@@ -48,6 +48,7 @@ def main() -> None:
     -------
     None
     """
+    logging_terminal_setup()
     # Argument parser
     parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
     parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
@@ -141,5 +142,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    logging_terminal_setup()
     main()

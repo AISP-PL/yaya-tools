@@ -27,9 +27,9 @@ def logging_terminal_setup() -> None:
 
 def main() -> None:
     """Test function for package installation tests"""
+    logging_terminal_setup()
     print("yaya_tools package installed successfully!")
 
 
 if __name__ == "__main__":
-    logging_terminal_setup()
     main()
