@@ -24,6 +24,7 @@ pytest = "^8.3.4"
 isort = "^6.0.0"
 types-tqdm = "^4.67.0.20241221"
 
+types-pyyaml = "^6.0.12.20241230"
 [tool.black]
 line-length = 120
 #Needed as of black 23.12.1 to properly split long stings
@@ -51,6 +52,8 @@ extend-exclude = ['.venv', '.pytest_cache']
 [tool.mypy]
 exclude = ['.venv', '.pytest_cache']
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
 
 [build-system]
 requires = ["poetry-core"]

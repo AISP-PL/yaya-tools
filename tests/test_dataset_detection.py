@@ -11,6 +11,9 @@ def test_detector_with_test_dataset() -> None:
             "weights_path": "tests/test_model/yolov4-tiny.weights",
             "data_path": "tests/test_model/coco.data",
             "names_path": "tests/test_model/coco.names",
+            "confidence": 0.50,
+            "nms_threshold": 0.30,
+            "force_cpu": True,
         }
     )
     confusion_matrix = test_detector(dataset_path, detector)

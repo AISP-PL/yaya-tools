@@ -8,7 +8,6 @@ from typing import Any, Optional, Sequence
 import cv2
 import numpy as np
 import supervision as sv  # type: ignore
-from qursor_vision.detectors.detector import Detector  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +39,6 @@ class DetectorCVDNN:
         """
         Constructor
         """
-        Detector.__init__(self, config)
         # GPU used
         self.gpuid = gpuID
         # Configuration dictionary
