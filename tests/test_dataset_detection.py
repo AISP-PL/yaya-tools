@@ -17,5 +17,6 @@ def test_detector_with_test_dataset() -> None:
         }
     )
     detector.init()
-    confusion_matrix = dataset_benchmark(dataset_path, detector)
-    print(confusion_matrix)
+    mAP, negatives_score = dataset_benchmark(dataset_path, detector)
+    assert mAP.map50_95 > 0.0
+    assert negatives_score == 1.0
