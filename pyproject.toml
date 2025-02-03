@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "yaya-tools"
-version = "0.1.0"
+version = "1.1.0"
 description = ""
 authors = ["Sławomir Paszko <s.paszko@aisp.pl>"]
 license = "MIT"
