@@ -189,8 +189,8 @@ class DetectorCVDNN:
 
         detections_sv = sv.Detections(
             xyxy=yolo_xyxy,
-            confidence=yolo_confidences,
-            class_id=yolo_classids,
+            confidence=np.array(yolo_confidences),
+            class_id=np.array(yolo_classids),
         )
 
         return detections_sv
