@@ -246,8 +246,8 @@ def annotations_diff(
         iou = sv.box_iou_batch(source_annotations_file.xyxy, dest_annotations_file.xyxy)
 
         source_assigned_idx, dest_assigned_idx = linear_assignment(iou, maximize=True)
-        sources_not_assigned_idx = np.setdiff1d(np.arange(len(source_annotations_file.xyxy)), source_assigned_idx)
-        dest_not_assigned_idx = np.setdiff1d(np.arange(len(dest_annotations_file.xyxy)), dest_assigned_idx)
+        # sources_not_assigned_idx = np.setdiff1d(np.arange(len(source_annotations_file.xyxy)), source_assigned_idx)
+        # dest_not_assigned_idx = np.setdiff1d(np.arange(len(dest_annotations_file.xyxy)), dest_assigned_idx)
 
         # @TODO : Rewrite this using linear_assignment() code.
         # # Highly matching bboxes
