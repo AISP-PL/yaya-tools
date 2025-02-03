@@ -53,4 +53,4 @@ def log_map(mAP: sv.MeanAveragePrecision) -> None:
 
     # Log per class AP
     for index in range(len(mAP.per_class_ap50_95)):
-        logger.info(f"AP {index}: {mAP.per_class_ap50_95[index]}")
+        logger.info(f"AP {index}: {mAP.per_class_ap50_95[index][4]}")
