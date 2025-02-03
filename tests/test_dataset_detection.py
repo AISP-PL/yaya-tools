@@ -16,5 +16,6 @@ def test_detector_with_test_dataset() -> None:
             "force_cpu": True,
         }
     )
+    detector.init()
     confusion_matrix = test_detector(dataset_path, detector)
     print(confusion_matrix)

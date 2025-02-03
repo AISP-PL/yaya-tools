@@ -1,20 +1,9 @@
 import argparse
 import logging
-from typing import Optional
 
 from yaya_tools import __version__
 from yaya_tools.detection.detection_test import log_map, test_detector
 from yaya_tools.detection.detector_yolov4_cvdnn import DetectorCVDNN
-from yaya_tools.helpers.annotations import (
-    annotations_append,
-    annotations_diff,
-    annotations_load_as_sv,
-    annotations_log_summary,
-)
-from yaya_tools.helpers.dataset import (
-    images_annotations_log,
-    load_directory_images_annotatations,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +62,7 @@ def main() -> None:
             "force_cpu": True,
         }
     )
+    detector.init()
 
     # Benchmark detector on dataset
     mAP = test_detector(args.dataset, detector)

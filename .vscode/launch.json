@@ -44,5 +44,20 @@
             "console": "integratedTerminal",
             "justMyCode": false
         },
+        {
+            "name": "Yaya-Benchmark",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/yaya_tools/yaya_benchmark.py",
+            "args": ["-d","tests/test_dataset",
+            "--cfg_path","tests/test_model/yolov4-tiny.cfg",
+            "--weights_path","tests/test_model/yolov4-tiny.weights",
+            "--names_path","tests/test_model/coco.names",
+            "--confidence","0.50",
+            "--nms","0.30",
+        ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
     ],
 }
