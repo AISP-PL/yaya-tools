@@ -20,7 +20,7 @@ def callback_detect(model: DetectorCVDNN, image: np.ndarray) -> sv.Detections:
     return model.detect(1, image)
 
 
-def dataset_benchmark(dataset_path: str, detector: DetectorCVDNN) -> sv.MeanAveragePrecision:
+def dataset_benchmark(dataset_path: str, detector: DetectorCVDNN) -> tuple[sv.MeanAveragePrecision, float]:
     """Test function that loads all annotated images from directory path,
     then it runs the detector on each image, finally it calculates the mAP.
     """
@@ -42,14 +42,35 @@ def dataset_benchmark(dataset_path: str, detector: DetectorCVDNN) -> sv.MeanAver
     # mAP : Calculate
     mAP = sv.MeanAveragePrecision.benchmark(dataset=dataset, callback=lambda image: callback_detect(detector, image))
 
-    return mAP
+    # Negatives score : Calculate accuracy of False Positives in empty images
+    negatives_accuracy: list[float] = []
+    negatives_filenames: list[str] = [
+        filepath for filepath, annotations_sv in dataset.annotations.items() if annotations_sv == sv.Detections.empty()
+    ]
+
+    # Check : No negatives, return mAP and 1.0
+    if len(negatives_filenames) == 0:
+        return mAP, 1.0
+
+    for filepath in negatives_filenames:
+        # Detect, add 1.0 if ok
+        detections = callback_detect(detector, dataset.images.get(filepath, np.ndarray([0, 0, 3], dtype=np.uint8)))
+        if detections == sv.Detections.empty():
+            negatives_accuracy.append(1.0)
+            continue
+
+        # Any detections, add 0.0 accuracy
+        negatives_accuracy.append(0.0)
+
+    return mAP, np.mean(np.array(negatives_accuracy))
 
 
-def log_map(mAP: sv.MeanAveragePrecision) -> None:
+def log_map(mAP: sv.MeanAveragePrecision, negatives_ap: float) -> None:
     """Log most important mAP metrics"""
     logger.info(f"mAP: {mAP.map50_95}")
     logger.info(f"mAP 50: {mAP.map50}")
     logger.info(f"mAP 75: {mAP.map75}")
+    logger.info(f"AP on negative images: {negatives_ap}")
 
     # Log per class AP
     for index in range(len(mAP.per_class_ap50_95)):

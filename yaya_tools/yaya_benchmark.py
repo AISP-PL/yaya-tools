@@ -67,10 +67,10 @@ def main() -> None:
     detector.init()
 
     # Benchmark detector on dataset
-    mAP = dataset_benchmark(args.dataset, detector)
+    mAP, negatives_ap = dataset_benchmark(args.dataset, detector)
 
     # Logging : Summary
-    log_map(mAP)
+    log_map(mAP, negatives_ap)
 
 
 if __name__ == "__main__":
