@@ -1,4 +1,4 @@
-from yaya_tools.detection.detection_test import test_detector
+from yaya_tools.detection.detection_test import dataset_benchmark
 from yaya_tools.detection.detector_yolov4_cvdnn import DetectorCVDNN
 
 
@@ -17,5 +17,5 @@ def test_detector_with_test_dataset() -> None:
         }
     )
     detector.init()
-    confusion_matrix = test_detector(dataset_path, detector)
+    confusion_matrix = dataset_benchmark(dataset_path, detector)
     print(confusion_matrix)

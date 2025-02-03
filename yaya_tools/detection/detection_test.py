@@ -20,7 +20,7 @@ def callback_detect(model: DetectorCVDNN, image: np.ndarray) -> sv.Detections:
     return model.detect(1, image)
 
 
-def test_detector(dataset_path: str, detector: DetectorCVDNN) -> sv.MeanAveragePrecision:
+def dataset_benchmark(dataset_path: str, detector: DetectorCVDNN) -> sv.MeanAveragePrecision:
     """Test function that loads all annotated images from directory path,
     then it runs the detector on each image, finally it calculates the mAP.
     """

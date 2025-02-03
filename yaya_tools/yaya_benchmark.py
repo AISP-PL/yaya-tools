@@ -2,7 +2,7 @@ import argparse
 import logging
 
 from yaya_tools import __version__
-from yaya_tools.detection.detection_test import log_map, test_detector
+from yaya_tools.detection.detection_test import dataset_benchmark, log_map
 from yaya_tools.detection.detector_yolov4_cvdnn import DetectorCVDNN
 
 logger = logging.getLogger(__name__)
@@ -65,7 +65,7 @@ def main() -> None:
     detector.init()
 
     # Benchmark detector on dataset
-    mAP = test_detector(args.dataset, detector)
+    mAP = dataset_benchmark(args.dataset, detector)
 
     # Logging : Summary
     log_map(mAP)
