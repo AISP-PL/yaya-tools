@@ -7,7 +7,9 @@ from typing import Any, Optional, Sequence
 
 import cv2
 import numpy as np
-import supervision as sv  # type: ignore
+import supervision as sv
+
+from yaya_tools.detection.detector import Detector  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +28,7 @@ def xlylwh_to_xyxy(bbox: Sequence[int]) -> tuple[int, int, int, int]:
     return (xmin, ymin, xmax, ymax)
 
 
-class DetectorCVDNN:
+class DetectorCVDNN(Detector):
     """YOLOv4 detector class."""
 
     def __init__(
@@ -39,6 +41,7 @@ class DetectorCVDNN:
         """
         Constructor
         """
+        super().__init__(config)
         # GPU used
         self.gpuid = gpuID
         # Configuration dictionary

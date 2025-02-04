@@ -5,7 +5,9 @@ import supervision as sv
 from tqdm import tqdm
 
 from yaya_tools import __version__
+from yaya_tools.detection.detector import Detector
 from yaya_tools.detection.detector_yolov4_cvdnn import DetectorCVDNN
+from yaya_tools.detection.detector_yolov4_darknet import DetectorDarknet
 
 logger = logging.getLogger(__name__)
 
@@ -51,24 +53,41 @@ def main() -> None:
     parser.add_argument("--names_path", type=str, required=True, help="Path to the names file")
     parser.add_argument("--confidence", type=float, default=0.50, help="Confidence threshold")
     parser.add_argument("--nms_threshold", type=float, default=0.30, help="NMS threshold")
+    parser.add_argument(
+        "--gpu", action="store_true", required=False, help="If set, the detector will use the GPU for inference."
+    )
 
     parser.add_argument("-h", "--help", action="help", help="Show this help message and exit.")
     parser.add_argument("-v", action="version", version=__version__, help="Show version and exit.")
     args = parser.parse_args()
 
     # Detector : Create and initialize the detector
-    detector = DetectorCVDNN(
-        config={
-            "cfg_path": args.cfg_path,
-            "weights_path": args.weights_path,
-            "data_path": "",
-            "names_path": args.names_path,
-            "confidence": args.confidence,
-            "nms_threshold": args.nms_threshold,
-            "force_cpu": True,
-        }
-    )
-    detector.init()
+    if args.gpu:
+        detector: Detector = DetectorDarknet(
+            config={
+                "cfg_path": args.cfg_path,
+                "weights_path": args.weights_path,
+                "data_path": "",
+                "names_path": args.names_path,
+                "confidence": args.confidence,
+                "nms_threshold": args.nms_threshold,
+                "force_cpu": True,
+            }
+        )
+        detector.init()
+    else:
+        detector = DetectorCVDNN(
+            config={
+                "cfg_path": args.cfg_path,
+                "weights_path": args.weights_path,
+                "data_path": "",
+                "names_path": args.names_path,
+                "confidence": args.confidence,
+                "nms_threshold": args.nms_threshold,
+                "force_cpu": True,
+            }
+        )
+        detector.init()
 
     # Annotators : Create Box and Label
     box_annotator = sv.BoxAnnotator()

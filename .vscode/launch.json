@@ -70,7 +70,9 @@
             "--names_path","tests/test_model/coco.names",
             "--confidence","0.50",
             "--nms","0.30",
-            "--output", "tests/test_video/output.mp4"
+            "--output", "tests/test_video/output.mp4",
+            "--gpu"
+
         ],
             "console": "integratedTerminal",
             "justMyCode": false
