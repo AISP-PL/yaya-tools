@@ -284,11 +284,6 @@ def detect_image(
     predictions = detections_to_ndarray(detections, class_names, num, thresh)
     free_detections(detections, num)
 
-    # Filter NMS
-    if nms and len(predictions):
-        predictions_mask = all_nms(predictions, nms)
-        predictions = predictions[predictions_mask]
-
     return predictions
 
 
