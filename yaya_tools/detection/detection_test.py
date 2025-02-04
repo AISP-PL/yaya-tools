@@ -68,11 +68,18 @@ def dataset_benchmark(dataset_path: str, detector: DetectorCVDNN) -> tuple[sv.Me
     # Dataset : Predict all
     predictions: list[sv.Detections] = []
     targets: list[sv.Detections] = []
+    negatives_detections: list[sv.Detections] = []
     for imagename, image, annotation in tqdm.tqdm(dataset, desc="Detecting images", total=len(dataset)):
         predictions_batch = detector.detect(frame_number=1, frame=image)
+
+        # Append to lists
         predictions.append(predictions_batch)
         targets.append(annotation)
         annotate_image_results(filepath=imagename, image=image, annotations=annotation, detections=predictions_batch)
+
+        # Check : No annotations, negative
+        if annotation == sv.Detections.empty():
+            negatives_detections.append(predictions_batch)
 
     # mAP : Calculate
     mAP = sv.MeanAveragePrecision.from_detections(
@@ -80,25 +87,14 @@ def dataset_benchmark(dataset_path: str, detector: DetectorCVDNN) -> tuple[sv.Me
         targets=targets,
     )
 
-    # Negatives score : Calculate accuracy of False Positives in empty images
-    negatives_accuracy: list[float] = []
-    negatives_filenames: list[str] = [
-        filepath for filepath, annotations_sv in dataset.annotations.items() if annotations_sv == sv.Detections.empty()
-    ]
-
-    # Check : No negatives, return mAP and 1.0
-    if len(negatives_filenames) == 0:
+    # No negatives, return 1.0
+    if len(negatives_detections) == 0:
         return mAP, 1.0
 
-    for filepath in negatives_filenames:
-        # Detect, add 1.0 if ok
-        detections = callback_detect(detector, dataset.images.get(filepath, np.ndarray([0, 0, 3], dtype=np.uint8)))
-        if detections == sv.Detections.empty():
-            negatives_accuracy.append(1.0)
-            continue
-
-        # Any detections, add 0.0 accuracy
-        negatives_accuracy.append(0.0)
+    # Negatives : Calculate accuracy
+    negatives_accuracy: list[float] = [
+        1.0 if detections == sv.Detections.empty() else 0.0 for detections in negatives_detections
+    ]
 
     return mAP, np.mean(np.array(negatives_accuracy))
 
