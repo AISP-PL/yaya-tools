@@ -1,7 +1,6 @@
 import argparse
 import logging
 
-import cv2
 import supervision as sv
 from tqdm import tqdm
 
