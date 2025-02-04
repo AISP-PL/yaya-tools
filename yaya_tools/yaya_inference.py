@@ -46,6 +46,7 @@ def main() -> None:
     # Argument parser
     parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
     parser.add_argument("--video", type=str, required=True, help="Path to the video file")
+    parser.add_argument("--output", type=str, required=True, help="Path to the output video file")
     parser.add_argument("--cfg_path", type=str, required=True, help="Path to the configuration file")
     parser.add_argument("--weights_path", type=str, required=True, help="Path to the weights file")
     parser.add_argument("--names_path", type=str, required=True, help="Path to the names file")
@@ -72,23 +73,22 @@ def main() -> None:
 
     # Annotators : Create Box and Label
     box_annotator = sv.BoxAnnotator()
-    label_annotator = sv.LabelAnnotator()
+    label_annotator = sv.LabelAnnotator(text_padding=5)
 
-    # Cv2 window create
-    cv2.namedWindow("Video", cv2.WINDOW_NORMAL)
+    source_video_info = sv.VideoInfo.from_video_path(video_path=args.video)
+    with sv.VideoSink(target_path=args.output, video_info=source_video_info) as sink:
+        for frame in tqdm(
+            sv.get_video_frames_generator(source_path=args.video), desc="Processing video", unit="frames"
+        ):
+            # Detection
+            detections = detector.detect(frame_number=0, frame=frame)
 
-    for frame in tqdm(sv.get_video_frames_generator(source_path=args.video), desc="Processing video"):
-        # Detection
-        detections = detector.detect(frame_number=0, frame=frame)
+            # Annotate
+            annotated = box_annotator.annotate(frame.copy(), detections)
+            annotated = label_annotator.annotate(annotated, detections)
 
-        # Annotate
-        annotated = box_annotator.annotate(frame.copy(), detections)
-        annotated = label_annotator.annotate(annotated, detections)
-
-        # Display
-        cv2.imshow("Video", annotated)
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
+            # Write frame
+            sink.write_frame(annotated)
 
 
 if __name__ == "__main__":
