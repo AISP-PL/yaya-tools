@@ -152,7 +152,7 @@ class DetectorDarknet(Detector):
             return sv.Detections.empty()
 
         # Image : Resize to network dimensions.
-        resized = cv2.resize(frame_rgb, (self.netWidth, self.netHeight), interpolation=cv2.INTER_LINEAR)
+        resized = cv2.resize(frame_rgb, (self.netWidth, self.netHeight), interpolation=cv2.INTER_NEAREST)
 
         # Copy image to darknet image
         darknet.copy_image_from_bytes(self.image, resized.tobytes())
