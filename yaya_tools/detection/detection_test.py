@@ -5,9 +5,12 @@ then it runs the detector on each image, finally it calculates the mAP.
 
 import logging
 import tempfile
+from pathlib import Path
 
+import cv2  # type: ignore
 import numpy as np
 import supervision as sv
+import tqdm
 
 from yaya_tools.detection.detector_yolov4_cvdnn import DetectorCVDNN
 from yaya_tools.helpers.yolo_yaml import create_yolo_yaml_str  # type: ignore
@@ -15,9 +18,32 @@ from yaya_tools.helpers.yolo_yaml import create_yolo_yaml_str  # type: ignore
 logger = logging.getLogger(__name__)
 
 
-def callback_detect(model: DetectorCVDNN, image: np.ndarray) -> sv.Detections:
-    """Callback function that runs the detector on the image."""
-    return model.detect(1, image)
+def annotate_image_results(
+    filepath: str, image: np.ndarray, annotations: sv.Detections, detections: sv.Detections
+) -> None:
+    """Annotate image with detections and annotations"""
+
+    # Subdirectory: Create if not exists
+    images_directory = Path(filepath).parent / ".results"
+    Path(images_directory).mkdir(parents=True, exist_ok=True)
+
+    # Ground truth : Anntoate as green boxes
+    box_annotator_gt = sv.BoxAnnotator(color=sv.Color.GREEN)
+    # Predictions : Annotate as red boxes
+    box_annotator_pred = sv.BoxAnnotator(color=sv.Color.RED)
+    # Labels : Annotate as text
+    label_annotator_gt = sv.LabelAnnotator(color=sv.Color.GREEN, text_padding=5)
+    label_annotator_pred = sv.LabelAnnotator(color=sv.Color.RED, text_padding=5, text_position=sv.Position.TOP_RIGHT)
+
+    # Annotate image : Boxes and labels
+    annotated_image = box_annotator_gt.annotate(image.copy(), annotations)
+    annotated_image = label_annotator_gt.annotate(annotated_image, annotations)
+    annotated_image = box_annotator_pred.annotate(annotated_image, detections)
+    annotated_image = label_annotator_pred.annotate(annotated_image, detections)
+
+    # Save image :
+    image_path = images_directory / Path(filepath).name
+    cv2.imwrite(str(image_path), annotated_image)
 
 
 def dataset_benchmark(dataset_path: str, detector: DetectorCVDNN) -> tuple[sv.MeanAveragePrecision, float]:
@@ -39,8 +65,20 @@ def dataset_benchmark(dataset_path: str, detector: DetectorCVDNN) -> tuple[sv.Me
         images_directory_path=dataset_path, annotations_directory_path=dataset_path, data_yaml_path=data_yaml_path
     )
 
+    # Dataset : Predict all
+    predictions: list[sv.Detections] = []
+    targets: list[sv.Detections] = []
+    for imagename, image, annotation in tqdm.tqdm(dataset, desc="Detecting images", total=len(dataset)):
+        predictions_batch = detector.detect(frame_number=1, frame=image)
+        predictions.append(predictions_batch)
+        targets.append(annotation)
+        annotate_image_results(filepath=imagename, image=image, annotations=annotation, detections=predictions_batch)
+
     # mAP : Calculate
-    mAP = sv.MeanAveragePrecision.benchmark(dataset=dataset, callback=lambda image: callback_detect(detector, image))
+    mAP = sv.MeanAveragePrecision.from_detections(
+        predictions=predictions,
+        targets=targets,
+    )
 
     # Negatives score : Calculate accuracy of False Positives in empty images
     negatives_accuracy: list[float] = []

@@ -171,3 +171,4 @@ cython_debug/
 .pypirc
 tests/test_dataset/validation.txt
 tests/test_resized/*.jpg
+.results
