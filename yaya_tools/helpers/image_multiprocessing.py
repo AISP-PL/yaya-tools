@@ -140,7 +140,7 @@ def multiprocess_augment(
     """Multiprocess list of images and detections"""
 
     # Files : Create single files list
-    detections_files = selected_detections.data.get("filepaths", np.ndarray([]))
+    detections_files = selected_detections.data.get("filepaths", np.array([], dtype=str))
     files_unique = np.unique(detections_files)
     files_possible = np.concatenate([files_unique, selected_negatives])
 

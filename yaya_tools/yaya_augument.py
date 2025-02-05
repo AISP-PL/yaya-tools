@@ -49,7 +49,6 @@ def main() -> None:
     # Argument parser
     parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
     parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
-    parser.add_argument("--select_all", action="store_true", default=True, help="Select all images (default: True)")
     parser.add_argument("--select_negatives", action="store_true", default=False, help="Select only  negative images")
     parser.add_argument(
         "--select_equalize",
@@ -218,10 +217,9 @@ def main() -> None:
     annotations_log_summary("Dataset", all_annotations_sv, all_negatives)
 
     # Selection :
-    if args.select_all:
-        selected_annotations = all_annotations_sv
-        selected_negatives = all_negatives
-    elif args.select_negatives:
+    selected_annotations = all_annotations_sv
+    selected_negatives = all_negatives
+    if args.select_negatives:
         selected_annotations = sv.Detections.empty()
         selected_negatives = all_negatives
 
