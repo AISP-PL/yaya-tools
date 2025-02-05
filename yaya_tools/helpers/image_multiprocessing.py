@@ -160,18 +160,15 @@ def multiprocess_augment(
             logger.error(f"Could not read image {filepath}!")
             continue
 
+        # File annotations : Default empty list
+        annotations_xyxy_class: list[float] = []
         # File annotations : Select
         file_annotations: sv.Detections = selected_detections[detections_files == filename]  # type: ignore
-
-        # Check : Class ID is missing
-        class_id = file_annotations.class_id
-        if class_id is None:
-            continue
-
-        # Annotations : Transform to list of [ [xyxy, class_id], ...] using
-        # numpy operations and reshaping
-        xyxy = file_annotations.xyxy
-        annotations_xyxy_class = np.concatenate([xyxy, class_id[:, None]], axis=1).tolist()
+        # Annotation : Extract if possible, transform to list
+        # of [ [xyxy, class_id], ...] using numpy operations and reshaping
+        if (file_annotations != sv.Detections.empty()) and (file_annotations.class_id is not None):
+            xyxy = file_annotations.xyxy
+            annotations_xyxy_class = np.concatenate([xyxy, file_annotations.class_id[:, None]], axis=1).tolist()
 
         # Augmentation : Apply
         new_yolo_annotations: Optional[sv.Detections] = None
