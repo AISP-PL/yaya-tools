@@ -5,7 +5,15 @@ from typing import Optional
 import supervision as sv  # types: ignore
 
 from yaya_tools import __version__
-from yaya_tools.helpers.annotations import annotations_filter_equalize, annotations_load_as_sv, annotations_log_summary
+from yaya_tools.helpers.annotations import (
+    annotations_filter_crowded,
+    annotations_filter_equalize,
+    annotations_filter_large,
+    annotations_filter_spacious,
+    annotations_filter_tiny,
+    annotations_load_as_sv,
+    annotations_log_summary,
+)
 from yaya_tools.helpers.augmentations import Augumentation, augmentation_select
 from yaya_tools.helpers.dataset import (
     load_directory_images_annotatations,
@@ -51,7 +59,7 @@ def main() -> None:
     parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
     parser.add_argument("--select_negatives", action="store_true", default=False, help="Select only  negative images")
     parser.add_argument(
-        "--select_class_id", type=int, nargs="?", const=0, default=0, required=False, help="Select class id"
+        "--select_class_id", type=int, nargs="?", const=-1, default=-1, required=False, help="Select class id"
     )
     parser.add_argument(
         "--select_equalize",
@@ -59,6 +67,10 @@ def main() -> None:
         default=False,
         help="Select images to equalize dataset class representation",
     )
+    parser.add_argument("--select_large", action="store_true", default=False, help="Select large annotations")
+    parser.add_argument("--select_tiny", action="store_true", default=False, help="Select small annotations")
+    parser.add_argument("--select_crowded", action="store_true", default=False, help="Select crowded scenes")
+    parser.add_argument("--select_spacious", action="store_true", default=False, help="Select spacious scenes")
     parser.add_argument(
         "-n",
         "--iterations",
@@ -219,17 +231,51 @@ def main() -> None:
     # Dataset : Logging
     annotations_log_summary("Dataset", all_annotations_sv, all_negatives)
 
-    # Selection :
     selected_annotations = all_annotations_sv
     selected_negatives = all_negatives
+    # Select : Only negatives
     if args.select_negatives:
         selected_annotations = sv.Detections.empty()
-        selected_negatives = all_negatives
-    elif args.select_class_id != -1:
-        selected_annotations = all_annotations_sv[all_annotations_sv.class_id == args.select_class_id]  # type: ignore
+        selected_negatives = selected_negatives
+        logger.info("Selection : Only negatives.")
+
+    # Select : Only single class id
+    if args.select_class_id != -1:
+        selected_annotations = selected_annotations[selected_annotations.class_id == args.select_class_id]  # type: ignore
         selected_negatives = []
-    elif args.select_equalize:
-        selected_annotations, selected_negatives = annotations_filter_equalize(all_annotations_sv, all_negatives)
+        logger.info(f"Selection : Only class id {args.select_class_id}.")
+
+    # Select : Equalize class representation
+    if args.select_equalize:
+        selected_annotations, selected_negatives = annotations_filter_equalize(selected_annotations, selected_negatives)
+        logger.info("Selection : Equalize class representation.")
+
+    # Select : Large annotations
+    if args.select_large:
+        selected_annotations = annotations_filter_large(selected_annotations)
+        selected_negatives = []
+        logger.info("Selection : Large annotations.")
+
+    # Select : Tiny annotations
+    if args.select_tiny:
+        selected_annotations = annotations_filter_tiny(selected_annotations)
+        selected_negatives = []
+        logger.info("Selection : Tiny annotations.")
+
+    # Select : Crowded scenes
+    if args.select_crowded:
+        selected_annotations = annotations_filter_crowded(selected_annotations)
+        selected_negatives = []
+        logger.info("Selection : Crowded scenes.")
+
+    # Select : Spacious scenes
+    if args.select_spacious:
+        selected_annotations = annotations_filter_spacious(selected_annotations)
+        selected_negatives = []
+        logger.info("Selection : Spacious scenes.")
+
+    # Log : How many annotations are selected
+    annotations_log_summary("Selected", selected_annotations, selected_negatives)
 
     # Augmentation : Select
     augmentation: Optional[Augumentation] = augmentation_select(args)

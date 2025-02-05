@@ -302,6 +302,32 @@ def annotations_append(dataset_path: str, new_annotations: sv.Detections) -> Non
         annotations_sv_to_yolo_file(imagepath=os.path.join(dataset_path, filename), annotations_sv=file_annotations_sv)
 
 
+def annotations_filter_large(annotations: sv.Detections, min_area: float = 0.20) -> sv.Detections:
+    """Filter out large annotations from the dataset"""
+    return annotations[annotations.area >= min_area]  # type: ignore
+
+
+def annotations_filter_tiny(annotations: sv.Detections, max_area: float = 0.01) -> sv.Detections:
+    """Filter out large annotations from the dataset"""
+    return annotations[annotations.area > max_area]  # type: ignore
+
+
+def annotations_filter_crowded(annotations: sv.Detections, min_objects: int = 7) -> sv.Detections:
+    """Filter out large annotations from the dataset"""
+    annotations_files = annotations.data.get("filepaths", np.array([]))
+    # Count for each filename how many annotations are there
+    annotations_count = np.array([np.sum(annotations_files == filename) for filename in annotations_files])
+    return annotations[annotations_count >= min_objects]  # type: ignore
+
+
+def annotations_filter_spacious(annotations: sv.Detections, max_objects: int = 3) -> sv.Detections:
+    """Filter out large annotations from the dataset"""
+    annotations_files = annotations.data.get("filepaths", np.array([]))
+    # Count for each filename how many annotations are there
+    annotations_count = np.array([np.sum(annotations_files == filename) for filename in annotations_files])
+    return annotations[annotations_count < max_objects]  # type: ignore
+
+
 def annotations_filter_equalize(
     annotations_sv: sv.Detections,
     negative_samples: list[str],
