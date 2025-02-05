@@ -242,6 +242,7 @@ def main() -> None:
         args.dataset_path,
         selected_annotations,
         selected_negatives,
+        all_annotations_sv,
         args.iterations,
         augmentation,
     )

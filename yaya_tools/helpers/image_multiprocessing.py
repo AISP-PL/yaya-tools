@@ -134,6 +134,7 @@ def multiprocess_augment(
     dataset_path: str,
     selected_detections: sv.Detections,
     selected_negatives: list[str],
+    all_detections: sv.Detections,
     iterations: int,
     augumentation: Augumentation,
 ) -> None:
@@ -163,7 +164,7 @@ def multiprocess_augment(
         # File annotations : Default empty list
         annotations_xyxy_class: list[float] = []
         # File annotations : Select
-        file_annotations: sv.Detections = selected_detections[detections_files == filename]  # type: ignore
+        file_annotations: sv.Detections = all_detections[detections_files == filename]  # type: ignore
         # Annotation : Extract if possible, transform to list
         # of [ [xyxy, class_id], ...] using numpy operations and reshaping
         if (file_annotations != sv.Detections.empty()) and (file_annotations.class_id is not None):
