@@ -3,10 +3,17 @@ Helper functions for image processing.
 """
 
 import logging
+import os
 from multiprocessing import Pool
+from pathlib import Path
 
+import albumentations as A  # types: ignore
 import cv2  # types: ignore
+import numpy as np
+import supervision as sv
 from tqdm import tqdm
+
+from yaya_tools.helpers.hashing import get_random_sha1
 
 logger = logging.getLogger(__name__)
 
@@ -83,3 +90,91 @@ def multiprocess_resize(
             failed_files.append(image_name)
 
     return sucess_files, failed_files
+
+
+def xyxy_to_xywh(xyxy: np.ndarray) -> np.ndarray:
+    """
+    Converts bounding box coordinates from `(x_min, y_min, x_max, y_max)`
+    format to `(x, y, width, height)` format.
+
+    Args:
+        xyxy (np.ndarray): A numpy array of shape `(N, 4)` where each row
+            corresponds to a bounding box in the format `(x_min, y_min, x_max, y_max)`.
+
+    Returns:
+        np.ndarray: A numpy array of shape `(N, 4)` where each row corresponds
+            to a bounding box in the format `(x, y, width, height)`.
+
+    Examples:
+        ```python
+        import numpy as np
+        import supervision as sv
+
+        xyxy = np.array([
+            [10, 20, 40, 60],
+            [15, 25, 50, 70]
+        ])
+
+        sv.xyxy_to_xywh(xyxy=xyxy)
+        # array([
+        #     [10, 20, 30, 40],
+        #     [15, 25, 35, 45]
+        # ])
+        ```
+    """
+    xywh = xyxy.copy()
+    xywh[:, 2] = xyxy[:, 2] - xyxy[:, 0]
+    xywh[:, 3] = xyxy[:, 3] - xyxy[:, 1]
+    return xywh
+
+
+def multiprocess_augment(
+    dataset_path: str,
+    selected_detections: sv.Detections,
+    selected_negatives: list[str],
+    iterations: int,
+    augumentation: A.Compose,
+) -> None:
+    """Multiprocess list of images and detections"""
+
+    # Files : Create single files list
+    detections_files = selected_detections.data.get("filepaths", np.ndarray([]))
+    files_unique = np.unique(detections_files)
+    files_possible = np.concatenate([files_unique, selected_negatives])
+
+    # Random : Choice N files
+    files_to_augment = np.random.choice(files_possible, iterations, replace=True)
+
+    # Output path : mkdir
+    Path(os.path.join(dataset_path, "generated", "augmented")).mkdir(parents=True, exist_ok=True)
+
+    # Augmentation : Augment files [iterativly first]
+    for filename in tqdm(files_to_augment, desc="Augmenting images", unit="images"):
+        # Image : Load
+        filepath = os.path.join(dataset_path, filename)
+        image = cv2.imread(filepath)
+        if image is None:
+            logger.error(f"Could not read image {filepath}!")
+            continue
+
+        # File annotations : Select
+        file_annotations: sv.Detections = selected_detections[detections_files == filename]  # type: ignore
+
+        # Check : Class ID is missing
+        class_id = file_annotations.class_id
+        if class_id is None:
+            continue
+
+        # Annotations : Transform to list of [ [xyxy, class_id], ...] using
+        # numpy operations and reshaping
+        xyxy = file_annotations.xyxy
+        xywh = xyxy_to_xywh(xyxy)
+        annotations_xyxy_class = np.concatenate([xywh, class_id[:, None]], axis=1).tolist()
+
+        # Augmentation : Apply
+        augmented = augumentation(image=image, bboxes=annotations_xyxy_class)
+
+        # Output : Save
+        output_name = f"{get_random_sha1()}.jpeg"
+        output_path = os.path.join(dataset_path, "generated", output_name)
+        cv2.imwrite(output_path, augmented["image"])

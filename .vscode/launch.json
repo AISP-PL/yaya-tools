@@ -77,5 +77,15 @@
             "console": "integratedTerminal",
             "justMyCode": false
         },
+        {
+            "name": "Yaya-Albumentate",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/yaya_tools/yaya_albumentate.py",
+            "args": ["--dataset_path", "/home/spasz/python/model-traffic/images/",
+            "--blur_delicate"],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
     ],
 }
