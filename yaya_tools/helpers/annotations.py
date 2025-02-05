@@ -300,3 +300,17 @@ def annotations_append(dataset_path: str, new_annotations: sv.Detections) -> Non
 
         # Save : Annotations
         annotations_sv_to_yolo_file(imagepath=os.path.join(dataset_path, filename), annotations_sv=file_annotations_sv)
+
+
+def annotations_filter_equalize(
+    annotations: sv.Detections, negatives: list[str], filenames: list[str]
+) -> tuple[sv.Detections, list[str]]:
+    """Filter only the annotations from files in the filenames list"""
+    # Filter : Get the indexes of the filenames
+    filter_indexes = np.isin(annotations.data.get("filepaths", np.array([])), filenames)
+    annotations_filtered: sv.Detections = annotations[filter_indexes]  # type: ignore
+
+    # Filter : Negative samples
+    negatives_filtered: list[str] = [neg for neg in negatives if neg in filenames]
+
+    return annotations_filtered, negatives_filtered

@@ -5,7 +5,7 @@ from typing import Optional
 import supervision as sv  # types: ignore
 
 from yaya_tools import __version__
-from yaya_tools.helpers.annotations import annotations_load_as_sv, annotations_log_summary
+from yaya_tools.helpers.annotations import annotations_filter_equalize, annotations_load_as_sv, annotations_log_summary
 from yaya_tools.helpers.augmentations import Augumentation, augmentation_select
 from yaya_tools.helpers.dataset import (
     load_directory_images_annotatations,
@@ -228,6 +228,8 @@ def main() -> None:
     elif args.select_class_id != -1:
         selected_annotations = all_annotations_sv[all_annotations_sv.class_id == args.select_class_id]  # type: ignore
         selected_negatives = []
+    elif args.select_equalize:
+        selected_annotations, selected_negatives = annotations_filter_equalize(all_annotations_sv, all_negatives)
 
     # Augmentation : Select
     augmentation: Optional[Augumentation] = augmentation_select(args)
