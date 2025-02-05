@@ -141,6 +141,7 @@ def multiprocess_augment(
     """Multiprocess list of images and detections"""
 
     # Files : Create single files list
+    all_detections_files = all_detections.data.get("filepaths", np.array([], dtype=str))
     detections_files = selected_detections.data.get("filepaths", np.array([], dtype=str))
     files_unique = np.unique(detections_files)
     files_possible = np.concatenate([files_unique, selected_negatives])
@@ -164,7 +165,7 @@ def multiprocess_augment(
         # File annotations : Default empty list
         annotations_xyxy_class: list[float] = []
         # File annotations : Select
-        file_annotations: sv.Detections = all_detections[detections_files == filename]  # type: ignore
+        file_annotations: sv.Detections = all_detections[all_detections_files == filename]  # type: ignore
         # Annotation : Extract if possible, transform to list
         # of [ [xyxy, class_id], ...] using numpy operations and reshaping
         if (file_annotations != sv.Detections.empty()) and (file_annotations.class_id is not None):
