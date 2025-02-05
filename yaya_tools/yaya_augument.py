@@ -51,6 +51,9 @@ def main() -> None:
     parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
     parser.add_argument("--select_negatives", action="store_true", default=False, help="Select only  negative images")
     parser.add_argument(
+        "--select_class_id", type=int, nargs="?", const=0, default=0, required=False, help="Select class id"
+    )
+    parser.add_argument(
         "--select_equalize",
         action="store_true",
         default=False,
@@ -180,8 +183,8 @@ def main() -> None:
         required=False,
         type=int,
         nargs="?",
-        const=0,
-        default=0,
+        const=-1,
+        default=-1,
         help="Blackboxing HxH parts of image.",
     )
     parser.add_argument("--snow", action="store_true", required=False, help="Snow add.")
@@ -222,6 +225,9 @@ def main() -> None:
     if args.select_negatives:
         selected_annotations = sv.Detections.empty()
         selected_negatives = all_negatives
+    elif args.select_class_id != -1:
+        selected_annotations = all_annotations_sv[all_annotations_sv.class_id == args.select_class_id]  # type: ignore
+        selected_negatives = []
 
     # Augmentation : Select
     augmentation: Optional[Augumentation] = augmentation_select(args)
