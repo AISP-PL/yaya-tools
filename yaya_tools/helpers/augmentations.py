@@ -1,5 +1,6 @@
+import argparse
 import logging
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 import albumentations as A  # type: ignore
 import cv2
@@ -372,3 +373,65 @@ def transform_sunflare_make() -> Augumentation:
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
     return Augumentation(transform=transformation, is_bboxes=True)
+
+
+def augmentation_select(args: argparse.Namespace) -> Optional[Augumentation]:
+    """Select any of augmentation, None if not set."""
+    if args.flip_horizontal:
+        return transform_flip_horizontal_make()
+    if args.flip_vertical:
+        return transform_flip_vertical_make()
+    if args.crop:
+        return transform_crop_make(args.crop)
+    if args.rotate:
+        return transform_rotate_make(args.rotate)
+    if args.randrotate:
+        return transform_rotate_make(args.randrotate)
+    if args.brighten:
+        return transform_brighten_make()
+    if args.sharpen:
+        return transform_sharpen_make()
+    if args.darken:
+        return transform_darken_make()
+    if args.clahe:
+        return transform_clahe_make()
+    if args.equalize:
+        return transform_equalize_make()
+    if args.colorshift:
+        return transform_colorshift_make()
+    if args.isonoise:
+        return transform_isonoise_make()
+    if args.gaussnoise:
+        return transform_gaussnoise_make()
+    if args.multi_noise:
+        return transform_multinoise_make()
+    if args.blur:
+        return transform_blur_make()
+    if args.blur_delicate:
+        return transform_blur_delicate_make()
+    if args.downsize_padding:
+        return transform_downsize_padding_make()
+    if args.compression:
+        return transform_compression_make()
+    if args.degrade:
+        return transform_degrade_make()
+    if args.spatter:
+        return transform_spatter_make()
+    if args.spatter_big:
+        return transform_spatter_big_make()
+    if args.spatter_small:
+        return transform_spatter_small_make()
+    if args.blackboxing:
+        return transform_blackboxing_make()
+    if args.snow:
+        return transform_snow_make()
+    if args.rain:
+        return transform_rain_make()
+    if args.fog:
+        return transform_fog_make()
+    if args.sunflare:
+        return transform_sunflare_make()
+    if args.medianblur:
+        return transform_median_blur_make()
+
+    return None

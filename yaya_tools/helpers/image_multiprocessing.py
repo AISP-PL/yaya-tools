@@ -142,8 +142,9 @@ def multiprocess_augment(
     files_unique = np.unique(detections_files)
     files_possible = np.concatenate([files_unique, selected_negatives])
 
-    # Random : Choice N files
-    files_to_augment = np.random.choice(files_possible, iterations, replace=True)
+    # Random : Shuffle and limit to N
+    np.random.shuffle(files_possible)
+    files_to_augment = files_possible[:iterations]
 
     # Output path : mkdir
     Path(os.path.join(dataset_path, "generated")).mkdir(parents=True, exist_ok=True)
