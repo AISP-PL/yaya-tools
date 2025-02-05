@@ -181,6 +181,7 @@ def multiprocess_augment(
             )
         else:
             augmented = augumentation.transform(image=image)
+            new_yolo_annotations = file_annotations
 
         # Output image : Save
         output_name = f"{get_random_sha1()}.jpeg"

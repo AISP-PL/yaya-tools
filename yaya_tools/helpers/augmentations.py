@@ -100,7 +100,7 @@ def transform_compression_make() -> Augumentation:
         [A.ImageCompression(quality_lower=10, quality_upper=15, p=0.99)],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_degrade_make() -> Augumentation:
@@ -111,7 +111,7 @@ def transform_degrade_make() -> Augumentation:
         ],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_clahe_make() -> Augumentation:
@@ -120,7 +120,7 @@ def transform_clahe_make() -> Augumentation:
         [A.CLAHE(p=0.999, always_apply=True)],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_equalize_make() -> Augumentation:
@@ -129,7 +129,7 @@ def transform_equalize_make() -> Augumentation:
         [A.Equalize(p=0.999, always_apply=True)],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_sharpen_make() -> Augumentation:
@@ -138,7 +138,7 @@ def transform_sharpen_make() -> Augumentation:
         [A.Sharpen(alpha=(0.25, 0.5), lightness=(0.7, 1.1), p=0.999, always_apply=True)],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_downsize_padding_make() -> Augumentation:
@@ -174,7 +174,7 @@ def transform_blur_make() -> Augumentation:
         [A.Blur(blur_limit=7, p=0.99)],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_median_blur_make() -> Augumentation:
@@ -183,7 +183,7 @@ def transform_median_blur_make() -> Augumentation:
         [A.MedianBlur(blur_limit=7, p=0.99)],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_colorshift_make() -> Augumentation:
@@ -201,7 +201,7 @@ def transform_colorshift_make() -> Augumentation:
         ],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_brighten_make() -> Augumentation:
@@ -217,7 +217,7 @@ def transform_brighten_make() -> Augumentation:
         ],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_darken_make() -> Augumentation:
@@ -233,7 +233,7 @@ def transform_darken_make() -> Augumentation:
         ],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_snow_make() -> Augumentation:
@@ -242,7 +242,7 @@ def transform_snow_make() -> Augumentation:
         [A.RandomSnow(p=0.999)],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_rain_make() -> Augumentation:
@@ -251,7 +251,7 @@ def transform_rain_make() -> Augumentation:
         [A.RandomRain(drop_length=10, blur_value=4, p=0.999)],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_spatter_big_make() -> Augumentation:
@@ -260,7 +260,7 @@ def transform_spatter_big_make() -> Augumentation:
         [A.Spatter(p=0.999, gauss_sigma=4.5)],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_spatter_make() -> Augumentation:
@@ -269,7 +269,7 @@ def transform_spatter_make() -> Augumentation:
         [A.Spatter(p=0.999)],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_spatter_small_make() -> Augumentation:
@@ -278,7 +278,7 @@ def transform_spatter_small_make() -> Augumentation:
         [A.Spatter(p=0.999, gauss_sigma=0.5)],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_blackboxing_make(size: int = 50) -> Augumentation:
@@ -314,7 +314,7 @@ def transform_isonoise_make() -> Augumentation:
         ],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_gaussnoise_make() -> Augumentation:
@@ -330,7 +330,7 @@ def transform_gaussnoise_make() -> Augumentation:
         ],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_multinoise_make() -> Augumentation:
@@ -347,7 +347,7 @@ def transform_multinoise_make() -> Augumentation:
         ],
         bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
-    return Augumentation(transform=transformation, is_bboxes=True)
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
 def transform_fog_make() -> Augumentation:
