@@ -308,6 +308,10 @@ def annotations_filter_equalize(
     max_length: int = 1000,
 ) -> tuple[sv.Detections, list[str]]:
     """Filter only the annotations from files in the filenames list"""
+    # Check : Empty
+    if annotations_sv.class_id is None:
+        return annotations_sv, negative_samples
+
     # Data : parse
     unique_classes = np.unique(annotations_sv.class_id)
     total_annotations = len(annotations_sv.xyxy)
@@ -322,7 +326,7 @@ def annotations_filter_equalize(
         dataset_stats[class_id] = class_ratio
 
     # Dataset stats : Sort as list in ascending order
-    _dataset_stats_sorted = sorted(dataset_stats.items(), key=lambda x: x[1])
+    _ = sorted(dataset_stats.items(), key=lambda x: x[1])
 
     # @TODO
 
