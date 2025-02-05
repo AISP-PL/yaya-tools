@@ -303,14 +303,27 @@ def annotations_append(dataset_path: str, new_annotations: sv.Detections) -> Non
 
 
 def annotations_filter_equalize(
-    annotations: sv.Detections, negatives: list[str], filenames: list[str]
+    annotations_sv: sv.Detections,
+    negative_samples: list[str],
+    max_length: int = 1000,
 ) -> tuple[sv.Detections, list[str]]:
     """Filter only the annotations from files in the filenames list"""
-    # Filter : Get the indexes of the filenames
-    filter_indexes = np.isin(annotations.data.get("filepaths", np.array([])), filenames)
-    annotations_filtered: sv.Detections = annotations[filter_indexes]  # type: ignore
+    # Data : parse
+    unique_classes = np.unique(annotations_sv.class_id)
+    total_annotations = len(annotations_sv.xyxy)
+    total_negatives = len(negative_samples)
+    total = total_annotations + total_negatives
 
-    # Filter : Negative samples
-    negatives_filtered: list[str] = [neg for neg in negatives if neg in filenames]
+    # Dataset stats : Calculate
+    dataset_stats: dict[int | str, float] = {"negatives": total_negatives / total}
+    for class_id in unique_classes:
+        class_count = (annotations_sv.class_id == class_id).sum()
+        class_ratio = class_count / total_annotations
+        dataset_stats[class_id] = class_ratio
 
-    return annotations_filtered, negatives_filtered
+    # Dataset stats : Sort as list in ascending order
+    _dataset_stats_sorted = sorted(dataset_stats.items(), key=lambda x: x[1])
+
+    # @TODO
+
+    return annotations_sv, negative_samples
