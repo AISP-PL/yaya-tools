@@ -13,7 +13,7 @@ class Augumentation(NamedTuple):
 
 
 # Shape : Albumentations transform
-def transform_crop_make(width: int = 640) -> A.Compose:
+def transform_crop_make(width: int = 640) -> Augumentation:
     """Create crop transformation."""
 
     # Width and height must be divisible by 32
@@ -24,16 +24,17 @@ def transform_crop_make(width: int = 640) -> A.Compose:
     height = height - (height % 32)
     width = width - (width % 32)
 
-    return A.Compose(
+    transformation = A.Compose(
         [A.RandomCrop(width=width, height=height, p=0.99)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_rotate_make(degrees: int = 30) -> A.Compose:
+def transform_rotate_make(degrees: int = 30) -> Augumentation:
     """Create rotate transformation."""
 
-    return A.Compose(
+    transformation = A.Compose(
         [
             A.Rotate(
                 limit=(degrees, degrees),
@@ -44,12 +45,13 @@ def transform_rotate_make(degrees: int = 30) -> A.Compose:
         ],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_randrotate_make(degrees: int = 30) -> A.Compose:
+def transform_randrotate_make(degrees: int = 30) -> Augumentation:
     """Create rotate transformation."""
 
-    return A.Compose(
+    transformation = A.Compose(
         [
             A.Rotate(
                 limit=degrees,
@@ -60,117 +62,87 @@ def transform_randrotate_make(degrees: int = 30) -> A.Compose:
         ],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_flip_horizontal_make() -> A.Compose:
+def transform_flip_horizontal_make() -> Augumentation:
     """Create flip transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [A.HorizontalFlip(p=0.99, always_apply=True)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_flip_vertical_make() -> A.Compose:
+def transform_flip_vertical_make() -> Augumentation:
     """Create flip transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [A.VerticalFlip(p=0.99, always_apply=True)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_flip_make() -> A.Compose:
+def transform_flip_make() -> Augumentation:
     """Create flip transformation."""
 
-    return A.Compose(
+    transformation = A.Compose(
         [A.HorizontalFlip(p=0.5), A.VerticalFlip(p=0.5)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-# Shape : Albumentations transform
-transform_shape = A.Compose(
-    [
-        A.SomeOf(
-            [
-                A.ImageCompression(quality_lower=30, quality_upper=55, p=0.1),
-                A.MotionBlur(blur_limit=3, p=0.1),
-            ],
-            n=2,
-        ),
-        A.GridDistortion(num_steps=3, distort_limit=0.25, p=0.1),
-        A.SomeOf(
-            [
-                A.RandomCrop(width=480, height=320, p=0.60),
-                A.ShiftScaleRotate(
-                    shift_limit=0.1,
-                    scale_limit=0.2,
-                    rotate_limit=15,
-                    p=0.25,
-                    border_mode=cv2.BORDER_CONSTANT,
-                ),
-                A.ElasticTransform(alpha_affine=9, p=0.2, border_mode=cv2.BORDER_CONSTANT),
-            ],
-            n=1,
-        ),
-        A.SomeOf(
-            [
-                A.OpticalDistortion(distort_limit=0.2, p=0.2, border_mode=cv2.BORDER_CONSTANT),
-                A.ZoomBlur(max_factor=1.1, p=0.2),
-                A.GaussNoise(p=0.2),
-                A.RandomShadow(p=0.1),
-            ],
-            n=1,
-        ),
-    ],
-    bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
-)
-
-
-def transform_compression_make() -> A.Compose:
+def transform_compression_make() -> Augumentation:
     """Create compression transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [A.ImageCompression(quality_lower=10, quality_upper=15, p=0.99)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_degrade_make() -> A.Compose:
+def transform_degrade_make() -> Augumentation:
     """Create compression transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [
             A.Downscale(scale_min=0.25, scale_max=0.45, p=0.999),
         ],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_clahe_make() -> A.Compose:
+def transform_clahe_make() -> Augumentation:
     """Create CLAHE transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [A.CLAHE(p=0.999, always_apply=True)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_equalize_make() -> A.Compose:
+def transform_equalize_make() -> Augumentation:
     """Create equalize transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [A.Equalize(p=0.999, always_apply=True)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_sharpen_make() -> A.Compose:
+def transform_sharpen_make() -> Augumentation:
     """Create sharpen transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [A.Sharpen(alpha=(0.25, 0.5), lightness=(0.7, 1.1), p=0.999, always_apply=True)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_downsize_padding_make() -> A.Compose:
+def transform_downsize_padding_make() -> Augumentation:
     """Downsize with padding using ShiftScaleRotate"""
-    return A.Compose(
+    transformation = A.Compose(
         [
             A.ShiftScaleRotate(
                 shift_limit=0.0,
@@ -183,6 +155,7 @@ def transform_downsize_padding_make() -> A.Compose:
         ],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
 def transform_blur_delicate_make() -> Augumentation:
@@ -194,25 +167,27 @@ def transform_blur_delicate_make() -> Augumentation:
     return Augumentation(transform=transform, is_bboxes=False)
 
 
-def transform_blur_make() -> A.Compose:
+def transform_blur_make() -> Augumentation:
     """Create blur transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [A.Blur(blur_limit=7, p=0.99)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_median_blur_make() -> A.Compose:
+def transform_median_blur_make() -> Augumentation:
     """Create median blur transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [A.MedianBlur(blur_limit=7, p=0.99)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_colorshift_make() -> A.Compose:
+def transform_colorshift_make() -> Augumentation:
     """Create random brighten transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [
             A.ColorJitter(
                 brightness=(1, 1),
@@ -225,11 +200,12 @@ def transform_colorshift_make() -> A.Compose:
         ],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_brighten_make() -> A.Compose:
+def transform_brighten_make() -> Augumentation:
     """Create random brighten transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [
             A.RandomBrightnessContrast(
                 brightness_limit=(0.0, 0.4),
@@ -240,11 +216,12 @@ def transform_brighten_make() -> A.Compose:
         ],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_darken_make() -> A.Compose:
+def transform_darken_make() -> Augumentation:
     """Create random darken transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [
             A.RandomBrightnessContrast(
                 brightness_limit=(-0.4, 0.0),
@@ -255,52 +232,58 @@ def transform_darken_make() -> A.Compose:
         ],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_snow_make() -> A.Compose:
+def transform_snow_make() -> Augumentation:
     """Create snow transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [A.RandomSnow(p=0.999)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_rain_make() -> A.Compose:
+def transform_rain_make() -> Augumentation:
     """Create rain transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [A.RandomRain(drop_length=10, blur_value=4, p=0.999)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_spatter_big_make() -> A.Compose:
+def transform_spatter_big_make() -> Augumentation:
     """Create spatter transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [A.Spatter(p=0.999, gauss_sigma=4.5)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_spatter_make() -> A.Compose:
+def transform_spatter_make() -> Augumentation:
     """Create spatter transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [A.Spatter(p=0.999)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_spatter_small_make() -> A.Compose:
+def transform_spatter_small_make() -> Augumentation:
     """Create spatter transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [A.Spatter(p=0.999, gauss_sigma=0.5)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_blackboxing_make(size: int = 50) -> A.Compose:
+def transform_blackboxing_make(size: int = 50) -> Augumentation:
     """Blackboxing parts of image."""
     logging.warning("Blackboxing not supports bbox target!")
-    return A.Compose(
+    transformation = A.Compose(
         [
             A.CoarseDropout(
                 min_holes=7,
@@ -314,11 +297,12 @@ def transform_blackboxing_make(size: int = 50) -> A.Compose:
             )
         ],
     )
+    return Augumentation(transform=transformation, is_bboxes=False)
 
 
-def transform_isonoise_make() -> A.Compose:
+def transform_isonoise_make() -> Augumentation:
     """Create isonoise transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [
             A.ISONoise(
                 color_shift=(0.04, 0.30),
@@ -329,11 +313,12 @@ def transform_isonoise_make() -> A.Compose:
         ],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_gaussnoise_make() -> A.Compose:
+def transform_gaussnoise_make() -> Augumentation:
     """Create gauss noise transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [
             A.GaussNoise(
                 var_limit=(10.0, 70.0),
@@ -344,11 +329,12 @@ def transform_gaussnoise_make() -> A.Compose:
         ],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_multinoise_make() -> A.Compose:
+def transform_multinoise_make() -> Augumentation:
     """Create multiplicative noise transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [
             A.MultiplicativeNoise(
                 multiplier=(0.85, 1.15),
@@ -360,19 +346,21 @@ def transform_multinoise_make() -> A.Compose:
         ],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_fog_make() -> A.Compose:
+def transform_fog_make() -> Augumentation:
     """Create fog transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [A.RandomFog(fog_coef_lower=0.1, fog_coef_upper=0.5, alpha_coef=0.5, p=0.999)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transformation, is_bboxes=True)
 
 
-def transform_sunflare_make() -> A.Compose:
+def transform_sunflare_make() -> Augumentation:
     """Create sunflare transformation."""
-    return A.Compose(
+    transformation = A.Compose(
         [
             A.RandomSunFlare(
                 src_radius=260,
@@ -383,60 +371,4 @@ def transform_sunflare_make() -> A.Compose:
         ],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
-
-
-# Color : Albumentations transform
-transform_color = A.Compose(
-    [
-        # Colors : Brightnes, contrast, tone curve, hue, saturation, value
-        A.SomeOf(
-            [
-                A.RandomBrightnessContrast(p=0.3),
-                A.RandomToneCurve(scale=0.5, p=0.3),
-                A.HueSaturationValue(p=0.3),
-                A.ColorJitter(p=0.2),
-                A.Equalize(p=0.3),
-                A.ToSepia(p=0.1),
-            ],
-            n=2,
-        ),
-        # Quality : Jpeg compression, multiplicative noise, downscale
-        A.OneOf(
-            [
-                A.ImageCompression(quality_lower=30, quality_upper=55, p=0.3),
-                A.MultiplicativeNoise(p=0.2),
-                A.Downscale(scale_min=0.4, scale_max=0.6, p=0.2),
-                A.MedianBlur(blur_limit=3, p=0.1),
-                A.ISONoise(color_shift=(0.01, 0.08), intensity=(0.2, 0.8), p=0.1),
-                A.PixelDropout(dropout_prob=0.1, p=0.1),
-                A.Spatter(p=0.1),
-                A.Superpixels(p=0.1),
-                A.GlassBlur(sigma=0.2, max_delta=2, iterations=1, p=0.1),
-            ]
-        ),
-        # Weather : Dropouts, rain, snow, sun flare, fog
-        A.OneOf(
-            [
-                A.RandomRain(drop_length=10, blur_value=4, p=0.1),
-                A.RandomSnow(p=0.1),
-                A.RandomSunFlare(
-                    src_radius=260,
-                    num_flare_circles_lower=2,
-                    num_flare_circles_upper=6,
-                    p=0.1,
-                ),
-                A.RandomFog(fog_coef_lower=0.1, fog_coef_upper=0.5, alpha_coef=0.5, p=0.1),
-            ]
-        ),
-    ],
-    bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.2),
-)
-
-# All : Full transform
-transform_all = A.Compose(
-    [
-        A.SomeOf([transform_color], n=3, p=0.5),
-        A.SomeOf([transform_shape], n=3, p=0.5),
-    ],
-    bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.2),
-)
+    return Augumentation(transform=transformation, is_bboxes=True)
