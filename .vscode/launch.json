@@ -78,12 +78,12 @@
             "justMyCode": false
         },
         {
-            "name": "Yaya-Albumentate",
+            "name": "Yaya-Augument",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/yaya_tools/yaya_albumentate.py",
+            "program": "${workspaceFolder}/yaya_tools/yaya_augument.py",
             "args": ["--dataset_path", "tests/test_dataset/",
-            "--blur_delicate"],
+            "--blur"],
             "console": "integratedTerminal",
             "justMyCode": false
         },

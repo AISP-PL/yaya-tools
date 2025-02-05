@@ -6,12 +6,14 @@ import logging
 import os
 from multiprocessing import Pool
 from pathlib import Path
+from typing import Optional
 
 import cv2  # types: ignore
 import numpy as np
 import supervision as sv
 from tqdm import tqdm
 
+from yaya_tools.helpers.annotations import annotations_sv_to_yolo_file
 from yaya_tools.helpers.augmentations import Augumentation
 from yaya_tools.helpers.hashing import get_random_sha1
 
@@ -169,16 +171,26 @@ def multiprocess_augment(
         # Annotations : Transform to list of [ [xyxy, class_id], ...] using
         # numpy operations and reshaping
         xyxy = file_annotations.xyxy
-        xywh = xyxy_to_xywh(xyxy)
-        annotations_xyxy_class = np.concatenate([xywh, class_id[:, None]], axis=1).tolist()
+        annotations_xyxy_class = np.concatenate([xyxy, class_id[:, None]], axis=1).tolist()
 
         # Augmentation : Apply
+        new_yolo_annotations: Optional[sv.Detections] = None
         if augumentation.is_bboxes:
             augmented = augumentation.transform(image=image, bboxes=annotations_xyxy_class)
+            new_albumentation_boxes = np.array(augmented["bboxes"]).reshape(-1, 5)
+            new_yolo_annotations = sv.Detections(
+                xyxy=new_albumentation_boxes[:, :4],
+                class_id=new_albumentation_boxes[:, 4].astype(int),
+            )
         else:
             augmented = augumentation.transform(image=image)
 
-        # Output : Save
+        # Output image : Save
         output_name = f"{get_random_sha1()}.jpeg"
         output_path = os.path.join(dataset_path, "generated", output_name)
         cv2.imwrite(output_path, augmented["image"])
+
+        # Output annotations : Save
+        if new_yolo_annotations is not None:
+            output_txt_path = output_path.replace(".jpeg", ".txt")
+            annotations_sv_to_yolo_file(output_txt_path, new_yolo_annotations)
