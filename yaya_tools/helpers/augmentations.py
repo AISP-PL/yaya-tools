@@ -1,7 +1,15 @@
 import logging
+from typing import NamedTuple
 
 import albumentations as A  # type: ignore
 import cv2
+
+
+class Augumentation(NamedTuple):
+    """This class is used to store the transformation and the type of the transformation"""
+
+    transform: A.Compose
+    is_bboxes: bool
 
 
 # Shape : Albumentations transform
@@ -177,12 +185,13 @@ def transform_downsize_padding_make() -> A.Compose:
     )
 
 
-def transform_blur_delicate_make() -> A.Compose:
+def transform_blur_delicate_make() -> Augumentation:
     """Create blur transformation."""
-    return A.Compose(
+    transform = A.Compose(
         [A.Blur(blur_limit=3, p=0.99)],
         bbox_params=A.BboxParams(format="yolo", min_area=100, min_visibility=0.3),
     )
+    return Augumentation(transform=transform, is_bboxes=False)
 
 
 def transform_blur_make() -> A.Compose:

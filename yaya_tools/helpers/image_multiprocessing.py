@@ -7,12 +7,12 @@ import os
 from multiprocessing import Pool
 from pathlib import Path
 
-import albumentations as A  # types: ignore
 import cv2  # types: ignore
 import numpy as np
 import supervision as sv
 from tqdm import tqdm
 
+from yaya_tools.helpers.augmentations import Augumentation
 from yaya_tools.helpers.hashing import get_random_sha1
 
 logger = logging.getLogger(__name__)
@@ -133,7 +133,7 @@ def multiprocess_augment(
     selected_detections: sv.Detections,
     selected_negatives: list[str],
     iterations: int,
-    augumentation: A.Compose,
+    augumentation: Augumentation,
 ) -> None:
     """Multiprocess list of images and detections"""
 
@@ -146,7 +146,7 @@ def multiprocess_augment(
     files_to_augment = np.random.choice(files_possible, iterations, replace=True)
 
     # Output path : mkdir
-    Path(os.path.join(dataset_path, "generated", "augmented")).mkdir(parents=True, exist_ok=True)
+    Path(os.path.join(dataset_path, "generated")).mkdir(parents=True, exist_ok=True)
 
     # Augmentation : Augment files [iterativly first]
     for filename in tqdm(files_to_augment, desc="Augmenting images", unit="images"):
@@ -172,7 +172,10 @@ def multiprocess_augment(
         annotations_xyxy_class = np.concatenate([xywh, class_id[:, None]], axis=1).tolist()
 
         # Augmentation : Apply
-        augmented = augumentation(image=image, bboxes=annotations_xyxy_class)
+        if augumentation.is_bboxes:
+            augmented = augumentation.transform(image=image, bboxes=annotations_xyxy_class)
+        else:
+            augmented = augumentation.transform(image=image)
 
         # Output : Save
         output_name = f"{get_random_sha1()}.jpeg"

@@ -2,12 +2,11 @@ import argparse
 import logging
 from typing import Optional
 
-import albumentations as A  # types: ignore
 import supervision as sv  # types: ignore
 
 from yaya_tools import __version__
 from yaya_tools.helpers.annotations import annotations_load_as_sv, annotations_log_summary
-from yaya_tools.helpers.augmentations import transform_blur_delicate_make
+from yaya_tools.helpers.augmentations import Augumentation, transform_blur_delicate_make
 from yaya_tools.helpers.dataset import (
     load_directory_images_annotatations,
 )
@@ -240,7 +239,7 @@ def main() -> None:
         selected_negatives = all_negatives
 
     # Augmentation : Select
-    augmentation: A.Compose = transform_blur_delicate_make()
+    augmentation: Augumentation = transform_blur_delicate_make()
 
     # Augmentation : Multiprocess
     multiprocess_augment(
