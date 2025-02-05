@@ -155,7 +155,7 @@ def main() -> None:
         "--isonoise",
         action="store_true",
         required=False,
-        help="Random add iso noise to image.",
+        help="Random add iso noise to image. Caution!! Hard!",
     )
     parser.add_argument(
         "--gaussnoise",
@@ -218,6 +218,8 @@ def main() -> None:
         required=False,
         help="Median blur image.",
     )
+    parser.add_argument("--grayscale", action="store_true", required=False, help="Convert image to grayscale.")
+    parser.add_argument("--sepia", action="store_true", required=False, help="Convert image to sepia.")
     parser.add_argument("-h", "--help", action="help", help="Show this help message and exit.")
     parser.add_argument("-v", action="version", version=__version__, help="Show version and exit.")
     args = parser.parse_args()

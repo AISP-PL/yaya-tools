@@ -375,6 +375,24 @@ def transform_sunflare_make() -> Augumentation:
     return Augumentation(transform=transformation, is_bboxes=True)
 
 
+def transform_grayscale_make() -> Augumentation:
+    """Create grayscale transformation."""
+    transformation = A.Compose(
+        [A.ToGray(p=0.999)],
+        bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
+    )
+    return Augumentation(transform=transformation, is_bboxes=False)
+
+
+def transform_sepia_make() -> Augumentation:
+    """Create sepia transformation."""
+    transformation = A.Compose(
+        [A.ToSepia(p=0.999)],
+        bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
+    )
+    return Augumentation(transform=transformation, is_bboxes=False)
+
+
 def augmentation_select(args: argparse.Namespace) -> Optional[Augumentation]:
     """Select any of augmentation, None if not set."""
     if args.flip_horizontal:
@@ -433,5 +451,9 @@ def augmentation_select(args: argparse.Namespace) -> Optional[Augumentation]:
         return transform_sunflare_make()
     if args.medianblur:
         return transform_median_blur_make()
+    if args.grayscale:
+        return transform_grayscale_make()
+    if args.sepia:
+        return transform_sepia_make()
 
     return None
