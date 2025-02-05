@@ -399,9 +399,9 @@ def augmentation_select(args: argparse.Namespace) -> Optional[Augumentation]:
         return transform_flip_horizontal_make()
     if args.flip_vertical:
         return transform_flip_vertical_make()
-    if args.crop:
+    if args.crop != -1:
         return transform_crop_make(args.crop)
-    if args.rotate:
+    if args.rotate != -1:
         return transform_rotate_make(args.rotate)
     if args.randrotate:
         return transform_rotate_make(args.randrotate)
@@ -439,7 +439,7 @@ def augmentation_select(args: argparse.Namespace) -> Optional[Augumentation]:
         return transform_spatter_big_make()
     if args.spatter_small:
         return transform_spatter_small_make()
-    if args.blackboxing:
+    if args.blackboxing != -1:
         return transform_blackboxing_make()
     if args.snow:
         return transform_snow_make()

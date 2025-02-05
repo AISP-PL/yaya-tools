@@ -97,8 +97,8 @@ def main() -> None:
         "--crop",
         type=int,
         nargs="?",
-        const=0,
-        default=0,
+        const=-1,
+        default=-1,
         required=False,
         help="Augument by random Crop image (for ex 640).",
     )
@@ -106,8 +106,8 @@ def main() -> None:
         "--rotate",
         type=int,
         nargs="?",
-        const=0,
-        default=0,
+        const=-1,
+        default=-1,
         required=False,
         help="Augument by direct degrees rotation (for ex 90).",
     )
