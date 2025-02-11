@@ -175,12 +175,16 @@ def multiprocess_augment(
         # Augmentation : Apply
         new_yolo_annotations: Optional[sv.Detections] = None
         if augumentation.is_bboxes:
-            augmented = augumentation.transform(image=image, bboxes=annotations_xyxy_class)
-            new_albumentation_boxes = np.array(augmented["bboxes"]).reshape(-1, 5)
-            new_yolo_annotations = sv.Detections(
-                xyxy=new_albumentation_boxes[:, :4],
-                class_id=new_albumentation_boxes[:, 4].astype(int),
-            )
+            try:
+                augmented = augumentation.transform(image=image, bboxes=annotations_xyxy_class)
+                new_albumentation_boxes = np.array(augmented["bboxes"]).reshape(-1, 5)
+                new_yolo_annotations = sv.Detections(
+                    xyxy=new_albumentation_boxes[:, :4],
+                    class_id=new_albumentation_boxes[:, 4].astype(int),
+                )
+            except Exception as e:
+                logger.error(f"Error augmenting image {filename}: {e}")
+                continue
         else:
             augmented = augumentation.transform(image=image)
             new_yolo_annotations = file_annotations
