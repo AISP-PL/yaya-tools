@@ -249,7 +249,8 @@ def main() -> None:
 
     # Select : Equalize class representation
     if args.select_equalize:
-        selected_annotations, selected_negatives = annotations_filter_equalize(selected_annotations, selected_negatives)
+        selected_negatives = []
+        selected_annotations = annotations_filter_equalize(selected_annotations)
         logger.info("Selection : Equalize class representation.")
 
     # Select : Large annotations

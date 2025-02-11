@@ -332,30 +332,45 @@ def annotations_filter_spacious(annotations: sv.Detections, max_objects: int = 4
 
 def annotations_filter_equalize(
     annotations_sv: sv.Detections,
-    negative_samples: list[str],
-    max_length: int = 1000,
-) -> tuple[sv.Detections, list[str]]:
+    max_length: int = 3000,
+) -> sv.Detections:
     """Filter only the annotations from files in the filenames list"""
     # Check : Empty
     if annotations_sv.class_id is None:
-        return annotations_sv, negative_samples
+        return annotations_sv
 
     # Data : parse
     unique_classes = np.unique(annotations_sv.class_id)
     total_annotations = len(annotations_sv.xyxy)
-    total_negatives = len(negative_samples)
-    total = total_annotations + total_negatives
 
     # Dataset stats : Calculate
-    dataset_stats: dict[int | str, float] = {"negatives": total_negatives / total}
+    dataset_stats: dict[int | str, float] = {}
     for class_id in unique_classes:
         class_count = (annotations_sv.class_id == class_id).sum()
-        class_ratio = class_count / total_annotations
-        dataset_stats[class_id] = class_ratio
+        class_ratio = float(class_count / total_annotations)
+        dataset_stats[int(class_id)] = class_ratio
 
-    # Dataset stats : Sort as list in ascending order
-    _ = sorted(dataset_stats.items(), key=lambda x: x[1])
+    # Inverted stats : Create as 100% - class_ratio
+    # - this are probabilities of the class to be selected
+    max_class_ratio = max(dataset_stats.values())
+    differences = {class_id: max_class_ratio - class_ratio for class_id, class_ratio in dataset_stats.items()}
 
-    # @TODO
+    # Normalize differences to probabilities suming to 1
+    total_differences = sum(differences.values())
+    class_probabilities = {class_id: difference / total_differences for class_id, difference in differences.items()}
 
-    return annotations_sv, negative_samples
+    # Based on class_id probabilities, calculate the annotations probabilities, then normalize to sum to 1
+    annotations_probabilities = np.array([class_probabilities[class_id] for class_id in annotations_sv.class_id])
+    annotations_probabilities = annotations_probabilities / annotations_probabilities.sum()
+
+    # Filter : Create equalized subset of max_length with probabilities of selected class_id
+    selected_indexes = np.random.choice(
+        np.arange(len(annotations_sv.xyxy)),
+        size=max_length,
+        p=annotations_probabilities,
+        replace=False,
+    )
+
+    # Filter : Return only the selected indexes
+    annotations_filtered: sv.Detections = annotations_sv[selected_indexes]  # type: ignore
+    return annotations_filtered
