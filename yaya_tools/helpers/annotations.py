@@ -357,10 +357,10 @@ def annotations_filter_equalize(
 
     # Normalize differences to probabilities suming to 1
     total_differences = sum(differences.values())
-    class_probabilities = {class_id: difference / total_differences for class_id, difference in differences.items()}
+    class_id_probabilities = {class_id: difference / total_differences for class_id, difference in differences.items()}
 
     # Based on class_id probabilities, calculate the annotations probabilities, then normalize to sum to 1
-    annotations_probabilities = np.array([class_probabilities[class_id] for class_id in annotations_sv.class_id])
+    annotations_probabilities = np.array([class_id_probabilities[class_id] for class_id in annotations_sv.class_id])
     annotations_probabilities = annotations_probabilities / annotations_probabilities.sum()
 
     # Filter : Create equalized subset of max_length with probabilities of selected class_id
@@ -368,7 +368,7 @@ def annotations_filter_equalize(
         np.arange(len(annotations_sv.xyxy)),
         size=max_length,
         p=annotations_probabilities,
-        replace=False,
+        replace=True,
     )
 
     # Filter : Return only the selected indexes
