@@ -6,6 +6,7 @@ import logging
 import os
 from multiprocessing import Pool
 from pathlib import Path
+from shutil import copyfile
 from typing import Optional
 
 import cv2  # types: ignore
@@ -20,16 +21,28 @@ from yaya_tools.helpers.hashing import get_random_sha1
 logger = logging.getLogger(__name__)
 
 
-def threaded_resize_image(args: tuple[str, str, str, int, int, int]) -> tuple[str, bool]:
-    image_name, source_directory, target_directory, new_width, new_height, interpolation = args
+def threaded_resize_image(args: tuple[str, str, str, int, int, int, bool]) -> tuple[str, bool]:
+    image_name, source_directory, target_directory, new_width, new_height, interpolation, copy_annotations = args
     """Threded Resize image"""
     try:
-        image = cv2.imread(f"{source_directory}/{image_name}")
+        source_path = os.path.join(source_directory, image_name)
+        image = cv2.imread(source_path)
         if image is None:
             logger.error(f"Could not read image {image_name}")
             return image_name, False
+
         resized_image = cv2.resize(image, (new_width, new_height), interpolation=interpolation)
-        cv2.imwrite(f"{target_directory}/{image_name}", resized_image)
+        target_path = os.path.join(target_directory, image_name)
+        cv2.imwrite(target_path, resized_image)
+
+        if copy_annotations:
+            source_txt_path = os.path.splitext(source_path)[0] + ".txt"
+            target_txt_path = os.path.splitext(target_path)[0] + ".txt"
+            try:
+                copyfile(source_txt_path, target_txt_path)
+            except Exception as e:
+                logger.error(f"Error copying annotations from {source_txt_path} to {target_txt_path}: {e}")
+
         return image_name, True
 
     except Exception as e:
@@ -45,6 +58,7 @@ def multiprocess_resize(
     new_height: int = 640,
     pool_size: int = 5,
     interpolation: int = cv2.INTER_NEAREST,
+    copy_annotations: bool = False,
 ) -> tuple[list[str], list[str]]:
     """
     Using multiprocessing pool resize simultaneously multiple images
@@ -76,7 +90,15 @@ def multiprocess_resize(
                 pool.imap(
                     threaded_resize_image,
                     [
-                        (image_name, source_directory, target_directory, new_width, new_height, interpolation)
+                        (
+                            image_name,
+                            source_directory,
+                            target_directory,
+                            new_width,
+                            new_height,
+                            interpolation,
+                            copy_annotations,
+                        )
                         for image_name in images_names
                     ],
                 ),

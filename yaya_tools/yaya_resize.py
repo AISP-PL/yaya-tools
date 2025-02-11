@@ -58,6 +58,9 @@ def main() -> None:
     parser.add_argument("-o", "--output_path", type=str, required=True, help="Path to the output folder")
     parser.add_argument("--width", type=int, default=640, help="Width of the resized image")
     parser.add_argument("--height", type=int, default=640, help="Height of the resized image")
+    parser.add_argument(
+        "--copy_annotations", action="store_true", help="Copy annotations if found to the output folder"
+    )
     parser.add_argument("-h", "--help", action="help", help="Show this help message and exit.")
     parser.add_argument("-v", action="version", version=__version__, help="Show version and exit.")
     args = parser.parse_args()
@@ -73,6 +76,7 @@ def main() -> None:
         images_names=images_annotated,
         new_width=args.width,
         new_height=args.height,
+        copy_annotations=args.copy_annotations,
     )
 
     logger.info(f"Successfully processed {len(succes_files)} files")

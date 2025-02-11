@@ -29,7 +29,7 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/yaya_tools/yaya_resize.py",
-            "args": ["-i","tests/test_dataset", "-o","tests/test_resized",],
+            "args": ["-i","tests/test_dataset", "-o","tests/test_resized", "--copy_annotations"],
             "console": "integratedTerminal",
             "justMyCode": false
         },
