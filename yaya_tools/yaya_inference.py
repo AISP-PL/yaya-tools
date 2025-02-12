@@ -1,5 +1,6 @@
 import argparse
 import logging
+from typing import Optional
 
 import supervision as sv
 from tqdm import tqdm
@@ -54,6 +55,9 @@ def main() -> None:
     parser.add_argument("--confidence", type=float, default=0.50, help="Confidence threshold")
     parser.add_argument("--nms_threshold", type=float, default=0.30, help="NMS threshold")
     parser.add_argument(
+        "--tracking", action="store_true", required=False, help="If set, the detector will use tracking with ByteSORT."
+    )
+    parser.add_argument(
         "--gpu", action="store_true", required=False, help="If set, the detector will use the GPU for inference."
     )
 
@@ -93,6 +97,9 @@ def main() -> None:
     box_annotator = sv.BoxAnnotator()
     label_annotator = sv.LabelAnnotator(text_padding=5)
 
+    # Tracker : sv.ByteTrack
+    tracker = sv.ByteTrack()
+
     source_video_info = sv.VideoInfo.from_video_path(video_path=args.video)
     with sv.VideoSink(target_path=args.output, video_info=source_video_info) as sink:
         for frame in tqdm(
@@ -101,9 +108,18 @@ def main() -> None:
             # Detection
             detections = detector.detect(frame_number=0, frame=frame)
 
+            # Tracking
+            if args.tracking:
+                detections = tracker.update_with_detections(detections)
+
+            # Annotate : Labels
+            labels: Optional[list[str]] = None
+            if detections.tracker_id is not None:
+                labels = [f"#{tracker_id}" for tracker_id in detections.tracker_id]
+
             # Annotate
             annotated = box_annotator.annotate(frame.copy(), detections)
-            annotated = label_annotator.annotate(annotated, detections)
+            annotated = label_annotator.annotate(annotated, detections, labels)
 
             # Write frame
             sink.write_frame(annotated)
