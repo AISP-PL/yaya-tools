@@ -94,8 +94,11 @@ def main() -> None:
         detector.init()
 
     # Annotators : Create Box and Label
-    box_annotator = sv.BoxAnnotator()
-    label_annotator = sv.LabelAnnotator(text_padding=5)
+    color_lookup = sv.ColorLookup.CLASS
+    if args.tracking:
+        color_lookup = sv.ColorLookup.TRACK
+    box_annotator = sv.BoxAnnotator(color_lookup=color_lookup)
+    label_annotator = sv.LabelAnnotator(text_padding=5, color_lookup=color_lookup)
 
     # Tracker : sv.ByteTrack
     tracker = sv.ByteTrack()

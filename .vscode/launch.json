@@ -71,8 +71,8 @@
             "--confidence","0.50",
             "--nms","0.30",
             "--output", "tests/test_video/output.mp4",
-            "--gpu"
-
+            "--gpu",
+            "--tracking",
         ],
             "console": "integratedTerminal",
             "justMyCode": false
