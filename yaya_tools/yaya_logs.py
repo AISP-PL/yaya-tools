@@ -81,12 +81,12 @@ def create_confusion_heatmap_figure(data, title):
 
     # Create a DataFrame for heatmap coloring: only the AP (%) column has data.
     df_color = df.copy()
-    df_color[["TP", "FP"]] = np.nan
+    df_color["TP"] = 0
+    df_color["FP"] = 0
 
     # Determine figure height based on number of rows.
     num_rows = len(df)
     fig, ax = plt.subplots(figsize=(figure_width, num_rows * figure_row_height + 2))
-
     sns.heatmap(df_color, annot=ann, fmt="", cmap="YlGnBu", ax=ax, cbar=True, vmin=0, vmax=100)
     ax.set_title(title)
     return fig
@@ -105,11 +105,9 @@ def create_comparison_matrix_heatmap_figure(data1, data2, title):
         key = f"{d1['class_id']}: {d1['name']}"
         diff = d1["ap"] - d2["ap"]
         rows[key] = {"Log1": d1["ap"], "Log2": d2["ap"], "Diff (%)": diff}
-    df = pd.DataFrame.from_dict(rows, orient="index")
 
-    # Create a DataFrame for coloring: only "Diff (%)" will be colored.
-    color_df = df.copy()
-    color_df[["Log1", "Log2"]] = np.nan
+    df = pd.DataFrame.from_dict(rows, orient="index")
+    df = df[["Diff (%)", "Log1", "Log2"]]
 
     # Create annotations for all three columns.
     def format_diff(val):
@@ -121,6 +119,11 @@ def create_comparison_matrix_heatmap_figure(data1, data2, title):
             annot_df[col] = df[col].apply(format_diff)
         else:
             annot_df[col] = df[col].apply(lambda x: f"{x:.2f}")
+
+    # Create a DataFrame for coloring: only "Diff (%)" will be colored.
+    color_df = df.copy()
+    color_df["Log1"] = 0
+    color_df["Log2"] = 0
 
     num_rows = len(df)
     fig, ax = plt.subplots(figsize=(figure_width, num_rows * figure_row_height + 2))
