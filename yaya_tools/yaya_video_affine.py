@@ -4,7 +4,16 @@ import cv2
 import numpy as np
 from PyQt5.QtCore import QPoint, Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QApplication, QFileDialog, QLabel, QMainWindow, QPushButton, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 
 # Rozszerzona etykieta umożliwiająca odbieranie kliknięć myszy
@@ -30,26 +39,34 @@ class MainWindow(QMainWindow):
         self.drawing_mode = False  # Flaga trybu rysowania punktów
         self.points = []  # Lista klikniętych punktów (źródłowych)
 
-        # Interfejs – etykieta do wyświetlania klatek oraz przyciski
+        # Interfejs – etykieta do wyświetlania klatek
         self.videoLabel = VideoLabel()
         self.videoLabel.setAlignment(Qt.AlignCenter)
         self.videoLabel.clicked.connect(self.getPoint)
 
-        # Next Label for text
-
+        # Przyciski + kontener horyzontalny
         self.openButton = QPushButton("Otwórz")
         self.openButton.clicked.connect(self.openFile)
 
         self.transformButton = QPushButton("Dodaj przekształcenie")
         self.transformButton.clicked.connect(self.activateDrawingMode)
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.videoLabel)
-        layout.addWidget(self.openButton)
-        layout.addWidget(self.transformButton)
+        self.resetButton = QPushButton("Reset przekształcenia")
+        self.resetButton.clicked.connect(self.resetTransformation)
+
+        buttonsLayout = QHBoxLayout()
+        buttonsLayout.addWidget(self.openButton)
+        buttonsLayout.addWidget(self.transformButton)
+        buttonsLayout.addWidget(self.resetButton)
+        buttonsLayout.addStretch()  # Spacer na końcu
+
+        # Główny layout – najpierw kontener z przyciskami, potem etykieta wideo
+        mainLayout = QVBoxLayout()
+        mainLayout.addLayout(buttonsLayout)
+        mainLayout.addWidget(self.videoLabel)
 
         container = QWidget()
-        container.setLayout(layout)
+        container.setLayout(mainLayout)
         self.setCentralWidget(container)
 
     def resize_frame(self, frame):
@@ -68,6 +85,9 @@ class MainWindow(QMainWindow):
             self, "Wybierz plik wideo", "", "Pliki wideo (*.avi *.mp4 *.mov *.mkv)"
         )
         if fileName:
+            # Reset przekształcenia przy otwarciu nowego pliku
+            self.homography = None
+            self.dst_size = None
             self.videoCapture = cv2.VideoCapture(fileName)
             ret, frame = self.videoCapture.read()
             if ret:
@@ -159,6 +179,12 @@ class MainWindow(QMainWindow):
             dtype="float32",
         )
         self.homography = cv2.getPerspectiveTransform(pts, dst)
+
+    def resetTransformation(self):
+        """Resetuje macierz przekształcenia."""
+        self.homography = None
+        self.dst_size = None
+        print("Resetowano przekształcenie.")
 
 
 if __name__ == "__main__":
