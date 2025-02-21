@@ -47,6 +47,8 @@ class MainWindow(QMainWindow):
         self.speedMultiplier: int = 1
         self.fps: float = 25.0
         self.yolo_detector: Optional[DetectorDarknet] = None  # Nowy atrybut przechowujący model YOLO
+        self.box_annotator = sv.BoxAnnotator(color_lookup=sv.ColorLookup.CLASS)
+        self.label_annotator = sv.LabelAnnotator(text_padding=5, color_lookup=sv.ColorLookup.CLASS)
 
         # Main Video label
         self.main_video_label: VideoLabel = VideoLabel()
@@ -130,11 +132,11 @@ class MainWindow(QMainWindow):
                 self.fps = self.videoCapture.get(cv2.CAP_PROP_FPS)
                 if self.fps <= 0:
                     self.fps = 25
-                # Nie uruchamiamy timera automatycznie
+                # Timer auto start
                 self.timer.setInterval(int(1000 / self.fps))
-                self.playing = False
-                self.startStopButton.setText("Start")
-                print("Plik wczytany. Kliknij Start aby rozpocząć odtwarzanie.")
+                self.timer.start()
+                self.playing = True
+                self.startStopButton.setText("Stop")
 
     def nextFrameSlot(self) -> None:
         if self.videoCapture is not None:
@@ -178,14 +180,20 @@ class MainWindow(QMainWindow):
                     cv2.line(frame, pt1, pt2, (0, 255, 0), 2)
 
         # Dodatkowy krok: jeśli załadowano model YOLO, wykonaj detekcję i annotację
+        detections: sv.Detections = sv.Detections.empty()
         if self.yolo_detector is not None:
             detections = self.yolo_detector.detect(frame_number=0, frame=frame)
-            # Użyj domyślnego color_lookup
-            box_annotator = sv.BoxAnnotator(color_lookup=sv.ColorLookup.CLASS)
-            label_annotator = sv.LabelAnnotator(text_padding=5, color_lookup=sv.ColorLookup.CLASS)
-            annotated = box_annotator.annotate(frame.copy(), detections)
-            annotated = label_annotator.annotate(annotated, detections)
-            frame = annotated
+
+        # Detections : Get anchor point of center bottom
+        objects_xy = detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER).astype(np.int32)
+
+        # Użyj domyślnego color_lookup
+        annotated = self.box_annotator.annotate(frame.copy(), detections)
+        annotated = self.label_annotator.annotate(annotated, detections)
+        # Annotate : Draw points
+        for obj_xy in objects_xy:
+            cv2.circle(annotated, obj_xy, 5, (0, 255, 0), -1)
+        frame = annotated
 
         # Base frame : Convert and display
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -193,6 +201,17 @@ class MainWindow(QMainWindow):
         bytesPerLine = 3 * width
         qImg = QImage(rgb.data, width, height, bytesPerLine, QImage.Format_RGB888)
         self.main_video_label.setPixmap(QPixmap.fromImage(qImg))
+
+        # Homography of objects xy :Create
+        homography_objects_xy = []
+        if self.homography is not None and self.dst_size is not None:
+            for obj_xy in objects_xy:
+                obj_xy_homography = cv2.perspectiveTransform(np.array([[obj_xy]], dtype="float32"), self.homography)
+                homography_objects_xy.append(obj_xy_homography[0][0])
+
+        # Homography of objects xy : Draw
+        for obj_xy in homography_objects_xy:
+            cv2.circle(homography_frame, (int(obj_xy[0]), int(obj_xy[1])), 5, (0, 255, 0), -1)
 
         # Homography frame : Convert and display
         rgb_homography = cv2.cvtColor(homography_frame, cv2.COLOR_BGR2RGB)
