@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 import supervision as sv
 from PyQt5.QtCore import QPoint, Qt, QTimer, pyqtSignal
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtGui import QImage, QMouseEvent, QPixmap
 from PyQt5.QtWidgets import (
     QApplication,
     QComboBox,
@@ -25,7 +25,8 @@ from yaya_tools.detection.detector_yolov4_darknet import DetectorDarknet
 class VideoLabel(QLabel):
     clicked = pyqtSignal(QPoint)
 
-    def mousePressEvent(self, event: "QMouseEvent") -> None:
+    def mousePressEvent(self, event: QMouseEvent) -> None:
+        """Zdarzenie kliknięcia lewym przyciskiem myszy."""
         if event.button() == Qt.LeftButton:
             self.clicked.emit(event.pos())
         super().mousePressEvent(event)
@@ -46,6 +47,7 @@ class MainWindow(QMainWindow):
         self.playing: bool = False
         self.speedMultiplier: int = 1
         self.fps: float = 25.0
+        self.objects_buffer: list = []  # Dodany atrybut bufora na ostatnie 3 sekundy detekcji
         self.yolo_detector: Optional[DetectorDarknet] = None  # Nowy atrybut przechowujący model YOLO
         self.box_annotator = sv.BoxAnnotator(color_lookup=sv.ColorLookup.CLASS)
         self.label_annotator = sv.LabelAnnotator(text_padding=5, color_lookup=sv.ColorLookup.CLASS)
@@ -187,6 +189,12 @@ class MainWindow(QMainWindow):
         # Detections : Get anchor point of center bottom
         objects_xy = detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER).astype(np.int32)
 
+        # Aktualizacja bufora: bufor ma długość równą fps*3 (3 sekundy)
+        max_buffer_length = int(self.fps) * 3
+        self.objects_buffer.append(objects_xy)
+        if len(self.objects_buffer) > max_buffer_length:
+            self.objects_buffer.pop(0)
+
         # Użyj domyślnego color_lookup
         annotated = self.box_annotator.annotate(frame.copy(), detections)
         annotated = self.label_annotator.annotate(annotated, detections)
@@ -202,16 +210,13 @@ class MainWindow(QMainWindow):
         qImg = QImage(rgb.data, width, height, bytesPerLine, QImage.Format_RGB888)
         self.main_video_label.setPixmap(QPixmap.fromImage(qImg))
 
-        # Homography of objects xy :Create
-        homography_objects_xy = []
+        # Rysowanie punktów z bufora na obrazie homografii:
         if self.homography is not None and self.dst_size is not None:
-            for obj_xy in objects_xy:
-                obj_xy_homography = cv2.perspectiveTransform(np.array([[obj_xy]], dtype="float32"), self.homography)
-                homography_objects_xy.append(obj_xy_homography[0][0])
-
-        # Homography of objects xy : Draw
-        for obj_xy in homography_objects_xy:
-            cv2.circle(homography_frame, (int(obj_xy[0]), int(obj_xy[1])), 5, (0, 255, 0), -1)
+            for buffered_points in self.objects_buffer:
+                for point in buffered_points:
+                    transformed = cv2.perspectiveTransform(np.array([[point]], dtype="float32"), self.homography)
+                    pt = transformed[0][0]
+                    cv2.circle(homography_frame, (int(pt[0]), int(pt[1])), 5, (0, 255, 0), -1)
 
         # Homography frame : Convert and display
         rgb_homography = cv2.cvtColor(homography_frame, cv2.COLOR_BGR2RGB)
@@ -242,12 +247,12 @@ class MainWindow(QMainWindow):
         # Zakładamy, że punkty są w kolejności:
         # [0] Lewy dolny, [1] Prawy dolny, [2] Prawy górny, [3] Lewy górny
 
-        width_bottom = np.linalg.norm(pts[1] - pts[0])
-        width_top = np.linalg.norm(pts[2] - pts[3])
+        width_bottom = float(np.linalg.norm(pts[1] - pts[0]))
+        width_top = float(np.linalg.norm(pts[2] - pts[3]))
         maxWidth = int(max(width_bottom, width_top))
 
-        height_left = np.linalg.norm(pts[0] - pts[3])
-        height_right = np.linalg.norm(pts[1] - pts[2])
+        height_left = float(np.linalg.norm(pts[0] - pts[3]))
+        height_right = float(np.linalg.norm(pts[1] - pts[2]))
         maxHeight = int(max(height_left, height_right))
 
         self.dst_size = (maxWidth, maxHeight)
