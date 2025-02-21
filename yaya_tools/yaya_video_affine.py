@@ -3,6 +3,7 @@ from typing import List, Optional, Tuple
 
 import cv2
 import numpy as np
+import supervision as sv
 from PyQt5.QtCore import QPoint, Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import (
@@ -16,6 +17,8 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from yaya_tools.detection.detector_yolov4_darknet import DetectorDarknet
 
 
 # Rozszerzona etykieta umożliwiająca odbieranie kliknięć myszy
@@ -43,6 +46,7 @@ class MainWindow(QMainWindow):
         self.playing: bool = False
         self.speedMultiplier: int = 1
         self.fps: float = 25.0
+        self.yolo_detector: Optional[DetectorDarknet] = None  # Nowy atrybut przechowujący model YOLO
 
         # Main Video label
         self.main_video_label: VideoLabel = VideoLabel()
@@ -57,6 +61,9 @@ class MainWindow(QMainWindow):
         # Przyciski + kontener horyzontalny
         self.openButton: QPushButton = QPushButton("Otwórz")
         self.openButton.clicked.connect(self.openFile)
+
+        self.openYOLOButton: QPushButton = QPushButton("Open YOLO")
+        self.openYOLOButton.clicked.connect(self.openYOLO)
 
         self.startStopButton: QPushButton = QPushButton("Start")
         self.startStopButton.clicked.connect(self.togglePlayback)
@@ -73,6 +80,7 @@ class MainWindow(QMainWindow):
 
         buttonsLayout: QHBoxLayout = QHBoxLayout()
         buttonsLayout.addWidget(self.openButton)
+        buttonsLayout.addWidget(self.openYOLOButton)  # Dodany przycisk YOLO
         buttonsLayout.addWidget(self.startStopButton)
         buttonsLayout.addWidget(self.speedComboBox)
         buttonsLayout.addWidget(self.transformButton)
@@ -169,6 +177,16 @@ class MainWindow(QMainWindow):
                     pt2 = (int(self.points[0][0]), int(self.points[0][1]))
                     cv2.line(frame, pt1, pt2, (0, 255, 0), 2)
 
+        # Dodatkowy krok: jeśli załadowano model YOLO, wykonaj detekcję i annotację
+        if self.yolo_detector is not None:
+            detections = self.yolo_detector.detect(frame_number=0, frame=frame)
+            # Użyj domyślnego color_lookup
+            box_annotator = sv.BoxAnnotator(color_lookup=sv.ColorLookup.CLASS)
+            label_annotator = sv.LabelAnnotator(text_padding=5, color_lookup=sv.ColorLookup.CLASS)
+            annotated = box_annotator.annotate(frame.copy(), detections)
+            annotated = label_annotator.annotate(annotated, detections)
+            frame = annotated
+
         # Base frame : Convert and display
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         height, width, channel = rgb.shape
@@ -204,12 +222,15 @@ class MainWindow(QMainWindow):
         pts = np.array(self.points, dtype="float32")
         # Zakładamy, że punkty są w kolejności:
         # [0] Lewy dolny, [1] Prawy dolny, [2] Prawy górny, [3] Lewy górny
+
         width_bottom = np.linalg.norm(pts[1] - pts[0])
         width_top = np.linalg.norm(pts[2] - pts[3])
         maxWidth = int(max(width_bottom, width_top))
+
         height_left = np.linalg.norm(pts[0] - pts[3])
         height_right = np.linalg.norm(pts[1] - pts[2])
         maxHeight = int(max(height_left, height_right))
+
         self.dst_size = (maxWidth, maxHeight)
         dst = np.array(
             [
@@ -243,6 +264,39 @@ class MainWindow(QMainWindow):
         speed_text = self.speedComboBox.currentText()
         self.speedMultiplier = int(speed_text.replace("x", ""))
         print(f"Wybrana prędkość: {self.speedMultiplier}x")
+
+    def openYOLO(self) -> None:
+        """Wczytuje model YOLO z plików cfg i weights."""
+        cfgPath, _ = QFileDialog.getOpenFileName(self, "Wybierz plik .cfg", "", "Pliki CFG (*.cfg)")
+        if not cfgPath:
+            return
+
+        weightsPath, _ = QFileDialog.getOpenFileName(self, "Wybierz plik .weights", "", "Pliki Weights (*.weights)")
+        if not weightsPath:
+            return
+
+        # dataPath, _ = QFileDialog.getOpenFileName(self, "Wybierz plik .data", "", "Pliki Data (*.data)")
+        # if not dataPath:
+        #     return
+
+        namesPath, _ = QFileDialog.getOpenFileName(self, "Wybierz plik .names", "", "Pliki Names (*.names)")
+        if not namesPath:
+            return
+
+        # Inicjalizacja modelu YOLO - plik names będzie generowany (np. jako placeholder)
+        self.yolo_detector = DetectorDarknet(
+            config={
+                "cfg_path": cfgPath,
+                "weights_path": weightsPath,
+                "data_path": "",
+                "names_path": namesPath,
+                "confidence": 0.50,
+                "nms_threshold": 0.30,
+                "force_cpu": True,
+            }
+        )
+        self.yolo_detector.init()
+        print("Model YOLO wczytany.")
 
 
 if __name__ == "__main__":
