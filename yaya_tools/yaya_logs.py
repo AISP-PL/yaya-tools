@@ -234,13 +234,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.clear_layout(self.figure_layout)
 
         if self.data1 is not None:
-            fig1 = create_confusion_heatmap_figure(self.data1, "Confusion Matrix - Log 1")
+            fig1 = create_confusion_heatmap_figure(self.data1, f"Log 1 - {self.log1_filename}")
             canvas1 = FigureCanvas(fig1)
             canvas1.setMinimumSize(canvas1.sizeHint())
             self.figure_layout.addWidget(canvas1)
 
         if self.data2 is not None:
-            fig2 = create_confusion_heatmap_figure(self.data2, "Confusion Matrix - Log 2")
+            fig2 = create_confusion_heatmap_figure(self.data2, f"Log 2 - {self.log2_filename}")
             canvas2 = FigureCanvas(fig2)
             canvas2.setMinimumSize(canvas2.sizeHint())
             self.figure_layout.addWidget(canvas2)
