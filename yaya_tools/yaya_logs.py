@@ -6,9 +6,9 @@ import sys
 import matplotlib
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
+import seaborn as sns  # type: ignore
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtWidgets
 
 # Use Qt5Agg backend for Matplotlib
 matplotlib.use("Qt5Agg")
@@ -165,7 +165,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_log1(self):
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Open Log 1", "", "Text Files (*.txt);;All Files (*)"
+            self, "Open Log 1", "", "Text Files (*.txt *.log);;All Files (*)"
         )
         if file_path:
             try:
@@ -176,7 +176,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_log2(self):
         file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Open Log 2", "", "Text Files (*.txt);;All Files (*)"
+            self, "Open Log 2", "", "Text Files (*.txt *.log);;All Files (*)"
         )
         if file_path:
             try:
@@ -207,14 +207,17 @@ class MainWindow(QtWidgets.QMainWindow):
             fig1 = create_confusion_heatmap_figure(self.data1, "Confusion Matrix - Log 1")
             canvas1 = FigureCanvas(fig1)
             self.figure_layout.addWidget(canvas1)
+
         if self.data2 is not None:
             fig2 = create_confusion_heatmap_figure(self.data2, "Confusion Matrix - Log 2")
             canvas2 = FigureCanvas(fig2)
             self.figure_layout.addWidget(canvas2)
+
         if self.data1 is not None and self.data2 is not None:
             fig3 = create_comparison_matrix_heatmap_figure(self.data1, self.data2, "Comparison Matrix (AP Difference)")
             canvas3 = FigureCanvas(fig3)
             self.figure_layout.addWidget(canvas3)
+
         # Add a spacer at the end so figures are top-aligned.
         self.figure_layout.addStretch()
 

@@ -29,6 +29,7 @@ types-tqdm = "^4.67.0.20241221"
 
 types-pyyaml = "^6.0.12.20241230"
 pyqt5-stubs = "^5.15.6.0"
+pandas-stubs = "^2.2.3.241126"
 [tool.black]
 line-length = 120
 #Needed as of black 23.12.1 to properly split long stings
