@@ -69,22 +69,21 @@ def create_confusion_heatmap_figure(data, title):
         key = f"{item['class_id']}: {item['name']}"
         rows[key] = {"AP (%)": item["ap"], "TP": item["TP"], "FP": item["FP"]}
     df = pd.DataFrame.from_dict(rows, orient="index")
-
+    
     # Build annotation DataFrame (as strings)
     ann = df.copy()
     ann["AP (%)"] = ann["AP (%)"].map(lambda x: f"{x:.2f}")
     ann["TP"] = ann["TP"].map(lambda x: f"{x}")
     ann["FP"] = ann["FP"].map(lambda x: f"{x}")
-
-    # Create a DataFrame for heatmap coloring: only the AP (%) column has data,
-    # TP and FP are set to NaN so they won’t be colored.
+    
+    # Create a DataFrame for heatmap coloring: only the AP (%) column has data.
     df_color = df.copy()
     df_color[["TP", "FP"]] = np.nan
 
     # Determine figure height based on number of rows.
     num_rows = len(df)
     fig, ax = plt.subplots(figsize=(8, num_rows * 0.8 + 2))
-
+    
     sns.heatmap(df_color, annot=ann, fmt="", cmap="YlGnBu", ax=ax, cbar=True)
     ax.set_title(title)
     return fig
@@ -93,34 +92,36 @@ def create_confusion_heatmap_figure(data, title):
 def create_comparison_matrix_heatmap_figure(data1, data2, title):
     """
     Creates a comparison heatmap for the AP differences.
-    For each class (indexed as "ID: name"), it shows:
-      - AP Log1 (%)
-      - AP Log2 (%)
-      - Diff (%)  [AP Log1 - AP Log2]
-    The heatmap is based on the "Diff (%)" column (a percent difference)
-    using a diverging colormap.
+    For each class (indexed as "ID: name"), it shows three columns:
+      - Log1 (AP value from Log1)
+      - Log2 (AP value from Log2)
+      - Diff (%) [AP Log1 - AP Log2], which is colored.
     """
     rows = {}
     for d1, d2 in zip(data1["classes"], data2["classes"]):
         key = f"{d1['class_id']}: {d1['name']}"
         diff = d1["ap"] - d2["ap"]
-        rows[key] = {"AP Log1 (%)": d1["ap"], "AP Log2 (%)": d2["ap"], "Diff (%)": diff}
+        rows[key] = {"Log1": d1["ap"], "Log2": d2["ap"], "Diff (%)": diff}
     df = pd.DataFrame.from_dict(rows, orient="index")
-
-    # Use only the difference column for the heatmap coloring.
-    diff_df = df[["Diff (%)"]]
-
-    # Create custom annotations: show AP1, AP2, and Diff (with +/- sign).
-    annot = df.apply(
-        lambda row: f"{row['AP Log1 (%)']:.2f}\n{row['AP Log2 (%)']:.2f}\n"
-        f"{'+' if row['Diff (%)']>=0 else ''}{row['Diff (%)']:.2f}",
-        axis=1,
-    )
-    annot = pd.DataFrame(annot, index=diff_df.index, columns=diff_df.columns)
-
-    num_rows = len(diff_df)
-    fig, ax = plt.subplots(figsize=(4, num_rows * 0.8 + 2))
-    sns.heatmap(diff_df, annot=annot, fmt="", cmap="coolwarm", center=0, cbar=True, ax=ax)
+    
+    # Create a DataFrame for coloring: only "Diff (%)" will be colored.
+    color_df = df.copy()
+    color_df[["Log1", "Log2"]] = np.nan
+    
+    # Create annotations for all three columns.
+    def format_diff(val):
+        return f"{val:+.2f}"
+    
+    annot_df = pd.DataFrame(index=df.index, columns=df.columns)
+    for col in df.columns:
+        if col == "Diff (%)":
+            annot_df[col] = df[col].apply(format_diff)
+        else:
+            annot_df[col] = df[col].apply(lambda x: f"{x:.2f}")
+    
+    num_rows = len(df)
+    fig, ax = plt.subplots(figsize=(6, num_rows * 0.8 + 2))
+    sns.heatmap(color_df, annot=annot_df, fmt="", cmap="coolwarm", center=0, cbar=True, ax=ax)
     ax.set_title(title)
     return fig
 
@@ -138,15 +139,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.data1 = None
         self.data2 = None
 
+        # Keep track of file names for display
+        self.log1_filename = "Not Loaded"
+        self.log2_filename = "Not Loaded"
+
         # Try loading logs from provided paths (if any)
         if log1_path and os.path.exists(log1_path):
             try:
                 self.data1 = load_log_file(log1_path)
+                self.log1_filename = os.path.basename(log1_path)
             except Exception as e:
                 print(f"Error loading log1: {e}")
         if log2_path and os.path.exists(log2_path):
             try:
                 self.data2 = load_log_file(log2_path)
+                self.log2_filename = os.path.basename(log2_path)
             except Exception as e:
                 print(f"Error loading log2: {e}")
 
@@ -185,6 +192,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if file_path:
             try:
                 self.data1 = load_log_file(file_path)
+                self.log1_filename = os.path.basename(file_path)
                 self.update_figures()
             except Exception as e:
                 QtWidgets.QMessageBox.warning(self, "Error", f"Could not load Log 1:\n{e}")
@@ -196,6 +204,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if file_path:
             try:
                 self.data2 = load_log_file(file_path)
+                self.log2_filename = os.path.basename(file_path)
                 self.update_figures()
             except Exception as e:
                 QtWidgets.QMessageBox.warning(self, "Error", f"Could not load Log 2:\n{e}")
@@ -231,7 +240,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.figure_layout.addWidget(canvas2)
 
         if self.data1 is not None and self.data2 is not None:
-            fig3 = create_comparison_matrix_heatmap_figure(self.data1, self.data2, "Comparison Matrix (AP Difference)")
+            comp_title = (f"Comparison Matrix (AP Difference)\n"
+                          f"[Log1: {self.log1_filename} | Log2: {self.log2_filename}]")
+            fig3 = create_comparison_matrix_heatmap_figure(self.data1, self.data2, comp_title)
             canvas3 = FigureCanvas(fig3)
             canvas3.setMinimumSize(canvas3.sizeHint())
             self.figure_layout.addWidget(canvas3)
@@ -244,7 +255,9 @@ class MainWindow(QtWidgets.QMainWindow):
 # Main Routine with Argparse
 # --------------------------
 def main():
-    parser = argparse.ArgumentParser(description="Compare two Darknet logs and show previews in a Qt5 window.")
+    parser = argparse.ArgumentParser(
+        description="Compare two Darknet logs and show previews in a Qt5 window."
+    )
     parser.add_argument("--log1", type=str, default="", help="Path to log 1 file")
     parser.add_argument("--log2", type=str, default="", help="Path to log 2 file")
     args = parser.parse_args()
