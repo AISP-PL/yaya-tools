@@ -15,6 +15,9 @@ from PyQt5 import QtWidgets
 # Use Qt5Agg backend for Matplotlib
 matplotlib.use("Qt5Agg")
 
+figure_row_height = 0.3  # Height of each figure row in the layout
+figure_width = 6  # Width of each figure in the layout
+
 
 # --------------------------
 # Log Parsing Functions
@@ -69,22 +72,22 @@ def create_confusion_heatmap_figure(data, title):
         key = f"{item['class_id']}: {item['name']}"
         rows[key] = {"AP (%)": item["ap"], "TP": item["TP"], "FP": item["FP"]}
     df = pd.DataFrame.from_dict(rows, orient="index")
-    
+
     # Build annotation DataFrame (as strings)
     ann = df.copy()
     ann["AP (%)"] = ann["AP (%)"].map(lambda x: f"{x:.2f}")
     ann["TP"] = ann["TP"].map(lambda x: f"{x}")
     ann["FP"] = ann["FP"].map(lambda x: f"{x}")
-    
+
     # Create a DataFrame for heatmap coloring: only the AP (%) column has data.
     df_color = df.copy()
     df_color[["TP", "FP"]] = np.nan
 
     # Determine figure height based on number of rows.
     num_rows = len(df)
-    fig, ax = plt.subplots(figsize=(8, num_rows * 0.8 + 2))
-    
-    sns.heatmap(df_color, annot=ann, fmt="", cmap="YlGnBu", ax=ax, cbar=True)
+    fig, ax = plt.subplots(figsize=(figure_width, num_rows * figure_row_height + 2))
+
+    sns.heatmap(df_color, annot=ann, fmt="", cmap="YlGnBu", ax=ax, cbar=True, vmin=0, vmax=100)
     ax.set_title(title)
     return fig
 
@@ -103,25 +106,25 @@ def create_comparison_matrix_heatmap_figure(data1, data2, title):
         diff = d1["ap"] - d2["ap"]
         rows[key] = {"Log1": d1["ap"], "Log2": d2["ap"], "Diff (%)": diff}
     df = pd.DataFrame.from_dict(rows, orient="index")
-    
+
     # Create a DataFrame for coloring: only "Diff (%)" will be colored.
     color_df = df.copy()
     color_df[["Log1", "Log2"]] = np.nan
-    
+
     # Create annotations for all three columns.
     def format_diff(val):
         return f"{val:+.2f}"
-    
+
     annot_df = pd.DataFrame(index=df.index, columns=df.columns)
     for col in df.columns:
         if col == "Diff (%)":
             annot_df[col] = df[col].apply(format_diff)
         else:
             annot_df[col] = df[col].apply(lambda x: f"{x:.2f}")
-    
+
     num_rows = len(df)
-    fig, ax = plt.subplots(figsize=(6, num_rows * 0.8 + 2))
-    sns.heatmap(color_df, annot=annot_df, fmt="", cmap="coolwarm", center=0, cbar=True, ax=ax)
+    fig, ax = plt.subplots(figsize=(figure_width, num_rows * figure_row_height + 2))
+    sns.heatmap(color_df, annot=annot_df, fmt="", cmap="coolwarm", center=0, cbar=True, ax=ax, vmin=-100, vmax=100)
     ax.set_title(title)
     return fig
 
@@ -240,8 +243,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.figure_layout.addWidget(canvas2)
 
         if self.data1 is not None and self.data2 is not None:
-            comp_title = (f"Comparison Matrix (AP Difference)\n"
-                          f"[Log1: {self.log1_filename} | Log2: {self.log2_filename}]")
+            comp_title = (
+                f"Comparison Matrix (AP Difference)\n" f"[Log1: {self.log1_filename} | Log2: {self.log2_filename}]"
+            )
             fig3 = create_comparison_matrix_heatmap_figure(self.data1, self.data2, comp_title)
             canvas3 = FigureCanvas(fig3)
             canvas3.setMinimumSize(canvas3.sizeHint())
@@ -255,9 +259,7 @@ class MainWindow(QtWidgets.QMainWindow):
 # Main Routine with Argparse
 # --------------------------
 def main():
-    parser = argparse.ArgumentParser(
-        description="Compare two Darknet logs and show previews in a Qt5 window."
-    )
+    parser = argparse.ArgumentParser(description="Compare two Darknet logs and show previews in a Qt5 window.")
     parser.add_argument("--log1", type=str, default="", help="Path to log 1 file")
     parser.add_argument("--log2", type=str, default="", help="Path to log 2 file")
     args = parser.parse_args()
