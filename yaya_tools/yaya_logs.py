@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import os
 import re
@@ -5,6 +6,7 @@ import sys
 
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns  # type: ignore
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -56,7 +58,9 @@ def load_log_file(file_path):
 # --------------------------
 def create_confusion_heatmap_figure(data, title):
     """
-    Creates a heatmap (using seaborn) of per-class metrics (AP, TP, FP).
+    Creates a heatmap (using seaborn) of per-class metrics.
+    Only the "AP (%)" column is colored (using a percent colormap),
+    while the TP and FP columns are shown as plain text.
     The DataFrame rows are labeled "ID: name".
     """
     # Build a dictionary where each key is "ID: name" and values are metrics.
@@ -66,11 +70,22 @@ def create_confusion_heatmap_figure(data, title):
         rows[key] = {"AP (%)": item["ap"], "TP": item["TP"], "FP": item["FP"]}
     df = pd.DataFrame.from_dict(rows, orient="index")
 
-    # Determine figure height based on the number of rows.
+    # Build annotation DataFrame (as strings)
+    ann = df.copy()
+    ann["AP (%)"] = ann["AP (%)"].map(lambda x: f"{x:.2f}")
+    ann["TP"] = ann["TP"].map(lambda x: f"{x}")
+    ann["FP"] = ann["FP"].map(lambda x: f"{x}")
+
+    # Create a DataFrame for heatmap coloring: only the AP (%) column has data,
+    # TP and FP are set to NaN so they won’t be colored.
+    df_color = df.copy()
+    df_color[["TP", "FP"]] = np.nan
+
+    # Determine figure height based on number of rows.
     num_rows = len(df)
     fig, ax = plt.subplots(figsize=(8, num_rows * 0.8 + 2))
 
-    sns.heatmap(df, annot=True, fmt=".2f", cmap="YlGnBu", ax=ax)
+    sns.heatmap(df_color, annot=ann, fmt="", cmap="YlGnBu", ax=ax, cbar=True)
     ax.set_title(title)
     return fig
 
@@ -78,11 +93,12 @@ def create_confusion_heatmap_figure(data, title):
 def create_comparison_matrix_heatmap_figure(data1, data2, title):
     """
     Creates a comparison heatmap for the AP differences.
-    The DataFrame index is "ID: name" and the single column "Diff (%)" contains the difference.
-    Custom annotations show:
-      AP Log1
-      AP Log2
-      Diff (with +/- sign)
+    For each class (indexed as "ID: name"), it shows:
+      - AP Log1 (%)
+      - AP Log2 (%)
+      - Diff (%)  [AP Log1 - AP Log2]
+    The heatmap is based on the "Diff (%)" column (a percent difference)
+    using a diverging colormap.
     """
     rows = {}
     for d1, d2 in zip(data1["classes"], data2["classes"]):
@@ -91,16 +107,15 @@ def create_comparison_matrix_heatmap_figure(data1, data2, title):
         rows[key] = {"AP Log1 (%)": d1["ap"], "AP Log2 (%)": d2["ap"], "Diff (%)": diff}
     df = pd.DataFrame.from_dict(rows, orient="index")
 
-    # Create a DataFrame with only the difference column for the heatmap.
+    # Use only the difference column for the heatmap coloring.
     diff_df = df[["Diff (%)"]]
 
-    # Create custom annotations: "AP1\nAP2\nDiff"
+    # Create custom annotations: show AP1, AP2, and Diff (with +/- sign).
     annot = df.apply(
         lambda row: f"{row['AP Log1 (%)']:.2f}\n{row['AP Log2 (%)']:.2f}\n"
         f"{'+' if row['Diff (%)']>=0 else ''}{row['Diff (%)']:.2f}",
         axis=1,
     )
-    # Turn into a DataFrame (one column) matching diff_df
     annot = pd.DataFrame(annot, index=diff_df.index, columns=diff_df.columns)
 
     num_rows = len(diff_df)
@@ -206,16 +221,19 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.data1 is not None:
             fig1 = create_confusion_heatmap_figure(self.data1, "Confusion Matrix - Log 1")
             canvas1 = FigureCanvas(fig1)
+            canvas1.setMinimumSize(canvas1.sizeHint())
             self.figure_layout.addWidget(canvas1)
 
         if self.data2 is not None:
             fig2 = create_confusion_heatmap_figure(self.data2, "Confusion Matrix - Log 2")
             canvas2 = FigureCanvas(fig2)
+            canvas2.setMinimumSize(canvas2.sizeHint())
             self.figure_layout.addWidget(canvas2)
 
         if self.data1 is not None and self.data2 is not None:
             fig3 = create_comparison_matrix_heatmap_figure(self.data1, self.data2, "Comparison Matrix (AP Difference)")
             canvas3 = FigureCanvas(fig3)
+            canvas3.setMinimumSize(canvas3.sizeHint())
             self.figure_layout.addWidget(canvas3)
 
         # Add a spacer at the end so figures are top-aligned.
