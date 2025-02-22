@@ -187,7 +187,7 @@ class MainWindow(QMainWindow):
             detections = self.yolo_detector.detect(frame_number=0, frame=frame)
 
         # Detections : Get anchor point of center bottom
-        objects_xy = detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER).astype(np.int32)
+        objects_xy: np.ndarray = detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER).astype(np.int32)
 
         # Aktualizacja bufora: bufor ma długość równą fps*3 (3 sekundy)
         max_buffer_length = int(self.fps) * 3
@@ -200,7 +200,8 @@ class MainWindow(QMainWindow):
         annotated = self.label_annotator.annotate(annotated, detections)
         # Annotate : Draw points
         for obj_xy in objects_xy:
-            cv2.circle(annotated, obj_xy, 5, (0, 255, 0), -1)
+            cv2.circle(annotated, (int(obj_xy[0]), int(obj_xy[1])), 5, (0, 255, 0), -1)
+
         frame = annotated
 
         # Base frame : Convert and display
