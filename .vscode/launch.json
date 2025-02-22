@@ -78,6 +78,24 @@
             "justMyCode": false
         },
         {
+            "name": "Yaya-Inference-QT5",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/yaya_tools/yaya_inference_qt5.py",
+            "args": ["--video","tests/test_video/people.mp4",
+            "--cfg_path","tests/test_model/yolov4-tiny.cfg",
+            "--weights_path","tests/test_model/yolov4-tiny.weights",
+            "--names_path","tests/test_model/coco.names",
+            "--confidence","0.50",
+            "--nms","0.30",
+            "--output", "tests/test_video/output.mp4",
+            "--gpu",
+            "--tracking",
+        ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
             "name": "Yaya-Augument",
             "type": "debugpy",
             "request": "launch",

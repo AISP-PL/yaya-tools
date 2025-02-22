@@ -1,3 +1,4 @@
+import logging
 import sys
 from typing import List, Optional, Tuple
 
@@ -21,12 +22,34 @@ from PyQt5.QtWidgets import (
 from yaya_tools.detection.detector_yolov4_darknet import DetectorDarknet
 
 
-# Rozszerzona etykieta umożliwiająca odbieranie kliknięć myszy
+def logging_terminal_setup() -> None:
+    """
+    Setup logging for the application.
+
+    Parameters
+    ----------
+    path_field : str
+        Field in the config file that contains the path to the log file.
+        Default is "path".
+    is_terminal : bool
+        If True, logs will be printed to the terminal.
+        Default is True.
+    """
+    logging.getLogger().setLevel(logging.DEBUG)  # Ensure log level is set to DEBUG
+    formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s")
+    console = logging.StreamHandler()
+    console.setLevel(logging.DEBUG)
+    console.setFormatter(formatter)
+    logging.getLogger().addHandler(console)
+    logging.info("\n\n###### Logging start of terminal session ######\n")
+
+
+# Extended label to handle mouse clicks
 class VideoLabel(QLabel):
     clicked = pyqtSignal(QPoint)
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
-        """Zdarzenie kliknięcia lewym przyciskiem myszy."""
+        """Mouse left button click event."""
         if event.button() == Qt.LeftButton:
             self.clicked.emit(event.pos())
         super().mousePressEvent(event)
@@ -35,20 +58,20 @@ class VideoLabel(QLabel):
 class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        self.setWindowTitle("Aplikacja do przetwarzania wideo")
+        self.setWindowTitle("Video Processing Application")
         self.videoCapture: Optional[cv2.VideoCapture] = None
         self.timer: QTimer = QTimer()
         self.timer.timeout.connect(self.nextFrameSlot)
         self.currentFrame: Optional[np.ndarray] = None
-        self.homography: Optional[np.ndarray] = None  # Macierz przekształcenia
-        self.dst_size: Optional[Tuple[int, int]] = None  # Rozmiar docelowy (szerokość, wysokość)
-        self.drawing_mode: bool = False  # Flaga trybu rysowania punktów
-        self.points: List[List[int]] = []  # Lista klikniętych punktów (źródłowych)
+        self.homography: Optional[np.ndarray] = None  # Transformation matrix
+        self.dst_size: Optional[Tuple[int, int]] = None  # Target size (width, height)
+        self.drawing_mode: bool = False  # Drawing mode flag
+        self.points: List[List[int]] = []  # List of clicked points (source)
         self.playing: bool = False
         self.speedMultiplier: int = 1
         self.fps: float = 25.0
-        self.objects_buffer: list = []  # Dodany atrybut bufora na ostatnie 3 sekundy detekcji
-        self.yolo_detector: Optional[DetectorDarknet] = None  # Nowy atrybut przechowujący model YOLO
+        self.objects_buffer: list = []  # Buffer for the last 3 seconds of detections
+        self.yolo_detector: Optional[DetectorDarknet] = None  # YOLO model attribute
         self.box_annotator = sv.BoxAnnotator(color_lookup=sv.ColorLookup.CLASS)
         self.label_annotator = sv.LabelAnnotator(text_padding=5, color_lookup=sv.ColorLookup.CLASS)
 
@@ -62,8 +85,8 @@ class MainWindow(QMainWindow):
         self.homography_video_label.setAlignment(Qt.AlignCenter)
         self.homography_video_label.clicked.connect(self.getPoint)
 
-        # Przyciski + kontener horyzontalny
-        self.openButton: QPushButton = QPushButton("Otwórz")
+        # Buttons + horizontal container
+        self.openButton: QPushButton = QPushButton("Open")
         self.openButton.clicked.connect(self.openFile)
 
         self.openYOLOButton: QPushButton = QPushButton("Open YOLO")
@@ -76,22 +99,22 @@ class MainWindow(QMainWindow):
         self.speedComboBox.addItems(["1x", "2x", "4x"])
         self.speedComboBox.currentIndexChanged.connect(self.changeSpeed)
 
-        self.transformButton: QPushButton = QPushButton("Dodaj przekształcenie")
+        self.transformButton: QPushButton = QPushButton("Add Transformation")
         self.transformButton.clicked.connect(self.activateDrawingMode)
 
-        self.resetButton: QPushButton = QPushButton("Reset przekształcenia")
+        self.resetButton: QPushButton = QPushButton("Reset Transformation")
         self.resetButton.clicked.connect(self.resetTransformation)
 
         buttonsLayout: QHBoxLayout = QHBoxLayout()
         buttonsLayout.addWidget(self.openButton)
-        buttonsLayout.addWidget(self.openYOLOButton)  # Dodany przycisk YOLO
+        buttonsLayout.addWidget(self.openYOLOButton)  # Added YOLO button
         buttonsLayout.addWidget(self.startStopButton)
         buttonsLayout.addWidget(self.speedComboBox)
         buttonsLayout.addWidget(self.transformButton)
         buttonsLayout.addWidget(self.resetButton)
-        buttonsLayout.addStretch()  # Spacer na końcu
+        buttonsLayout.addStretch()  # Spacer at the end
 
-        # Główny layout – najpierw kontener z przyciskami, potem etykieta wideo
+        # Main layout – first the button container, then the video label
         mainLayout: QVBoxLayout = QVBoxLayout()
         mainLayout.addLayout(buttonsLayout)
         # Horizontal Layout inside mainLayout for two video labels
@@ -105,7 +128,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(container)
 
     def resize_frame(self, frame: np.ndarray) -> np.ndarray:
-        """Redukcja klatki do maksymalnej szerokości 1280 pikseli przy zachowaniu proporcji."""
+        """Resize frame to a maximum width of 1280 pixels while maintaining aspect ratio."""
         max_width = 800
         h, w = frame.shape[:2]
         if w > max_width:
@@ -116,8 +139,9 @@ class MainWindow(QMainWindow):
         return frame
 
     def openFile(self) -> None:
+        """Open a video file."""
         fileName, _ = QFileDialog.getOpenFileName(
-            self, "Wybierz plik wideo", "", "Pliki wideo (*.avi *.mp4 *.mov *.mkv)"
+            self, "Select video file", "", "Video files (*.avi *.mp4 *.mov *.mkv)"
         )
         if fileName:
             self.homography = None
@@ -128,7 +152,7 @@ class MainWindow(QMainWindow):
                 frame = self.resize_frame(frame)
                 self.currentFrame = frame
                 height, width, _ = frame.shape
-                # Ustawiamy rozmiar etykiety zgodnie z przeskalowaną klatką
+                # Set label size according to the resized frame
                 self.main_video_label.setFixedSize(width, height)
                 self.displayFrame(frame)
                 self.fps = self.videoCapture.get(cv2.CAP_PROP_FPS)
@@ -141,77 +165,79 @@ class MainWindow(QMainWindow):
                 self.startStopButton.setText("Stop")
 
     def nextFrameSlot(self) -> None:
+        """Process the next frame in the video."""
         if self.videoCapture is not None:
             ret, frame = self.videoCapture.read()
             if ret:
                 frame = self.resize_frame(frame)
                 self.currentFrame = frame
                 self.displayFrame(frame)
-                # Pomijamy dodatkowe klatki wg. wybranego mnożnika
+                # Skip additional frames according to the selected multiplier
                 for _ in range(self.speedMultiplier - 1):
                     ret_skip, _ = self.videoCapture.read()
                     if not ret_skip:
                         self.videoCapture.set(cv2.CAP_PROP_POS_FRAMES, 0)
                         break
             else:
-                # Po zakończeniu odtwarzania wideo, wracamy do początku
+                # After finishing video playback, return to the beginning
                 self.videoCapture.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
     def displayFrame(self, frame: np.ndarray) -> None:
-        # Jeśli macierz homografii istnieje, przekształcamy klatkę
+        """Display the current frame."""
+        # If homography matrix exists, transform the frame
         homography_frame = frame
         if self.homography is not None and self.dst_size is not None:
             homography_frame = cv2.warpPerspective(frame, self.homography, self.dst_size)
 
-        # Jeśli jesteśmy w trybie rysowania, nakładamy punkty i linie, by pokazać powstający poligon
+        # If in drawing mode, overlay points and lines to show the forming polygon
         if self.drawing_mode and self.points:
-            # Rysuj punkty
+            # Draw points
             for pt in self.points:
                 cv2.circle(frame, (int(pt[0]), int(pt[1])), 5, (0, 0, 255), -1)
 
-            # Rysuj linie między kolejnymi punktami
+            # Draw lines between consecutive points
             if len(self.points) > 1:
                 for i in range(len(self.points) - 1):
                     pt1 = (int(self.points[i][0]), int(self.points[i][1]))
                     pt2 = (int(self.points[i + 1][0]), int(self.points[i + 1][1]))
                     cv2.line(frame, pt1, pt2, (0, 255, 0), 2)
-                # Jeśli użytkownik kliknął 4 punkty, zamykamy poligon
+                # If the user clicked 4 points, close the polygon
                 if len(self.points) == 4:
                     pt1 = (int(self.points[3][0]), int(self.points[3][1]))
                     pt2 = (int(self.points[0][0]), int(self.points[0][1]))
                     cv2.line(frame, pt1, pt2, (0, 255, 0), 2)
 
-        # Dodatkowy krok: jeśli załadowano model YOLO, wykonaj detekcję i annotację
+        # Additional step: if YOLO model is loaded, perform detection and annotation
         detections: sv.Detections = sv.Detections.empty()
         if self.yolo_detector is not None:
             detections = self.yolo_detector.detect(frame_number=0, frame=frame)
 
-        # Detections : Get anchor point of center bottom
+        # Detections: Get anchor point of center bottom
         objects_xy: np.ndarray = detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER).astype(np.int32)
 
-        # Aktualizacja bufora: bufor ma długość równą fps*3 (3 sekundy)
+        # Update buffer: buffer length equals fps*3 (3 seconds)
         max_buffer_length = int(self.fps) * 3
         self.objects_buffer.append(objects_xy)
         if len(self.objects_buffer) > max_buffer_length:
             self.objects_buffer.pop(0)
 
-        # Użyj domyślnego color_lookup
+        # Use default color_lookup
         annotated = self.box_annotator.annotate(frame.copy(), detections)
         annotated = self.label_annotator.annotate(annotated, detections)
-        # Annotate : Draw points
+        # Annotate: Draw points
         for obj_xy in objects_xy:
             cv2.circle(annotated, (int(obj_xy[0]), int(obj_xy[1])), 5, (0, 255, 0), -1)
 
         frame = annotated
 
-        # Base frame : Convert and display
+        # Base frame: Convert and display
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         height, width, channel = rgb.shape
         bytesPerLine = 3 * width
         qImg = QImage(rgb.data, width, height, bytesPerLine, QImage.Format_RGB888)
         self.main_video_label.setPixmap(QPixmap.fromImage(qImg))
 
-        # Rysowanie punktów z bufora na obrazie homografii:
+        # Draw points from buffer on the homography image:
         if self.homography is not None and self.dst_size is not None:
             for buffered_points in self.objects_buffer:
                 for point in buffered_points:
@@ -219,7 +245,7 @@ class MainWindow(QMainWindow):
                     pt = transformed[0][0]
                     cv2.circle(homography_frame, (int(pt[0]), int(pt[1])), 5, (0, 255, 0), -1)
 
-        # Homography frame : Convert and display
+        # Homography frame: Convert and display
         rgb_homography = cv2.cvtColor(homography_frame, cv2.COLOR_BGR2RGB)
         height, width, channel = rgb_homography.shape
         bytesPerLine = 3 * width
@@ -227,26 +253,28 @@ class MainWindow(QMainWindow):
         self.homography_video_label.setPixmap(QPixmap.fromImage(qImg_homography))
 
     def activateDrawingMode(self) -> None:
-        # Aktywacja trybu rysowania – resetujemy listę punktów
+        """Activate drawing mode – reset the list of points."""
         self.drawing_mode = True
         self.points = []
-        print("Kliknij 4 punkty w kolejności: Lewy dolny, Prawy dolny, Prawy górny, Lewy górny.")
+        logging.info("Click 4 points in order: Bottom left, Bottom right, Top right, Top left.")
 
     def getPoint(self, pos: QPoint) -> None:
+        """Register a point when clicked."""
         if self.drawing_mode:
             self.points.append([pos.x(), pos.y()])
-            print(f"Zarejestrowano punkt: {pos.x()}, {pos.y()}.")
+            logging.info(f"Registered point: {pos.x()}, {pos.y()}.")
             if len(self.points) == 4:
                 self.drawing_mode = False
                 self.computeHomography()
-                # Po obliczeniu homografii czyścimy punkty, aby nie były rysowane na przetworzonym obrazie
+                # After computing homography, clear points to avoid drawing on the processed image
                 self.points = []
-                print("Obliczono macierz przekształcenia.")
+                logging.info("Transformation matrix computed.")
 
     def computeHomography(self) -> None:
+        """Compute the homography matrix."""
         pts = np.array(self.points, dtype="float32")
-        # Zakładamy, że punkty są w kolejności:
-        # [0] Lewy dolny, [1] Prawy dolny, [2] Prawy górny, [3] Lewy górny
+        # Assume points are in order:
+        # [0] Bottom left, [1] Bottom right, [2] Top right, [3] Top left
 
         width_bottom = float(np.linalg.norm(pts[1] - pts[0]))
         width_top = float(np.linalg.norm(pts[2] - pts[3]))
@@ -259,22 +287,23 @@ class MainWindow(QMainWindow):
         self.dst_size = (maxWidth, maxHeight)
         dst = np.array(
             [
-                [0, maxHeight],  # Dolny lewy
-                [maxWidth, maxHeight],  # Dolny prawy
-                [maxWidth, 0],  # Górny prawy
-                [0, 0],  # Górny lewy
+                [0, maxHeight],  # Bottom left
+                [maxWidth, maxHeight],  # Bottom right
+                [maxWidth, 0],  # Top right
+                [0, 0],  # Top left
             ],
             dtype="float32",
         )
         self.homography = cv2.getPerspectiveTransform(pts, dst)
 
     def resetTransformation(self) -> None:
-        """Resetuje macierz przekształcenia."""
+        """Reset the transformation matrix."""
         self.homography = None
         self.dst_size = None
-        print("Resetowano przekształcenie.")
+        logging.info("Transformation reset.")
 
     def togglePlayback(self) -> None:
+        """Toggle video playback."""
         if self.playing:
             self.timer.stop()
             self.playing = False
@@ -285,30 +314,26 @@ class MainWindow(QMainWindow):
             self.startStopButton.setText("Stop")
 
     def changeSpeed(self) -> None:
-        # Aktualizacja mnożnika na podstawie wybranej wartości w comboboxie
+        """Update the speed multiplier based on the selected value in the combobox."""
         speed_text = self.speedComboBox.currentText()
         self.speedMultiplier = int(speed_text.replace("x", ""))
-        print(f"Wybrana prędkość: {self.speedMultiplier}x")
+        logging.info(f"Selected speed: {self.speedMultiplier}x")
 
     def openYOLO(self) -> None:
-        """Wczytuje model YOLO z plików cfg i weights."""
-        cfgPath, _ = QFileDialog.getOpenFileName(self, "Wybierz plik .cfg", "", "Pliki CFG (*.cfg)")
+        """Load the YOLO model from cfg and weights files."""
+        cfgPath, _ = QFileDialog.getOpenFileName(self, "Select .cfg file", "", "CFG files (*.cfg)")
         if not cfgPath:
             return
 
-        weightsPath, _ = QFileDialog.getOpenFileName(self, "Wybierz plik .weights", "", "Pliki Weights (*.weights)")
+        weightsPath, _ = QFileDialog.getOpenFileName(self, "Select .weights file", "", "Weights files (*.weights)")
         if not weightsPath:
             return
 
-        # dataPath, _ = QFileDialog.getOpenFileName(self, "Wybierz plik .data", "", "Pliki Data (*.data)")
-        # if not dataPath:
-        #     return
-
-        namesPath, _ = QFileDialog.getOpenFileName(self, "Wybierz plik .names", "", "Pliki Names (*.names)")
+        namesPath, _ = QFileDialog.getOpenFileName(self, "Select .names file", "", "Names files (*.names)")
         if not namesPath:
             return
 
-        # Inicjalizacja modelu YOLO - plik names będzie generowany (np. jako placeholder)
+        # Initialize YOLO model - names file will be generated (e.g., as a placeholder)
         self.yolo_detector = DetectorDarknet(
             config={
                 "cfg_path": cfgPath,
@@ -321,11 +346,12 @@ class MainWindow(QMainWindow):
             }
         )
         self.yolo_detector.init()
-        print("Model YOLO wczytany.")
+        logging.info("YOLO model loaded.")
 
 
 def main() -> None:
-    """Uruchamia aplikację PyQt5."""
+    """Run the PyQt5 application."""
+    logging_terminal_setup()
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
