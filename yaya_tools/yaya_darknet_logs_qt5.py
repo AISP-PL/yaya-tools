@@ -177,13 +177,13 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.data1 = load_log_file(log1_path)
                 self.log1_filename = os.path.basename(log1_path)
             except Exception as e:
-                print(f"Error loading log1: {e}")
+                logging.error(f"Error loading log1: {e}")
         if log2_path and os.path.exists(log2_path):
             try:
                 self.data2 = load_log_file(log2_path)
                 self.log2_filename = os.path.basename(log2_path)
             except Exception as e:
-                print(f"Error loading log2: {e}")
+                logging.error(f"Error loading log2: {e}")
 
         # Create the menu
         self.create_menu()
