@@ -324,8 +324,13 @@ class MainWindow(QMainWindow):
         print("Model YOLO wczytany.")
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Uruchamia aplikację PyQt5."""
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
