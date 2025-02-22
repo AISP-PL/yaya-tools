@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import logging
 import os
 import re
 import sys
@@ -16,6 +17,28 @@ matplotlib.use("Qt5Agg")
 
 figure_row_height = 0.3  # Height of each figure row in the layout
 figure_width = 6  # Width of each figure in the layout
+
+
+def logging_terminal_setup() -> None:
+    """
+    Setup logging for the application.
+
+    Parameters
+    ----------
+    path_field : str
+        Field in the config file that contains the path to the log file.
+        Default is "path".
+    is_terminal : bool
+        If True, logs will be printed to the terminal.
+        Default is True.
+    """
+    logging.getLogger().setLevel(logging.DEBUG)  # Ensure log level is set to DEBUG
+    formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s")
+    console = logging.StreamHandler()
+    console.setLevel(logging.DEBUG)
+    console.setFormatter(formatter)
+    logging.getLogger().addHandler(console)
+    logging.info("\n\n###### Logging start of terminal session ######\n")
 
 
 # --------------------------
@@ -260,7 +283,12 @@ class MainWindow(QtWidgets.QMainWindow):
 # --------------------------
 # Main Routine with Argparse
 # --------------------------
-def main():
+def main() -> None:
+    """
+    Main function for comparing two Darknet logs and showing previews in a Qt5 window.
+    """
+    logging_terminal_setup()
+    # Argument parser
     parser = argparse.ArgumentParser(description="Compare two Darknet logs and show previews in a Qt5 window.")
     parser.add_argument("--log1", type=str, default="", help="Path to log 1 file")
     parser.add_argument("--log2", type=str, default="", help="Path to log 2 file")
