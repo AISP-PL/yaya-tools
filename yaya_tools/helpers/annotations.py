@@ -337,7 +337,7 @@ def annotations_filter_orientation(annotations: sv.Detections, orientation: Dete
     annotations_files = annotations.data.get("filepaths", np.array([]))
     unique_files = np.unique(annotations_files)
     files_orientation: np.ndarray = np.array(
-        [get_detections_orientation(annotations[annotations_files == filename]) for filename in unique_files], dtype=int
+        [get_detections_orientation(annotations[annotations_files == filename]) for filename in unique_files], dtype=int  # type: ignore
     )
     files_approved = unique_files[files_orientation == int(orientation)]
     return annotations[np.isin(annotations_files, files_approved)]  # type: ignore
