@@ -49,9 +49,18 @@ def test_get_detections_orientation(data, expected) -> None:
     assert get_detections_orientation(detections) == expected
 
 
-def test_dir_horizontal() -> None:
+@pytest.mark.parametrize(
+    "dirname, expected",
+    [
+        ("horizontal", DetectionsOrientation.HORIZONTAL),
+        ("vertical", DetectionsOrientation.VERTICAL),
+        ("diagonal_right", DetectionsOrientation.DIAGONAL_RIGHT),
+        ("diagonal_left", DetectionsOrientation.DIAGONAL_LEFT),
+    ],
+)
+def test_dir_horizontal(dirname: str, expected: DetectionsOrientation) -> None:
     """Test the horizontal direction."""
-    path = "tests/test_orientation/horizontal"
+    path = f"tests/test_orientation/{dirname}"
 
     # All images : with optional annotation filename
     all_images_annotations: dict[str, Optional[str]] = load_directory_images_annotatations(path)
