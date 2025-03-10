@@ -100,7 +100,7 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/yaya_tools/yaya_augument.py",
-            "args": ["--dataset_path", "tests/test_dataset/","--sepia", "--select_equalize" ],
+            "args": ["--dataset_path", "tests/test_dataset/","--sepia", "--select_horizontal" ],
             "console": "integratedTerminal",
             "justMyCode": false
         },

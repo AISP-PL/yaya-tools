@@ -10,6 +10,8 @@ from scipy.optimize import linear_sum_assignment as linear_assignment
 from supervision.dataset.formats.yolo import detections_to_yolo_annotations, yolo_annotations_to_detections
 from supervision.utils.file import read_txt_file
 
+from yaya_tools.classifiers.classifier_orientation import DetectionsOrientation, get_detections_orientation
+
 logger = logging.getLogger(__name__)
 
 
@@ -327,6 +329,17 @@ def annotations_filter_spacious(annotations: sv.Detections, max_objects: int = 4
     unique_files = np.unique(annotations_files)
     files_sum = np.array([np.sum(annotations_files == filename) for filename in unique_files])
     files_approved = unique_files[files_sum < max_objects]
+    return annotations[np.isin(annotations_files, files_approved)]  # type: ignore
+
+
+def annotations_filter_orientation(annotations: sv.Detections, orientation: DetectionsOrientation) -> sv.Detections:
+    """Filter out horizontal annotations from the dataset"""
+    annotations_files = annotations.data.get("filepaths", np.array([]))
+    unique_files = np.unique(annotations_files)
+    files_orientation: np.ndarray = np.array(
+        [get_detections_orientation(annotations[annotations_files == filename]) for filename in unique_files], dtype=int
+    )
+    files_approved = unique_files[files_orientation == int(orientation)]
     return annotations[np.isin(annotations_files, files_approved)]  # type: ignore
 
 

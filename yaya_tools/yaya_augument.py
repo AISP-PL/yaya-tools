@@ -5,10 +5,12 @@ from typing import Optional
 import supervision as sv  # types: ignore
 
 from yaya_tools import __version__
+from yaya_tools.classifiers.classifier_orientation import DetectionsOrientation
 from yaya_tools.helpers.annotations import (
     annotations_filter_crowded,
     annotations_filter_equalize,
     annotations_filter_large,
+    annotations_filter_orientation,
     annotations_filter_spacious,
     annotations_filter_tiny,
     annotations_load_as_sv,
@@ -66,6 +68,18 @@ def main() -> None:
         action="store_true",
         default=False,
         help="Select images to equalize dataset class representation",
+    )
+    parser.add_argument(
+        "--select_horizontal", action="store_true", default=False, help="Select horizontal line of detections"
+    )
+    parser.add_argument(
+        "--select_vertical", action="store_true", default=False, help="Select vertical line of detections"
+    )
+    parser.add_argument(
+        "--select_diagonal_right", action="store_true", default=False, help="Select diagonal right line of detections"
+    )
+    parser.add_argument(
+        "--select_diagonal_left", action="store_true", default=False, help="Select diagonal left line of detections"
     )
     parser.add_argument("--select_large", action="store_true", default=False, help="Select large annotations")
     parser.add_argument("--select_tiny", action="store_true", default=False, help="Select small annotations")
@@ -252,6 +266,32 @@ def main() -> None:
         selected_negatives = []
         selected_annotations = annotations_filter_equalize(selected_annotations)
         logger.info("Selection : Equalize class representation.")
+
+    # Select : Horizontal line of detections
+    if args.select_horizontal:
+        selected_negatives = []
+        selected_annotations = annotations_filter_orientation(selected_annotations, DetectionsOrientation.HORIZONTAL)
+        logger.info("Selection : Horizontal line of detections.")
+
+    # Select : Vertical line of detections
+    if args.select_vertical:
+        selected_negatives = []
+        selected_annotations = annotations_filter_orientation(selected_annotations, DetectionsOrientation.VERTICAL)
+        logger.info("Selection : Vertical line of detections.")
+
+    # Select : Diagonal right line of detections
+    if args.select_diagonal_right:
+        selected_negatives = []
+        selected_annotations = annotations_filter_orientation(
+            selected_annotations, DetectionsOrientation.DIAGONAL_RIGHT
+        )
+        logger.info("Selection : Diagonal right line of detections.")
+
+    # Select : Diagonal left line of detections
+    if args.select_diagonal_left:
+        selected_negatives = []
+        selected_annotations = annotations_filter_orientation(selected_annotations, DetectionsOrientation.DIAGONAL_LEFT)
+        logger.info("Selection : Diagonal left line of detections.")
 
     # Select : Large annotations
     if args.select_large:

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import supervision as sv  # type: ignore
 
-from yaya_tools.classifiers.classifier_orientation import detections_orientation, get_detections_orientation
+from yaya_tools.classifiers.classifier_orientation import DetectionsOrientation, get_detections_orientation
 
 # Example points (range 0..1000)
 data_examples = {
@@ -31,12 +31,12 @@ def sv_detections_from_points(points: list[tuple[int, int]]) -> sv.Detections:
 @pytest.mark.parametrize(
     "data, expected",
     [
-        (data_examples["horizontal"], detections_orientation.HORIZONTAL),
-        (data_examples["vertical"], detections_orientation.VERTICAL),
-        (data_examples["diagonal_right"], detections_orientation.DIAGONAL_RIGHT),
-        (data_examples["diagonal_left"], detections_orientation.DIAGONAL_LEFT),
-        (data_examples["scattered"], detections_orientation.SCATTERED),
-        (data_examples["clustered"], detections_orientation.CLUSTERED),
+        (data_examples["horizontal"], DetectionsOrientation.HORIZONTAL),
+        (data_examples["vertical"], DetectionsOrientation.VERTICAL),
+        (data_examples["diagonal_right"], DetectionsOrientation.DIAGONAL_RIGHT),
+        (data_examples["diagonal_left"], DetectionsOrientation.DIAGONAL_LEFT),
+        (data_examples["scattered"], DetectionsOrientation.SCATTERED),
+        (data_examples["clustered"], DetectionsOrientation.CLUSTERED),
     ],
 )
 def test_get_detections_orientation(data, expected) -> None:
