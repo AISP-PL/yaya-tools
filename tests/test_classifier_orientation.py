@@ -25,8 +25,8 @@ def sv_detections_from_points(points: list[tuple[int, int]]) -> sv.Detections:
     boxes = []
     for point in points:
         x, y = point
-        width = np.random.randint(100, 200)
-        height = np.random.randint(100, 200)
+        width = np.random.randint(50, 100)
+        height = np.random.randint(50, 100)
         boxes.append([x - width, y - height, x + width, y + height])
 
     return sv.Detections(xyxy=np.array(boxes), class_id=np.zeros(len(boxes)), confidence=np.ones(len(boxes)))
