@@ -76,4 +76,4 @@ def test_dir_horizontal(dirname: str, expected: DetectionsOrientation) -> None:
     )
 
     # Check if all orientations are horizontal
-    assert np.all(files_orientation == DetectionsOrientation.HORIZONTAL)
+    assert np.all(files_orientation == expected)
