@@ -24,8 +24,9 @@ def get_detections_orientation(detections: sv.Detections) -> DetectionsOrientati
     if len(points) == 0:
         return DetectionsOrientation.SCATTERED
 
-    x = points[:, 0]
-    y = points[:, 1]
+    # Scaling
+    x = points[:, 0] * 1000
+    y = points[:, 1] * 1000
 
     # Check for clustered points (small spread)
     if np.std(x) < 30 and np.std(y) < 30:
@@ -50,7 +51,9 @@ def get_detections_orientation(detections: sv.Detections) -> DetectionsOrientati
     angle = np.degrees(np.arctan(slope))
 
     # Diagonal classifications based on the angle of the regression line
-    if 25 < angle < 65:
+    if -25 <= angle <= 25:
+        return DetectionsOrientation.HORIZONTAL
+    elif 25 < angle < 65:
         return DetectionsOrientation.DIAGONAL_RIGHT
     elif -65 < angle < -25:
         return DetectionsOrientation.DIAGONAL_LEFT

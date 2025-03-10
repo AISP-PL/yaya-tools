@@ -1,8 +1,12 @@
+from typing import Optional
+
 import numpy as np
 import pytest
 import supervision as sv  # type: ignore
 
 from yaya_tools.classifiers.classifier_orientation import DetectionsOrientation, get_detections_orientation
+from yaya_tools.helpers.annotations import annotations_load_as_sv
+from yaya_tools.helpers.dataset import load_directory_images_annotatations
 
 # Example points (range 0..1000)
 data_examples = {
@@ -43,3 +47,24 @@ def test_get_detections_orientation(data, expected) -> None:
     """Test the get_detections_orientation function with various point orientations."""
     detections = sv_detections_from_points(data)
     assert get_detections_orientation(detections) == expected
+
+
+def test_dir_horizontal() -> None:
+    """Test the horizontal direction."""
+    path = "tests/test_orientation/horizontal"
+
+    # All images : with optional annotation filename
+    all_images_annotations: dict[str, Optional[str]] = load_directory_images_annotatations(path)
+
+    # All annotations as SV : Get
+    annotations, all_negatives = annotations_load_as_sv(all_images_annotations, path)
+
+    # Orientations : Get
+    annotations_files = annotations.data.get("filepaths", np.array([]))
+    unique_files = np.unique(annotations_files)
+    files_orientation: np.ndarray = np.array(
+        [get_detections_orientation(annotations[annotations_files == filename]) for filename in unique_files], dtype=int  # type: ignore
+    )
+
+    # Check if all orientations are horizontal
+    assert np.all(files_orientation == DetectionsOrientation.HORIZONTAL)
