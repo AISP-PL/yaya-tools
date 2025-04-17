@@ -17,9 +17,11 @@ class Detector(ABC):
     def __init__(
         self,
         config: dict[str, Any],
+        name: str = "detector",
     ):
         """Constructor"""
         self.config = config
+        self.name = name
 
     @abstractmethod
     def is_initialized(self) -> bool:
