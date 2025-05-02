@@ -17,7 +17,7 @@ from yaya_tools.classifiers.classifier_orientation import (
     DetectionsOrientation,
     get_detections_orientation,
 )
-from yaya_tools.helpers.np_boxes import xyxy_to_xywh
+from yaya_tools.helpers.np_boxes import xywh_to_xyxy, xyxy_to_xywh
 
 logger = logging.getLogger(__name__)
 
@@ -418,6 +418,15 @@ def annotations_warnings_xywh_not_normalized(annotations_sv: sv.Detections) -> s
             "Found %u not normalized 0..1 XYWH annotations boxes!", len(annotations_xywh_not_normalized.xyxy)
         )
 
+    # XYWH : fix using np.clip
+    xyxy_filtered = annotations_xywh_not_normalized.xyxy
+    xywh_filtered = xyxy_to_xywh(xyxy_filtered)
+    xywh_filtered[:, 0] = np.clip(xywh_filtered[:, 0], 0, 1)
+    xywh_filtered[:, 1] = np.clip(xywh_filtered[:, 1], 0, 1)
+    xywh_filtered[:, 2] = np.clip(xywh_filtered[:, 2], 0, 1)
+    xywh_filtered[:, 3] = np.clip(xywh_filtered[:, 3], 0, 1)
+    annotations_xywh_not_normalized.xyxy = xywh_to_xyxy(xywh_filtered)
+
     return annotations_xywh_not_normalized
 
 
@@ -431,5 +440,13 @@ def annotations_warnings_xyxy_not_normalized(annotations_sv: sv.Detections) -> s
         logger.warning(
             "Found %u not normalized 0..1 XYXY annotations boxes!", len(annotations_xyxy_not_normalized.xyxy)
         )
+
+    # XYXY : fix using np.clip
+    xyxy_filtered = annotations_xyxy_not_normalized.xyxy
+    xyxy_filtered[:, 0] = np.clip(xyxy_filtered[:, 0], 0, 1)
+    xyxy_filtered[:, 1] = np.clip(xyxy_filtered[:, 1], 0, 1)
+    xyxy_filtered[:, 2] = np.clip(xyxy_filtered[:, 2], 0, 1)
+    xyxy_filtered[:, 3] = np.clip(xyxy_filtered[:, 3], 0, 1)
+    annotations_xyxy_not_normalized.xyxy = xyxy_filtered
 
     return annotations_xyxy_not_normalized
