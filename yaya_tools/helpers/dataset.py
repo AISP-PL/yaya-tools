@@ -188,13 +188,16 @@ def annotations_update_save(dirpath: str, annotations_all: sv.Detections, annota
     Use annotations from sv.Detections and save as .txt files inside the dataset folder
     """
     annotations_files = annotations_new.data.get("filepaths", np.array([]))
+    all_files = annotations_all.data.get("filepaths", np.array([]))
     unique_files = np.unique(annotations_files)
     for filename in unique_files:
         # File annotations : Get all
-        file_annotations_all: sv.Detections = annotations_all[annotations_files == filename]  # type: ignore
+        file_annotations_all: sv.Detections = annotations_all[all_files == filename]  # type: ignore
+        file_annotations_all.confidence = np.array([0.70] * len(file_annotations_all))  # type: ignore
         # File annotations : Overwrite with new annotations
         file_annotations_new: sv.Detections = annotations_new[annotations_files == filename]  # type: ignore
-        file_annotations_merged = sv.Detections.merge([file_annotations_all, file_annotations_new])
+        file_annotations_new.confidence = np.array([0.99] * len(file_annotations_new))  # type: ignore
+        file_annotations_merged = sv.Detections.merge([file_annotations_all, file_annotations_new]).with_nms()
         if len(file_annotations_merged) == 0:
             continue
 
