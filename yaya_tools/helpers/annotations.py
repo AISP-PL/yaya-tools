@@ -408,7 +408,9 @@ def annotations_filter_warnings(
         logger.warning("Found %u too small <%2.2f annotations", too_small, len(annotations_too_small.xyxy))
 
     # XYXY to XYWH
-    xywh = xyxy_to_xywh(annotations_sv.xyxy)
+    xyxy: np.ndarray = annotations_sv.xyxy
+    xywh: np.ndarray = xyxy_to_xywh(annotations_sv.xyxy)
+
     # Check : Not normalized 0..1 xywh
     annotations_xywh_not_normalized: sv.Detections = annotations_sv[
         (xywh[:, 0] < 0) | (xywh[:, 1] < 0) | (xywh[:, 2] > 1) | (xywh[:, 3] > 1)
@@ -420,10 +422,7 @@ def annotations_filter_warnings(
 
     # Check : Not normalized 0..1 xyxy
     annotations_xyxy_not_normalized: sv.Detections = annotations_sv[
-        (annotations_sv.xyxy[:, 0] < 0)
-        | (annotations_sv.xyxy[:, 1] < 0)
-        | (annotations_sv.xyxy[:, 2] > 1)
-        | (annotations_sv.xyxy[:, 3] > 1)
+        (xyxy[:, 0] < 0) | (xyxy[:, 1] < 0) | (xyxy[:, 2] > 1) | (xyxy[:, 3] > 1)
     ]  # type: ignore
     if len(annotations_xyxy_not_normalized.xyxy) != 0:
         logger.warning(
