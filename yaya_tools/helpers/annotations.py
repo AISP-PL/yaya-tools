@@ -398,14 +398,14 @@ def annotations_filter_equalize(
 
 def annotations_filter_warnings(
     annotations_sv: sv.Detections,
-    too_small: float = 0.01,
+    too_small: float = 0.0010,
 ) -> sv.Detections:
     """Filter ever annotations which could occur in training warning"""
 
     # Check : Too small
-    annotations_too_small: sv.Detections = annotations_sv[annotations_sv.area > too_small]  # type: ignore
+    annotations_too_small: sv.Detections = annotations_sv[annotations_sv.area <= too_small]  # type: ignore
     if len(annotations_too_small.xyxy) != 0:
-        logger.warning("Found %u too small <%2.2f annotations", too_small, len(annotations_too_small.xyxy))
+        logger.warning("Found %u too small <%2.4f annotations", len(annotations_too_small.xyxy), too_small)
 
     # XYXY to XYWH
     xyxy: np.ndarray = annotations_sv.xyxy
