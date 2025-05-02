@@ -7,10 +7,17 @@ import numpy as np
 import supervision as sv  # type: ignore
 import tqdm
 from scipy.optimize import linear_sum_assignment as linear_assignment
-from supervision.dataset.formats.yolo import detections_to_yolo_annotations, yolo_annotations_to_detections
+from supervision.dataset.formats.yolo import (
+    detections_to_yolo_annotations,
+    yolo_annotations_to_detections,
+)
 from supervision.utils.file import read_txt_file
 
-from yaya_tools.classifiers.classifier_orientation import DetectionsOrientation, get_detections_orientation
+from yaya_tools.classifiers.classifier_orientation import (
+    DetectionsOrientation,
+    get_detections_orientation,
+)
+from yaya_tools.helpers.np_boxes import xyxy_to_xywh
 
 logger = logging.getLogger(__name__)
 
@@ -387,3 +394,40 @@ def annotations_filter_equalize(
     # Filter : Return only the selected indexes
     annotations_filtered: sv.Detections = annotations_sv[selected_indexes]  # type: ignore
     return annotations_filtered
+
+
+def annotations_filter_warnings(
+    annotations_sv: sv.Detections,
+    too_small: float = 0.01,
+) -> sv.Detections:
+    """Filter ever annotations which could occur in training warning"""
+
+    # Check : Too small
+    annotations_too_small: sv.Detections = annotations_sv[annotations_sv.area > too_small]  # type: ignore
+    if len(annotations_too_small.xyxy) != 0:
+        logger.warning("Found %u too small <%2.2f annotations", too_small, len(annotations_too_small.xyxy))
+
+    # XYXY to XYWH
+    xywh = xyxy_to_xywh(annotations_sv.xyxy)
+    # Check : Not normalized 0..1 xywh
+    annotations_xywh_not_normalized: sv.Detections = annotations_sv[
+        (xywh[:, 0] < 0) | (xywh[:, 1] < 0) | (xywh[:, 2] > 1) | (xywh[:, 3] > 1)
+    ]  # type: ignore
+    if len(annotations_xywh_not_normalized.xyxy) != 0:
+        logger.warning(
+            "Found %u not normalized 0..1 XYWH annotations boxes!", len(annotations_xywh_not_normalized.xyxy)
+        )
+
+    # Check : Not normalized 0..1 xyxy
+    annotations_xyxy_not_normalized: sv.Detections = annotations_sv[
+        (annotations_sv.xyxy[:, 0] < 0)
+        | (annotations_sv.xyxy[:, 1] < 0)
+        | (annotations_sv.xyxy[:, 2] > 1)
+        | (annotations_sv.xyxy[:, 3] > 1)
+    ]  # type: ignore
+    if len(annotations_xyxy_not_normalized.xyxy) != 0:
+        logger.warning(
+            "Found %u not normalized 0..1 XYXY annotations boxes!", len(annotations_xyxy_not_normalized.xyxy)
+        )
+
+    return sv.Detections.merge([annotations_too_small, annotations_xyxy_not_normalized])  # type: ignore
