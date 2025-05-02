@@ -6,9 +6,11 @@ from typing import Optional
 from yaya_tools import __version__
 from yaya_tools.helpers.annotations import (
     annotations_filter_filenames,
-    annotations_filter_warnings,
     annotations_load_as_sv,
     annotations_log_summary,
+    annotations_warnings_toosmall,
+    annotations_warnings_xywh_not_normalized,
+    annotations_warnings_xyxy_not_normalized,
 )
 from yaya_tools.helpers.dataset import (
     dataset_copy_to,
@@ -57,7 +59,9 @@ def main() -> None:
     # Argument parser
     parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
     parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
-    parser.add_argument("--fix_annotations", action="store_true", help="Fix annotations warnings in the dataset folder")
+    parser.add_argument("--fix_toosmall", action="store_true", help="Fix too small annotations")
+    parser.add_argument("--fix_xywh_normalization", action="store_true", help="Fix xywh normalization")
+    parser.add_argument("--fix_xyxy_normalization", action="store_true", help="Fix xyxy normalization")
     parser.add_argument("--copy_negatives_to", type=str, help="Path to copy the negative samples only")
     parser.add_argument("--train_all", action="store_true", help="Use all images for training dataset")
     parser.add_argument(
@@ -90,7 +94,9 @@ def main() -> None:
     all_annotations_sv, all_negatives = annotations_load_as_sv(all_images_annotations, dataset_path)
 
     # Warnings : Check and get
-    warnings_annotations = annotations_filter_warnings(all_annotations_sv)
+    warnings_too_small = annotations_warnings_toosmall(all_annotations_sv)
+    warnings_xyxy = annotations_warnings_xyxy_not_normalized(all_annotations_sv)
+    warnings_xywh = annotations_warnings_xywh_not_normalized(all_annotations_sv)
 
     # Negatives : Extract
     if args.copy_negatives_to:

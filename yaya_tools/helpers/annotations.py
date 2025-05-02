@@ -396,22 +396,20 @@ def annotations_filter_equalize(
     return annotations_filtered
 
 
-def annotations_filter_warnings(
-    annotations_sv: sv.Detections,
-    too_small: float = 0.0010,
-) -> sv.Detections:
-    """Filter ever annotations which could occur in training warning"""
-
-    # Check : Too small
+def annotations_warnings_toosmall(annotations_sv: sv.Detections, too_small: float = 0.0010) -> sv.Detections:
+    """Filter out too small annotations from the dataset"""
     annotations_too_small: sv.Detections = annotations_sv[annotations_sv.area <= too_small]  # type: ignore
     if len(annotations_too_small.xyxy) != 0:
         logger.warning("Found %u too small <%2.4f annotations", len(annotations_too_small.xyxy), too_small)
 
-    # XYXY to XYWH
-    xyxy: np.ndarray = annotations_sv.xyxy
-    xywh: np.ndarray = xyxy_to_xywh(annotations_sv.xyxy)
+    return annotations_too_small
 
-    # Check : Not normalized 0..1 xywh
+
+def annotations_warnings_xywh_not_normalized(annotations_sv: sv.Detections) -> sv.Detections:
+    """Filter not normalized annotations (XYWH)"""
+    xyxy: np.ndarray = annotations_sv.xyxy
+    xywh: np.ndarray = xyxy_to_xywh(xyxy)
+
     annotations_xywh_not_normalized: sv.Detections = annotations_sv[
         (xywh[:, 0] < 0) | (xywh[:, 1] < 0) | (xywh[:, 2] > 1) | (xywh[:, 3] > 1)
     ]  # type: ignore
@@ -420,7 +418,12 @@ def annotations_filter_warnings(
             "Found %u not normalized 0..1 XYWH annotations boxes!", len(annotations_xywh_not_normalized.xyxy)
         )
 
-    # Check : Not normalized 0..1 xyxy
+    return annotations_xywh_not_normalized
+
+
+def annotations_warnings_xyxy_not_normalized(annotations_sv: sv.Detections) -> sv.Detections:
+    """Filter not normalized annotations (XYXY)"""
+    xyxy: np.ndarray = annotations_sv.xyxy
     annotations_xyxy_not_normalized: sv.Detections = annotations_sv[
         (xyxy[:, 0] < 0) | (xyxy[:, 1] < 0) | (xyxy[:, 2] > 1) | (xyxy[:, 3] > 1)
     ]  # type: ignore
@@ -429,4 +432,4 @@ def annotations_filter_warnings(
             "Found %u not normalized 0..1 XYXY annotations boxes!", len(annotations_xyxy_not_normalized.xyxy)
         )
 
-    return sv.Detections.merge([annotations_too_small, annotations_xyxy_not_normalized])  # type: ignore
+    return annotations_xyxy_not_normalized
