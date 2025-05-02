@@ -98,11 +98,11 @@ def main() -> None:
     warnings_too_small = annotations_warnings_toosmall(all_annotations_sv)
     warnings_xyxy = annotations_warnings_xyxy_not_normalized(all_annotations_sv)
     if args.fix_xyxy_normalization:
-        annotations_update_save(dataset_path, warnings_xyxy)
+        annotations_update_save(dataset_path, all_annotations_sv, warnings_xyxy)
 
     warnings_xywh = annotations_warnings_xywh_not_normalized(all_annotations_sv)
     if args.fix_xywh_normalization:
-        annotations_update_save(dataset_path, warnings_xywh)
+        annotations_update_save(dataset_path, all_annotations_sv, warnings_xywh)
 
     # Negatives : Extract
     if args.copy_negatives_to:

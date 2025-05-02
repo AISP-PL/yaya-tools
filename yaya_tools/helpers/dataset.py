@@ -183,21 +183,24 @@ def dataset_log_summary(
         logger.warning("Training dataset removed %u missing images.", train_deleted)
 
 
-def annotations_update_save(dirpath: str, annotations: sv.Detections) -> None:
+def annotations_update_save(dirpath: str, annotations_all: sv.Detections, annotations_new: sv.Detections) -> None:
     """
     Use annotations from sv.Detections and save as .txt files inside the dataset folder
     """
-    annotations_files = annotations.data.get("filepaths", np.array([]))
+    annotations_files = annotations_new.data.get("filepaths", np.array([]))
     unique_files = np.unique(annotations_files)
     for filename in unique_files:
-        # Get : Filter annotations for the current file
-        file_annotations: sv.Detections = annotations[annotations_files == filename]  # type: ignore
-        if len(file_annotations) == 0:
+        # File annotations : Get all
+        file_annotations_all: sv.Detections = annotations_all[annotations_files == filename]  # type: ignore
+        # File annotations : Overwrite with new annotations
+        file_annotations_new: sv.Detections = annotations_new[annotations_files == filename]  # type: ignore
+        file_annotations_merged = sv.Detections.merge([file_annotations_all, file_annotations_new])
+        if len(file_annotations_merged) == 0:
             continue
 
         # Supervision -> to yolo text format
         lines = detections_to_yolo_annotations(
-            detections=file_annotations,
+            detections=file_annotations_merged,
             image_shape=[1, 1, 3],  # type: ignore
             min_image_area_percentage=0.0,
             max_image_area_percentage=1.0,
