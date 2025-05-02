@@ -13,6 +13,7 @@ from yaya_tools.helpers.annotations import (
     annotations_warnings_xyxy_not_normalized,
 )
 from yaya_tools.helpers.dataset import (
+    annotations_update_save,
     dataset_copy_to,
     dataset_create_validation,
     dataset_log_summary,
@@ -96,7 +97,12 @@ def main() -> None:
     # Warnings : Check and get
     warnings_too_small = annotations_warnings_toosmall(all_annotations_sv)
     warnings_xyxy = annotations_warnings_xyxy_not_normalized(all_annotations_sv)
+    if args.fix_xyxy_normalization:
+        annotations_update_save(dataset_path, warnings_xyxy)
+
     warnings_xywh = annotations_warnings_xywh_not_normalized(all_annotations_sv)
+    if args.fix_xywh_normalization:
+        annotations_update_save(dataset_path, warnings_xywh)
 
     # Negatives : Extract
     if args.copy_negatives_to:

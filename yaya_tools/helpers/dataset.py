@@ -10,6 +10,8 @@ from typing import Optional
 import numpy as np
 import supervision as sv
 import tqdm
+from supervision.dataset.formats.yolo import detections_to_yolo_annotations
+from supervision.utils.file import save_text_file
 
 from yaya_tools.helpers.files import is_image_file  # type: ignore
 
@@ -179,3 +181,29 @@ def dataset_log_summary(
 
     if train_deleted > 0:
         logger.warning("Training dataset removed %u missing images.", train_deleted)
+
+
+def annotations_update_save(dirpath: str, annotations: sv.Detections) -> None:
+    """
+    Use annotations from sv.Detections and save as .txt files inside the dataset folder
+    """
+    annotations_files = annotations.data.get("filepaths", np.array([]))
+    unique_files = np.unique(annotations_files)
+    for filename in unique_files:
+        # Get : Filter annotations for the current file
+        file_annotations: sv.Detections = annotations[annotations_files == filename]  # type: ignore
+        if len(file_annotations) == 0:
+            continue
+
+        # Supervision -> to yolo text format
+        lines = detections_to_yolo_annotations(
+            detections=file_annotations,
+            image_shape=[1, 1, 3],  # type: ignore
+            min_image_area_percentage=0.0,
+            max_image_area_percentage=1.0,
+            approximation_percentage=0,
+        )
+
+        # Save : Annotations to .txt file
+        txt_filename = os.path.splitext(filename)[0] + ".txt"
+        save_text_file(lines=lines, file_path=os.path.join(dirpath, txt_filename))
