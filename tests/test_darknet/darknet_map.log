@@ -1,0 +1,228 @@
+ CUDA-version: 11050 (12020), cuDNN: 8.2.4, CUDNN_HALF=1, GPU count: 2  
+ CUDNN_HALF=1 
+ OpenCV version: 4.5.4
+ 0 : compute_capability = 750, cudnn_half = 1, GPU: NVIDIA GeForce RTX 2060 
+   layer   filters  size/strd(dil)      input                output
+   0 conv     32       3 x 3/ 1    640 x 352 x   3 ->  640 x 352 x  32 0.389 BF
+   1 conv     64       3 x 3/ 2    640 x 352 x  32 ->  320 x 176 x  64 2.076 BF
+   2 conv     64       1 x 1/ 1    320 x 176 x  64 ->  320 x 176 x  64 0.461 BF
+   3 route  1 		                           ->  320 x 176 x  64 
+   4 conv     64       1 x 1/ 1    320 x 176 x  64 ->  320 x 176 x  64 0.461 BF
+   5 conv     32       1 x 1/ 1    320 x 176 x  64 ->  320 x 176 x  32 0.231 BF
+   6 conv     64       3 x 3/ 1    320 x 176 x  32 ->  320 x 176 x  64 2.076 BF
+   7 Shortcut Layer: 4,  wt = 0, wn = 0, outputs: 320 x 176 x  64 0.004 BF
+   8 conv     64       1 x 1/ 1    320 x 176 x  64 ->  320 x 176 x  64 0.461 BF
+   9 route  8 2 	                           ->  320 x 176 x 128 
+  10 conv     64       1 x 1/ 1    320 x 176 x 128 ->  320 x 176 x  64 0.923 BF
+  11 conv    128       3 x 3/ 2    320 x 176 x  64 ->  160 x  88 x 128 2.076 BF
+  12 conv     64       1 x 1/ 1    160 x  88 x 128 ->  160 x  88 x  64 0.231 BF
+  13 route  11 		                           ->  160 x  88 x 128 
+  14 conv     64       1 x 1/ 1    160 x  88 x 128 ->  160 x  88 x  64 0.231 BF
+  15 conv     64       1 x 1/ 1    160 x  88 x  64 ->  160 x  88 x  64 0.115 BF
+  16 conv     64       3 x 3/ 1    160 x  88 x  64 ->  160 x  88 x  64 1.038 BF
+  17 Shortcut Layer: 14,  wt = 0, wn = 0, outputs: 160 x  88 x  64 0.001 BF
+  18 conv     64       1 x 1/ 1    160 x  88 x  64 ->  160 x  88 x  64 0.115 BF
+  19 conv     64       3 x 3/ 1    160 x  88 x  64 ->  160 x  88 x  64 1.038 BF
+  20 Shortcut Layer: 17,  wt = 0, wn = 0, outputs: 160 x  88 x  64 0.001 BF
+  21 conv     64       1 x 1/ 1    160 x  88 x  64 ->  160 x  88 x  64 0.115 BF
+  22 route  21 12 	                           ->  160 x  88 x 128 
+  23 conv    128       1 x 1/ 1    160 x  88 x 128 ->  160 x  88 x 128 0.461 BF
+  24 conv    256       3 x 3/ 2    160 x  88 x 128 ->   80 x  44 x 256 2.076 BF
+  25 conv    128       1 x 1/ 1     80 x  44 x 256 ->   80 x  44 x 128 0.231 BF
+  26 route  24 		                           ->   80 x  44 x 256 
+  27 conv    128       1 x 1/ 1     80 x  44 x 256 ->   80 x  44 x 128 0.231 BF
+  28 conv    128       1 x 1/ 1     80 x  44 x 128 ->   80 x  44 x 128 0.115 BF
+  29 conv    128       3 x 3/ 1     80 x  44 x 128 ->   80 x  44 x 128 1.038 BF
+  30 Shortcut Layer: 27,  wt = 0, wn = 0, outputs:  80 x  44 x 128 0.000 BF
+  31 conv    128       1 x 1/ 1     80 x  44 x 128 ->   80 x  44 x 128 0.115 BF
+  32 conv    128       3 x 3/ 1     80 x  44 x 128 ->   80 x  44 x 128 1.038 BF
+  33 Shortcut Layer: 30,  wt = 0, wn = 0, outputs:  80 x  44 x 128 0.000 BF
+  34 conv    128       1 x 1/ 1     80 x  44 x 128 ->   80 x  44 x 128 0.115 BF
+  35 conv    128       3 x 3/ 1     80 x  44 x 128 ->   80 x  44 x 128 1.038 BF
+  36 Shortcut Layer: 33,  wt = 0, wn = 0, outputs:  80 x  44 x 128 0.000 BF
+  37 conv    128       1 x 1/ 1     80 x  44 x 128 ->   80 x  44 x 128 0.115 BF
+  38 conv    128       3 x 3/ 1     80 x  44 x 128 ->   80 x  44 x 128 1.038 BF
+  39 Shortcut Layer: 36,  wt = 0, wn = 0, outputs:  80 x  44 x 128 0.000 BF
+  40 conv    128       1 x 1/ 1     80 x  44 x 128 ->   80 x  44 x 128 0.115 BF
+  41 conv    128       3 x 3/ 1     80 x  44 x 128 ->   80 x  44 x 128 1.038 BF
+  42 Shortcut Layer: 39,  wt = 0, wn = 0, outputs:  80 x  44 x 128 0.000 BF
+  43 conv    128       1 x 1/ 1     80 x  44 x 128 ->   80 x  44 x 128 0.115 BF
+  44 conv    128       3 x 3/ 1     80 x  44 x 128 ->   80 x  44 x 128 1.038 BF
+  45 Shortcut Layer: 42,  wt = 0, wn = 0, outputs:  80 x  44 x 128 0.000 BF
+  46 conv    128       1 x 1/ 1     80 x  44 x 128 ->   80 x  44 x 128 0.115 BF
+  47 conv    128       3 x 3/ 1     80 x  44 x 128 ->   80 x  44 x 128 1.038 BF
+  48 Shortcut Layer: 45,  wt = 0, wn = 0, outputs:  80 x  44 x 128 0.000 BF
+  49 conv    128       1 x 1/ 1     80 x  44 x 128 ->   80 x  44 x 128 0.115 BF
+  50 conv    128       3 x 3/ 1     80 x  44 x 128 ->   80 x  44 x 128 1.038 BF
+  51 Shortcut Layer: 48,  wt = 0, wn = 0, outputs:  80 x  44 x 128 0.000 BF
+  52 conv    128       1 x 1/ 1     80 x  44 x 128 ->   80 x  44 x 128 0.115 BF
+  53 route  52 25 	                           ->   80 x  44 x 256 
+  54 conv    256       1 x 1/ 1     80 x  44 x 256 ->   80 x  44 x 256 0.461 BF
+  55 conv    512       3 x 3/ 2     80 x  44 x 256 ->   40 x  22 x 512 2.076 BF
+  56 conv    256       1 x 1/ 1     40 x  22 x 512 ->   40 x  22 x 256 0.231 BF
+  57 route  55 		                           ->   40 x  22 x 512 
+  58 conv    256       1 x 1/ 1     40 x  22 x 512 ->   40 x  22 x 256 0.231 BF
+  59 conv    256       1 x 1/ 1     40 x  22 x 256 ->   40 x  22 x 256 0.115 BF
+  60 conv    256       3 x 3/ 1     40 x  22 x 256 ->   40 x  22 x 256 1.038 BF
+  61 Shortcut Layer: 58,  wt = 0, wn = 0, outputs:  40 x  22 x 256 0.000 BF
+  62 conv    256       1 x 1/ 1     40 x  22 x 256 ->   40 x  22 x 256 0.115 BF
+  63 conv    256       3 x 3/ 1     40 x  22 x 256 ->   40 x  22 x 256 1.038 BF
+  64 Shortcut Layer: 61,  wt = 0, wn = 0, outputs:  40 x  22 x 256 0.000 BF
+  65 conv    256       1 x 1/ 1     40 x  22 x 256 ->   40 x  22 x 256 0.115 BF
+  66 conv    256       3 x 3/ 1     40 x  22 x 256 ->   40 x  22 x 256 1.038 BF
+  67 Shortcut Layer: 64,  wt = 0, wn = 0, outputs:  40 x  22 x 256 0.000 BF
+  68 conv    256       1 x 1/ 1     40 x  22 x 256 ->   40 x  22 x 256 0.115 BF
+  69 conv    256       3 x 3/ 1     40 x  22 x 256 ->   40 x  22 x 256 1.038 BF
+  70 Shortcut Layer: 67,  wt = 0, wn = 0, outputs:  40 x  22 x 256 0.000 BF
+  71 conv    256       1 x 1/ 1     40 x  22 x 256 ->   40 x  22 x 256 0.115 BF
+  72 conv    256       3 x 3/ 1     40 x  22 x 256 ->   40 x  22 x 256 1.038 BF
+  73 Shortcut Layer: 70,  wt = 0, wn = 0, outputs:  40 x  22 x 256 0.000 BF
+  74 conv    256       1 x 1/ 1     40 x  22 x 256 ->   40 x  22 x 256 0.115 BF
+  75 conv    256       3 x 3/ 1     40 x  22 x 256 ->   40 x  22 x 256 1.038 BF
+  76 Shortcut Layer: 73,  wt = 0, wn = 0, outputs:  40 x  22 x 256 0.000 BF
+  77 conv    256       1 x 1/ 1     40 x  22 x 256 ->   40 x  22 x 256 0.115 BF
+  78 conv    256       3 x 3/ 1     40 x  22 x 256 ->   40 x  22 x 256 1.038 BF
+  79 Shortcut Layer: 76,  wt = 0, wn = 0, outputs:  40 x  22 x 256 0.000 BF
+  80 conv    256       1 x 1/ 1     40 x  22 x 256 ->   40 x  22 x 256 0.115 BF
+  81 conv    256       3 x 3/ 1     40 x  22 x 256 ->   40 x  22 x 256 1.038 BF
+  82 Shortcut Layer: 79,  wt = 0, wn = 0, outputs:  40 x  22 x 256 0.000 BF
+  83 conv    256       1 x 1/ 1     40 x  22 x 256 ->   40 x  22 x 256 0.115 BF
+  84 route  83 56 	                           ->   40 x  22 x 512 
+  85 conv    512       1 x 1/ 1     40 x  22 x 512 ->   40 x  22 x 512 0.461 BF
+  86 conv   1024       3 x 3/ 2     40 x  22 x 512 ->   20 x  11 x1024 2.076 BF
+  87 conv    512       1 x 1/ 1     20 x  11 x1024 ->   20 x  11 x 512 0.231 BF
+  88 route  86 		                           ->   20 x  11 x1024 
+  89 conv    512       1 x 1/ 1     20 x  11 x1024 ->   20 x  11 x 512 0.231 BF
+  90 conv    512       1 x 1/ 1     20 x  11 x 512 ->   20 x  11 x 512 0.115 BF
+  91 conv    512       3 x 3/ 1     20 x  11 x 512 ->   20 x  11 x 512 1.038 BF
+  92 Shortcut Layer: 89,  wt = 0, wn = 0, outputs:  20 x  11 x 512 0.000 BF
+  93 conv    512       1 x 1/ 1     20 x  11 x 512 ->   20 x  11 x 512 0.115 BF
+  94 conv    512       3 x 3/ 1     20 x  11 x 512 ->   20 x  11 x 512 1.038 BF
+  95 Shortcut Layer: 92,  wt = 0, wn = 0, outputs:  20 x  11 x 512 0.000 BF
+  96 conv    512       1 x 1/ 1     20 x  11 x 512 ->   20 x  11 x 512 0.115 BF
+  97 conv    512       3 x 3/ 1     20 x  11 x 512 ->   20 x  11 x 512 1.038 BF
+  98 Shortcut Layer: 95,  wt = 0, wn = 0, outputs:  20 x  11 x 512 0.000 BF
+  99 conv    512       1 x 1/ 1     20 x  11 x 512 ->   20 x  11 x 512 0.115 BF
+ 100 conv    512       3 x 3/ 1     20 x  11 x 512 ->   20 x  11 x 512 1.038 BF
+ 101 Shortcut Layer: 98,  wt = 0, wn = 0, outputs:  20 x  11 x 512 0.000 BF
+ 102 conv    512       1 x 1/ 1     20 x  11 x 512 ->   20 x  11 x 512 0.115 BF
+ 103 route  102 87 	                           ->   20 x  11 x1024 
+ 104 conv   1024       1 x 1/ 1     20 x  11 x1024 ->   20 x  11 x1024 0.461 BF
+ 105 conv    512       1 x 1/ 1     20 x  11 x1024 ->   20 x  11 x 512 0.231 BF
+ 106 conv   1024       3 x 3/ 1     20 x  11 x 512 ->   20 x  11 x1024 2.076 BF
+ 107 conv    512       1 x 1/ 1     20 x  11 x1024 ->   20 x  11 x 512 0.231 BF
+ 108 max                5x 5/ 1     20 x  11 x 512 ->   20 x  11 x 512 0.003 BF
+ 109 route  107 		                           ->   20 x  11 x 512 
+ 110 max                9x 9/ 1     20 x  11 x 512 ->   20 x  11 x 512 0.009 BF
+ 111 route  107 		                           ->   20 x  11 x 512 
+ 112 max               13x13/ 1     20 x  11 x 512 ->   20 x  11 x 512 0.019 BF
+ 113 route  112 110 108 107 	                   ->   20 x  11 x2048 
+ 114 conv    512       1 x 1/ 1     20 x  11 x2048 ->   20 x  11 x 512 0.461 BF
+ 115 conv   1024       3 x 3/ 1     20 x  11 x 512 ->   20 x  11 x1024 2.076 BF
+ 116 conv    512       1 x 1/ 1     20 x  11 x1024 ->   20 x  11 x 512 0.231 BF
+ 117 conv    256       1 x 1/ 1     20 x  11 x 512 ->   20 x  11 x 256 0.058 BF
+ 118 upsample                 2x    20 x  11 x 256 ->   40 x  22 x 256
+ 119 route  85 		                           ->   40 x  22 x 512 
+ 120 conv    256       1 x 1/ 1     40 x  22 x 512 ->   40 x  22 x 256 0.231 BF
+ 121 route  120 118 	                           ->   40 x  22 x 512 
+ 122 conv    256       1 x 1/ 1     40 x  22 x 512 ->   40 x  22 x 256 0.231 BF
+ 123 conv    512       3 x 3/ 1     40 x  22 x 256 ->   40 x  22 x 512 2.076 BF
+ 124 conv    256       1 x 1/ 1     40 x  22 x 512 ->   40 x  22 x 256 0.231 BF
+ 125 conv    512       3 x 3/ 1     40 x  22 x 256 ->   40 x  22 x 512 2.076 BF
+ 126 conv    256       1 x 1/ 1     40 x  22 x 512 ->   40 x  22 x 256 0.231 BF
+ 127 conv    128       1 x 1/ 1     40 x  22 x 256 ->   40 x  22 x 128 0.058 BF
+ 128 upsample                 2x    40 x  22 x 128 ->   80 x  44 x 128
+ 129 route  54 		                           ->   80 x  44 x 256 
+ 130 conv    128       1 x 1/ 1     80 x  44 x 256 ->   80 x  44 x 128 0.231 BF
+ 131 route  130 128 	                           ->   80 x  44 x 256 
+ 132 conv    128       1 x 1/ 1     80 x  44 x 256 ->   80 x  44 x 128 0.231 BF
+ 133 conv    256       3 x 3/ 1     80 x  44 x 128 ->   80 x  44 x 256 2.076 BF
+ 134 conv    128       1 x 1/ 1     80 x  44 x 256 ->   80 x  44 x 128 0.231 BF
+ 135 conv    256       3 x 3/ 1     80 x  44 x 128 ->   80 x  44 x 256 2.076 BF
+ 136 conv    128       1 x 1/ 1     80 x  44 x 256 ->   80 x  44 x 128 0.231 BF
+ 137 conv    256       3 x 3/ 1     80 x  44 x 128 ->   80 x  44 x 256 2.076 BF
+ 138 conv     87       1 x 1/ 1     80 x  44 x 256 ->   80 x  44 x  87 0.157 BF
+ 139 yolo
+[yolo] params: iou loss: ciou (4), iou_norm: 0.07, obj_norm: 1.00, cls_norm: 1.00, delta_norm: 1.00, scale_x_y: 1.20
+ 140 route  136 		                           ->   80 x  44 x 128 
+ 141 conv    256       3 x 3/ 2     80 x  44 x 128 ->   40 x  22 x 256 0.519 BF
+ 142 route  141 126 	                           ->   40 x  22 x 512 
+ 143 conv    256       1 x 1/ 1     40 x  22 x 512 ->   40 x  22 x 256 0.231 BF
+ 144 conv    512       3 x 3/ 1     40 x  22 x 256 ->   40 x  22 x 512 2.076 BF
+ 145 conv    256       1 x 1/ 1     40 x  22 x 512 ->   40 x  22 x 256 0.231 BF
+ 146 conv    512       3 x 3/ 1     40 x  22 x 256 ->   40 x  22 x 512 2.076 BF
+ 147 conv    256       1 x 1/ 1     40 x  22 x 512 ->   40 x  22 x 256 0.231 BF
+ 148 conv    512       3 x 3/ 1     40 x  22 x 256 ->   40 x  22 x 512 2.076 BF
+ 149 conv     87       1 x 1/ 1     40 x  22 x 512 ->   40 x  22 x  87 0.078 BF
+ 150 yolo
+[yolo] params: iou loss: ciou (4), iou_norm: 0.07, obj_norm: 1.00, cls_norm: 1.00, delta_norm: 1.00, scale_x_y: 1.10
+ 151 route  147 		                           ->   40 x  22 x 256 
+ 152 conv    512       3 x 3/ 2     40 x  22 x 256 ->   20 x  11 x 512 0.519 BF
+ 153 route  152 116 	                           ->   20 x  11 x1024 
+ 154 conv    512       1 x 1/ 1     20 x  11 x1024 ->   20 x  11 x 512 0.231 BF
+ 155 conv   1024       3 x 3/ 1     20 x  11 x 512 ->   20 x  11 x1024 2.076 BF
+ 156 conv    512       1 x 1/ 1     20 x  11 x1024 ->   20 x  11 x 512 0.231 BF
+ 157 conv   1024       3 x 3/ 1     20 x  11 x 512 ->   20 x  11 x1024 2.076 BF
+ 158 conv    512       1 x 1/ 1     20 x  11 x1024 ->   20 x  11 x 512 0.231 BF
+ 159 conv   1024       3 x 3/ 1     20 x  11 x 512 ->   20 x  11 x1024 2.076 BF
+ 160 conv     87       1 x 1/ 1     20 x  11 x1024 ->   20 x  11 x  87 0.039 BF
+ 161 yolo
+[yolo] params: iou loss: ciou (4), iou_norm: 0.07, obj_norm: 1.00, cls_norm: 1.00, delta_norm: 1.00, scale_x_y: 1.05
+Total BFLOPS 77.755 
+avg_outputs = 641517 
+ Allocate additional workspace_size = 21.66 MB 
+Loading weights from zoo/yolo-traffic.weights...net.optimized_memory = 0 
+mini_batch = 1, batch = 32, time_steps = 1, train = 0 
+Create CUDA-stream - 0 
+ Create cudnn-handle 0 
+nms_kind: greedynms (1), beta = 0.600000 
+nms_kind: greedynms (1), beta = 0.600000 
+nms_kind: greedynms (1), beta = 0.600000 
+Done! Loaded 162 layers from weights-file 
+481216202428323640444852566064687276808488929610010410811211612012412813213614014414815215616016416817217618018418819219620020420821221622022422823223624024424825225626026426827227628028428829229630030430831231632032432833233634034434835235636036436837237638038438839239640040440841241642042442843243644044444845245646046446847247648048448849249650050450851251652052452853253654054454855255656056456857257658058458859259660060460861261662062462863263664064464865265666066466867267668068468869269670070470871271672072472873273674074474875275676076476877277678078478879279680080480881281682082482883283684084484885285686086486887287688088488889289690090490891291692092492893293694094494895295696096496897297698098498899299610001004100810121016102010241028103210361040104410481052105610601064106810721076108010841088109210961100110411081112111611201124112811321136114011441148115211561160116411681172117611801184118811921196120012041208121212161220122412281232123612401244124812521256126012641268127212761280128412881292129613001304130813121316132013241328133213361340134413481352135613601364136813721376138013841388139213961400140414081412141614201424142814321436144014441448145214561460146414681472147614801484148814921496150015041508151215161520152415281532153615401544154815521556156015641568157215761580158415881592159616001604160816121616162016241628163216361640164416481652165616601664166816721676168016841688169216961700170417081712171617201724172817321736174017441748175217561760176417681772177617801784178817921796180018041808181218161820182418281832183618401844184818521856186018641868187218761880188418881892189619001904190819121916192019241928193219361940194419481952195619601964196819721976198019841988199219962000200420082012201620202024202820322036204020442048205220562060206420682072207620802084208820922096210021042108211221162120212421282132213621402144214821522156216021642168217221762180218421882192219622002204220822122216222022242228223222362240224422482252225622602264226822722276228022842288229222962300230423082312231623202324232823322336234023442348235223562360236423682372237623802384238823922396240024042408241224162420242424282432243624402444244824522456246024642468247224762480248424882492249625002504250825122516252025242528253225362540254425482552255625602564256825722576258025842588259225962600260426082612261626202624262826322636264026442648265226562660266426682672267626802684268826922696270027042708271227162720272427282732273627402744274827522756276027642768277227762780278427882792279628002804280828122816282028242828283228362840284428482852285628602864286828722876288028842888289228962900290429082912291629202924292829322936294029442948295229562960296429682972297629802984298829922996300030043008301230163020302430283032303630403044304830523056306030643068307230763080308430883092309631003104310831123116312031243128313231363140314431483152315631603164316831723176318031843188319231963200320432083212321632203224322832323236324032443248325232563260326432683272327632803284328832923296330033043308331233163320332433283332333633403344334833523356336033643368337233763380338433883392339634003404340834123416342034243428343234363440344434483452345634603464346834723476348034843488349234963500350435083512351635203524352835323536354035443548355235563560356435683572357635803584358835923596360036043608361236163620362436283632363636403644364836523656366036643668367236763680368436883692369637003704370837123716372037243728373237363740374437483752375637603764376837723776378037843788379237963800380438083812381638203824382838323836384038443848385238563860386438683872387638803884388838923896390039043908391239163920392439283932393639403944394839523956396039643968397239763980398439883992399640004004400840124016402040244028403240364040404440484052405640604064406840724076408040844088409240964100410441084112411641204124412841324136414041444148415241564160416441684172417641804184418841924196420042044208421242164220422442284232423642404244424842524256426042644268427242764280428442884292429643004304430843124316432043244328433243364340434443484352435643604364436843724376438043844388439243964400440444084412441644204424442844324436444044444448445244564460446444684472447644804484448844924496450045044508451245164520452445284532453645404544454845524556456045644568457245764580458445884592459646004604460846124616462046244628463246364640464446484652465646604664466846724676468046844688469246964700470447084712471647204724472847324736474047444748475247564760476447684772477647804784478847924796480048044808481248164820482448284832483648404844484848524856486048644868487248764880488448884892489649004904490849124916492049244928493249364940494449484952495649604964496849724976498049844988499249965000500450085012501650205024502850325036504050445048505250565060506450685072507650805084508850925096
+ seen 64, trained: 3297 K-images (51 Kilo-batches_64) 
+
+ calculation mAP (mean average precision)...
+ Detection layer: 139 - type = 28 
+ Detection layer: 150 - type = 28 
+ Detection layer: 161 - type = 28 
+Cannot load image .images_resized/cbc27b383fe1349dacfcf086258a327b3cb77764.jpg
+51005104510851125116512051245128513251365140514451485152515651605164516851725176518051845188519251965200520452085212521652205224522852325236524052445248525252565260526452685272527652805284528852925296530053045308531253165320532453285332533653405344534853525356536053645368537253765380538453885392539654005404540854125416542054245428543254365440544454485452545654605464546854725476548054845488549254965500550455085512551655205524552855325536554055445548555255565560556455685572557655805584558855925596560056045608561256165620562456285632563656405644564856525656566056645668567256765680568456885692569657005704570857125716572057245728573257365740574457485752575657605764576857725776578057845788579257965800580458085812581658205824582858325836584058445848585258565860586458685872587658805884588858925896590059045908591259165920592459285932593659405944594859525956596059645968597259765980598459885992599660006004600860126016602060246028603260366040604460486052605660606064606860726076608060846088609260966100610461086112611661206124612861326136614061446148615261566160616461686172617661806184618861926196620062046208621262166220622462286232623662406244624862526256626062646268627262766280628462886292629663006304630863126316632063246328633263366340634463486352635663606364636863726376638063846388639263966400640464086412641664206424642864326436644064446448645264566460646464686472647664806484648864926496650065046508651265166520652465286532653665406544654865526556656065646568657265766580658465886592659666006604660866126616662066246628663266366640664466486652665666606664666866726676668066846688669266966700670467086712671667206724672867326736674067446748675267566760676467686772677667806784678867926796680068046808681268166820682468286832683668406844684868526856Can't open label file. (This can be normal only if you use MSCOCO): .images_resized/cbc27b383fe1349dacfcf086258a327b3cb77764.txt 
+
+ detections_count = 48397, unique_truth_count = 23912  
+ rank = 0 of ranks = 48397  rank = 100 of ranks = 48397  rank = 200 of ranks = 48397  rank = 300 of ranks = 48397  rank = 400 of ranks = 48397  rank = 500 of ranks = 48397  rank = 600 of ranks = 48397  rank = 700 of ranks = 48397  rank = 800 of ranks = 48397  rank = 900 of ranks = 48397  rank = 1000 of ranks = 48397  rank = 1100 of ranks = 48397  rank = 1200 of ranks = 48397  rank = 1300 of ranks = 48397  rank = 1400 of ranks = 48397  rank = 1500 of ranks = 48397  rank = 1600 of ranks = 48397  rank = 1700 of ranks = 48397  rank = 1800 of ranks = 48397  rank = 1900 of ranks = 48397  rank = 2000 of ranks = 48397  rank = 2100 of ranks = 48397  rank = 2200 of ranks = 48397  rank = 2300 of ranks = 48397  rank = 2400 of ranks = 48397  rank = 2500 of ranks = 48397  rank = 2600 of ranks = 48397  rank = 2700 of ranks = 48397  rank = 2800 of ranks = 48397  rank = 2900 of ranks = 48397  rank = 3000 of ranks = 48397  rank = 3100 of ranks = 48397  rank = 3200 of ranks = 48397  rank = 3300 of ranks = 48397  rank = 3400 of ranks = 48397  rank = 3500 of ranks = 48397  rank = 3600 of ranks = 48397  rank = 3700 of ranks = 48397  rank = 3800 of ranks = 48397  rank = 3900 of ranks = 48397  rank = 4000 of ranks = 48397  rank = 4100 of ranks = 48397  rank = 4200 of ranks = 48397  rank = 4300 of ranks = 48397  rank = 4400 of ranks = 48397  rank = 4500 of ranks = 48397  rank = 4600 of ranks = 48397  rank = 4700 of ranks = 48397  rank = 4800 of ranks = 48397  rank = 4900 of ranks = 48397  rank = 5000 of ranks = 48397  rank = 5100 of ranks = 48397  rank = 5200 of ranks = 48397  rank = 5300 of ranks = 48397  rank = 5400 of ranks = 48397  rank = 5500 of ranks = 48397  rank = 5600 of ranks = 48397  rank = 5700 of ranks = 48397  rank = 5800 of ranks = 48397  rank = 5900 of ranks = 48397  rank = 6000 of ranks = 48397  rank = 6100 of ranks = 48397  rank = 6200 of ranks = 48397  rank = 6300 of ranks = 48397  rank = 6400 of ranks = 48397  rank = 6500 of ranks = 48397  rank = 6600 of ranks = 48397  rank = 6700 of ranks = 48397  rank = 6800 of ranks = 48397  rank = 6900 of ranks = 48397  rank = 7000 of ranks = 48397  rank = 7100 of ranks = 48397  rank = 7200 of ranks = 48397  rank = 7300 of ranks = 48397  rank = 7400 of ranks = 48397  rank = 7500 of ranks = 48397  rank = 7600 of ranks = 48397  rank = 7700 of ranks = 48397  rank = 7800 of ranks = 48397  rank = 7900 of ranks = 48397  rank = 8000 of ranks = 48397  rank = 8100 of ranks = 48397  rank = 8200 of ranks = 48397  rank = 8300 of ranks = 48397  rank = 8400 of ranks = 48397  rank = 8500 of ranks = 48397  rank = 8600 of ranks = 48397  rank = 8700 of ranks = 48397  rank = 8800 of ranks = 48397  rank = 8900 of ranks = 48397  rank = 9000 of ranks = 48397  rank = 9100 of ranks = 48397  rank = 9200 of ranks = 48397  rank = 9300 of ranks = 48397  rank = 9400 of ranks = 48397  rank = 9500 of ranks = 48397  rank = 9600 of ranks = 48397  rank = 9700 of ranks = 48397  rank = 9800 of ranks = 48397  rank = 9900 of ranks = 48397  rank = 10000 of ranks = 48397  rank = 10100 of ranks = 48397  rank = 10200 of ranks = 48397  rank = 10300 of ranks = 48397  rank = 10400 of ranks = 48397  rank = 10500 of ranks = 48397  rank = 10600 of ranks = 48397  rank = 10700 of ranks = 48397  rank = 10800 of ranks = 48397  rank = 10900 of ranks = 48397  rank = 11000 of ranks = 48397  rank = 11100 of ranks = 48397  rank = 11200 of ranks = 48397  rank = 11300 of ranks = 48397  rank = 11400 of ranks = 48397  rank = 11500 of ranks = 48397  rank = 11600 of ranks = 48397  rank = 11700 of ranks = 48397  rank = 11800 of ranks = 48397  rank = 11900 of ranks = 48397  rank = 12000 of ranks = 48397  rank = 12100 of ranks = 48397  rank = 12200 of ranks = 48397  rank = 12300 of ranks = 48397  rank = 12400 of ranks = 48397  rank = 12500 of ranks = 48397  rank = 12600 of ranks = 48397  rank = 12700 of ranks = 48397  rank = 12800 of ranks = 48397  rank = 12900 of ranks = 48397  rank = 13000 of ranks = 48397  rank = 13100 of ranks = 48397  rank = 13200 of ranks = 48397  rank = 13300 of ranks = 48397  rank = 13400 of ranks = 48397  rank = 13500 of ranks = 48397  rank = 13600 of ranks = 48397  rank = 13700 of ranks = 48397  rank = 13800 of ranks = 48397  rank = 13900 of ranks = 48397  rank = 14000 of ranks = 48397  rank = 14100 of ranks = 48397  rank = 14200 of ranks = 48397  rank = 14300 of ranks = 48397  rank = 14400 of ranks = 48397  rank = 14500 of ranks = 48397  rank = 14600 of ranks = 48397  rank = 14700 of ranks = 48397  rank = 14800 of ranks = 48397  rank = 14900 of ranks = 48397  rank = 15000 of ranks = 48397  rank = 15100 of ranks = 48397  rank = 15200 of ranks = 48397  rank = 15300 of ranks = 48397  rank = 15400 of ranks = 48397  rank = 15500 of ranks = 48397  rank = 15600 of ranks = 48397  rank = 15700 of ranks = 48397  rank = 15800 of ranks = 48397  rank = 15900 of ranks = 48397  rank = 16000 of ranks = 48397  rank = 16100 of ranks = 48397  rank = 16200 of ranks = 48397  rank = 16300 of ranks = 48397  rank = 16400 of ranks = 48397  rank = 16500 of ranks = 48397  rank = 16600 of ranks = 48397  rank = 16700 of ranks = 48397  rank = 16800 of ranks = 48397  rank = 16900 of ranks = 48397  rank = 17000 of ranks = 48397  rank = 17100 of ranks = 48397  rank = 17200 of ranks = 48397  rank = 17300 of ranks = 48397  rank = 17400 of ranks = 48397  rank = 17500 of ranks = 48397  rank = 17600 of ranks = 48397  rank = 17700 of ranks = 48397  rank = 17800 of ranks = 48397  rank = 17900 of ranks = 48397  rank = 18000 of ranks = 48397  rank = 18100 of ranks = 48397  rank = 18200 of ranks = 48397  rank = 18300 of ranks = 48397  rank = 18400 of ranks = 48397  rank = 18500 of ranks = 48397  rank = 18600 of ranks = 48397  rank = 18700 of ranks = 48397  rank = 18800 of ranks = 48397  rank = 18900 of ranks = 48397  rank = 19000 of ranks = 48397  rank = 19100 of ranks = 48397  rank = 19200 of ranks = 48397  rank = 19300 of ranks = 48397  rank = 19400 of ranks = 48397  rank = 19500 of ranks = 48397  rank = 19600 of ranks = 48397  rank = 19700 of ranks = 48397  rank = 19800 of ranks = 48397  rank = 19900 of ranks = 48397  rank = 20000 of ranks = 48397  rank = 20100 of ranks = 48397  rank = 20200 of ranks = 48397  rank = 20300 of ranks = 48397  rank = 20400 of ranks = 48397  rank = 20500 of ranks = 48397  rank = 20600 of ranks = 48397  rank = 20700 of ranks = 48397  rank = 20800 of ranks = 48397  rank = 20900 of ranks = 48397  rank = 21000 of ranks = 48397  rank = 21100 of ranks = 48397  rank = 21200 of ranks = 48397  rank = 21300 of ranks = 48397  rank = 21400 of ranks = 48397  rank = 21500 of ranks = 48397  rank = 21600 of ranks = 48397  rank = 21700 of ranks = 48397  rank = 21800 of ranks = 48397  rank = 21900 of ranks = 48397  rank = 22000 of ranks = 48397  rank = 22100 of ranks = 48397  rank = 22200 of ranks = 48397  rank = 22300 of ranks = 48397  rank = 22400 of ranks = 48397  rank = 22500 of ranks = 48397  rank = 22600 of ranks = 48397  rank = 22700 of ranks = 48397  rank = 22800 of ranks = 48397  rank = 22900 of ranks = 48397  rank = 23000 of ranks = 48397  rank = 23100 of ranks = 48397  rank = 23200 of ranks = 48397  rank = 23300 of ranks = 48397  rank = 23400 of ranks = 48397  rank = 23500 of ranks = 48397  rank = 23600 of ranks = 48397  rank = 23700 of ranks = 48397  rank = 23800 of ranks = 48397  rank = 23900 of ranks = 48397  rank = 24000 of ranks = 48397  rank = 24100 of ranks = 48397  rank = 24200 of ranks = 48397  rank = 24300 of ranks = 48397  rank = 24400 of ranks = 48397  rank = 24500 of ranks = 48397  rank = 24600 of ranks = 48397  rank = 24700 of ranks = 48397  rank = 24800 of ranks = 48397  rank = 24900 of ranks = 48397  rank = 25000 of ranks = 48397  rank = 25100 of ranks = 48397  rank = 25200 of ranks = 48397  rank = 25300 of ranks = 48397  rank = 25400 of ranks = 48397  rank = 25500 of ranks = 48397  rank = 25600 of ranks = 48397  rank = 25700 of ranks = 48397  rank = 25800 of ranks = 48397  rank = 25900 of ranks = 48397  rank = 26000 of ranks = 48397  rank = 26100 of ranks = 48397  rank = 26200 of ranks = 48397  rank = 26300 of ranks = 48397  rank = 26400 of ranks = 48397  rank = 26500 of ranks = 48397  rank = 26600 of ranks = 48397  rank = 26700 of ranks = 48397  rank = 26800 of ranks = 48397  rank = 26900 of ranks = 48397  rank = 27000 of ranks = 48397  rank = 27100 of ranks = 48397  rank = 27200 of ranks = 48397  rank = 27300 of ranks = 48397  rank = 27400 of ranks = 48397  rank = 27500 of ranks = 48397  rank = 27600 of ranks = 48397  rank = 27700 of ranks = 48397  rank = 27800 of ranks = 48397  rank = 27900 of ranks = 48397  rank = 28000 of ranks = 48397  rank = 28100 of ranks = 48397  rank = 28200 of ranks = 48397  rank = 28300 of ranks = 48397  rank = 28400 of ranks = 48397  rank = 28500 of ranks = 48397  rank = 28600 of ranks = 48397  rank = 28700 of ranks = 48397  rank = 28800 of ranks = 48397  rank = 28900 of ranks = 48397  rank = 29000 of ranks = 48397  rank = 29100 of ranks = 48397  rank = 29200 of ranks = 48397  rank = 29300 of ranks = 48397  rank = 29400 of ranks = 48397  rank = 29500 of ranks = 48397  rank = 29600 of ranks = 48397  rank = 29700 of ranks = 48397  rank = 29800 of ranks = 48397  rank = 29900 of ranks = 48397  rank = 30000 of ranks = 48397  rank = 30100 of ranks = 48397  rank = 30200 of ranks = 48397  rank = 30300 of ranks = 48397  rank = 30400 of ranks = 48397  rank = 30500 of ranks = 48397  rank = 30600 of ranks = 48397  rank = 30700 of ranks = 48397  rank = 30800 of ranks = 48397  rank = 30900 of ranks = 48397  rank = 31000 of ranks = 48397  rank = 31100 of ranks = 48397  rank = 31200 of ranks = 48397  rank = 31300 of ranks = 48397  rank = 31400 of ranks = 48397  rank = 31500 of ranks = 48397  rank = 31600 of ranks = 48397  rank = 31700 of ranks = 48397  rank = 31800 of ranks = 48397  rank = 31900 of ranks = 48397  rank = 32000 of ranks = 48397  rank = 32100 of ranks = 48397  rank = 32200 of ranks = 48397  rank = 32300 of ranks = 48397  rank = 32400 of ranks = 48397  rank = 32500 of ranks = 48397  rank = 32600 of ranks = 48397  rank = 32700 of ranks = 48397  rank = 32800 of ranks = 48397  rank = 32900 of ranks = 48397  rank = 33000 of ranks = 48397  rank = 33100 of ranks = 48397  rank = 33200 of ranks = 48397  rank = 33300 of ranks = 48397  rank = 33400 of ranks = 48397  rank = 33500 of ranks = 48397  rank = 33600 of ranks = 48397  rank = 33700 of ranks = 48397  rank = 33800 of ranks = 48397  rank = 33900 of ranks = 48397  rank = 34000 of ranks = 48397  rank = 34100 of ranks = 48397  rank = 34200 of ranks = 48397  rank = 34300 of ranks = 48397  rank = 34400 of ranks = 48397  rank = 34500 of ranks = 48397  rank = 34600 of ranks = 48397  rank = 34700 of ranks = 48397  rank = 34800 of ranks = 48397  rank = 34900 of ranks = 48397  rank = 35000 of ranks = 48397  rank = 35100 of ranks = 48397  rank = 35200 of ranks = 48397  rank = 35300 of ranks = 48397  rank = 35400 of ranks = 48397  rank = 35500 of ranks = 48397  rank = 35600 of ranks = 48397  rank = 35700 of ranks = 48397  rank = 35800 of ranks = 48397  rank = 35900 of ranks = 48397  rank = 36000 of ranks = 48397  rank = 36100 of ranks = 48397  rank = 36200 of ranks = 48397  rank = 36300 of ranks = 48397  rank = 36400 of ranks = 48397  rank = 36500 of ranks = 48397  rank = 36600 of ranks = 48397  rank = 36700 of ranks = 48397  rank = 36800 of ranks = 48397  rank = 36900 of ranks = 48397  rank = 37000 of ranks = 48397  rank = 37100 of ranks = 48397  rank = 37200 of ranks = 48397  rank = 37300 of ranks = 48397  rank = 37400 of ranks = 48397  rank = 37500 of ranks = 48397  rank = 37600 of ranks = 48397  rank = 37700 of ranks = 48397  rank = 37800 of ranks = 48397  rank = 37900 of ranks = 48397  rank = 38000 of ranks = 48397  rank = 38100 of ranks = 48397  rank = 38200 of ranks = 48397  rank = 38300 of ranks = 48397  rank = 38400 of ranks = 48397  rank = 38500 of ranks = 48397  rank = 38600 of ranks = 48397  rank = 38700 of ranks = 48397  rank = 38800 of ranks = 48397  rank = 38900 of ranks = 48397  rank = 39000 of ranks = 48397  rank = 39100 of ranks = 48397  rank = 39200 of ranks = 48397  rank = 39300 of ranks = 48397  rank = 39400 of ranks = 48397  rank = 39500 of ranks = 48397  rank = 39600 of ranks = 48397  rank = 39700 of ranks = 48397  rank = 39800 of ranks = 48397  rank = 39900 of ranks = 48397  rank = 40000 of ranks = 48397  rank = 40100 of ranks = 48397  rank = 40200 of ranks = 48397  rank = 40300 of ranks = 48397  rank = 40400 of ranks = 48397  rank = 40500 of ranks = 48397  rank = 40600 of ranks = 48397  rank = 40700 of ranks = 48397  rank = 40800 of ranks = 48397  rank = 40900 of ranks = 48397  rank = 41000 of ranks = 48397  rank = 41100 of ranks = 48397  rank = 41200 of ranks = 48397  rank = 41300 of ranks = 48397  rank = 41400 of ranks = 48397  rank = 41500 of ranks = 48397  rank = 41600 of ranks = 48397  rank = 41700 of ranks = 48397  rank = 41800 of ranks = 48397  rank = 41900 of ranks = 48397  rank = 42000 of ranks = 48397  rank = 42100 of ranks = 48397  rank = 42200 of ranks = 48397  rank = 42300 of ranks = 48397  rank = 42400 of ranks = 48397  rank = 42500 of ranks = 48397  rank = 42600 of ranks = 48397  rank = 42700 of ranks = 48397  rank = 42800 of ranks = 48397  rank = 42900 of ranks = 48397  rank = 43000 of ranks = 48397  rank = 43100 of ranks = 48397  rank = 43200 of ranks = 48397  rank = 43300 of ranks = 48397  rank = 43400 of ranks = 48397  rank = 43500 of ranks = 48397  rank = 43600 of ranks = 48397  rank = 43700 of ranks = 48397  rank = 43800 of ranks = 48397  rank = 43900 of ranks = 48397  rank = 44000 of ranks = 48397  rank = 44100 of ranks = 48397  rank = 44200 of ranks = 48397  rank = 44300 of ranks = 48397  rank = 44400 of ranks = 48397  rank = 44500 of ranks = 48397  rank = 44600 of ranks = 48397  rank = 44700 of ranks = 48397  rank = 44800 of ranks = 48397  rank = 44900 of ranks = 48397  rank = 45000 of ranks = 48397  rank = 45100 of ranks = 48397  rank = 45200 of ranks = 48397  rank = 45300 of ranks = 48397  rank = 45400 of ranks = 48397  rank = 45500 of ranks = 48397  rank = 45600 of ranks = 48397  rank = 45700 of ranks = 48397  rank = 45800 of ranks = 48397  rank = 45900 of ranks = 48397  rank = 46000 of ranks = 48397  rank = 46100 of ranks = 48397  rank = 46200 of ranks = 48397  rank = 46300 of ranks = 48397  rank = 46400 of ranks = 48397  rank = 46500 of ranks = 48397  rank = 46600 of ranks = 48397  rank = 46700 of ranks = 48397  rank = 46800 of ranks = 48397  rank = 46900 of ranks = 48397  rank = 47000 of ranks = 48397  rank = 47100 of ranks = 48397  rank = 47200 of ranks = 48397  rank = 47300 of ranks = 48397  rank = 47400 of ranks = 48397  rank = 47500 of ranks = 48397  rank = 47600 of ranks = 48397  rank = 47700 of ranks = 48397  rank = 47800 of ranks = 48397  rank = 47900 of ranks = 48397  rank = 48000 of ranks = 48397  rank = 48100 of ranks = 48397  rank = 48200 of ranks = 48397  rank = 48300 of ranks = 48397 class_id = 0, name = a1.rowery, ap = 98.65%   	 (TP = 824, FP = 79) 
+class_id = 1, name = b.moto, ap = 99.45%   	 (TP = 674, FP = 35) 
+class_id = 2, name = c1.osobowe, ap = 99.08%   	 (TP = 8397, FP = 500) 
+class_id = 3, name = d1.dostawcze, ap = 98.50%   	 (TP = 693, FP = 75) 
+class_id = 4, name = e.ciezarowe, ap = 99.59%   	 (TP = 667, FP = 61) 
+class_id = 5, name = f2.tir, ap = 99.57%   	 (TP = 993, FP = 61) 
+class_id = 6, name = g.autobusy, ap = 99.97%   	 (TP = 640, FP = 7) 
+class_id = 7, name = h.rolne, ap = 99.38%   	 (TP = 527, FP = 32) 
+class_id = 8, name = c1A.osob.przyczepa, ap = 99.18%   	 (TP = 355, FP = 22) 
+class_id = 9, name = d1A.dost.przyczepa, ap = 99.58%   	 (TP = 301, FP = 30) 
+class_id = 10, name = f1.ciezar.przyczepa, ap = 99.61%   	 (TP = 341, FP = 38) 
+class_id = 11, name = i.konne, apTotal Detection Time: 174 Seconds
+ = 99.63%   	 (TP = 274, FP = 4) 
+class_id = 12, name = i1.pieszy, ap = 97.86%   	 (TP = 3427, FP = 208) 
+class_id = 13, name = z.pociagi, ap = 99.43%   	 (TP = 425, FP = 18) 
+class_id = 14, name = r.rejestracja, ap = 96.35%   	 (TP = 2637, FP = 806) 
+class_id = 15, name = f3.tir.przyczepa, ap = 99.45%   	 (TP = 309, FP = 27) 
+class_id = 16, name = d2.dost.bus, ap = 98.93%   	 (TP = 544, FP = 33) 
+class_id = 17, name = d2A.dost.bus.przyczepa, ap = 99.81%   	 (TP = 70, FP = 7) 
+class_id = 18, name = a2.uto, ap = 98.51%   	 (TP = 73, FP = 1) 
+class_id = 19, name = i2.pieszy.potrzeby, ap = 98.97%   	 (TP = 376, FP = 17) 
+class_id = 20, name = a3.hulajnogi, ap = 99.34%   	 (TP = 388, FP = 18) 
+class_id = 21, name = i3.pieszy.uwr, ap = 99.70%   	 (TP = 150, FP = 13) 
+class_id = 22, name = c3.mikrobus, ap = 98.76%   	 (TP = 247, FP = 6) 
+class_id = 23, name = o.ostrzegawcze, ap = 98.06%   	 (TP = 81, FP = 13) 
+
+ for conf_thresh = 0.25, precision = 0.92, recall = 0.98, F1-score = 0.95 
+ for conf_thresh = 0.25, TP = 23413, FP = 2111, FN = 499, average IoU = 79.60 % 
+
+ IoU threshold = 50 %, used Area-Under-Curve for each unique Recall 
+ mean average precision (mAP@0.50) = 0.990564, or 99.06 % 
+
+Set -points flag:
+ `-points 101` for MS COCO 
+ `-points 11` for PascalVOC 2007 (uncomment `difficult` in voc.data) 
+ `-points 0` (AUC) for ImageNet, PascalVOC 2010-2012, your custom dataset
