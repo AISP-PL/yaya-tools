@@ -8,7 +8,6 @@ from yaya_tools.helpers.annotations import (
     annotations_filter_filenames,
     annotations_load_as_sv,
     annotations_log_summary,
-    annotations_warnings_toosmall,
     annotations_warnings_xywh_not_normalized,
     annotations_warnings_xyxy_not_normalized,
 )
@@ -95,7 +94,6 @@ def main() -> None:
     all_annotations_sv, all_negatives = annotations_load_as_sv(all_images_annotations, dataset_path)
 
     # Warnings : Check and get
-    warnings_too_small = annotations_warnings_toosmall(all_annotations_sv)
     warnings_xyxy = annotations_warnings_xyxy_not_normalized(all_annotations_sv)
     if args.fix_xyxy_normalization:
         annotations_update_save(dataset_path, all_annotations_sv, warnings_xyxy)
