@@ -13,6 +13,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Reading darknet log and receiving results")
     parser.add_argument("--log", type=str, default="", required=True, help="Path to log file")
     parser.add_argument("--return_iou", action="store_true", help="Return average IoU value")
+    parser.add_argument(
+        "--return_classes_metrics", action="store_true", help="Return classes metrics (TP, FP, AP) as text"
+    )
     parser.add_argument("--return_map", action="store_true", help="Return mAP value  printing it")
     parser.add_argument("--return_map_float", action="store_true", help="Return mAP value printing it")
 
@@ -22,6 +25,11 @@ def main() -> None:
     if log is None:
         logging.error("Failed to parse the log file.")
         sys.exit(1)
+
+    # Classes metrics : Return this values as text
+    if args.return_classes_metrics:
+        for class_metric in log.classes:
+            print(f"{class_metric}")
 
     # mAP : Return this values as text
     if args.return_map:
