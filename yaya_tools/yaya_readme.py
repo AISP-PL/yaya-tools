@@ -28,7 +28,7 @@ def logging_terminal_setup() -> None:
     logging.info("\n\n###### Logging start of terminal session ######\n")
 
 
-def update_key_in_file(file_path: Path, key: str, value: str, encoding: str = "utf-8") -> None:
+def file_update_keyline(file_path: Path, key: str, value: str, encoding: str = "utf-8") -> None:
     """
     Open the given text file, look for any line containing `key`.
     If found: replace that entire line with "key: value" (only once).
@@ -85,6 +85,11 @@ def update_key_in_file(file_path: Path, key: str, value: str, encoding: str = "u
 
 
 def main() -> None:
+    """
+    Main function to parse command-line arguments and execute the update operation.
+    It sets up logging, parses arguments, and calls the file_update_keyline function
+    with the provided key and value.
+    """
     logging_terminal_setup()
 
     parser = argparse.ArgumentParser(
@@ -115,7 +120,7 @@ def main() -> None:
         key, value = args.update
         file_to_edit = Path(args.file)
         try:
-            update_key_in_file(file_to_edit, key, value)
+            file_update_keyline(file_to_edit, key, value)
         except Exception as e:
             logger.error(f"Aborting due to error: {e}")
             sys.exit(1)
