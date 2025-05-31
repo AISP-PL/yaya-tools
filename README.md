@@ -21,12 +21,39 @@ cd yaya-tools
 poetry install
 ```
 
-# Usage : yaya-dataset
+# Run
+Use the following commands after installing the package:
 
-Dataset analysis, update and modification tool.
+```bash
+# Test package installation
+yaya-test
 
+# Update or append a key/value in a text file
+yaya-readme --update <KEY> <VALUE> [-f <FILE>]
 
-# Usage : yaya-resize
+# Manage dataset (summary, fixes, train/validation lists)
+yaya-dataset -i <DATASET_PATH> [--fix_toosmall] [--fix_xywh_normalization] [--fix_xyxy_normalization] [--copy_negatives_to <PATH>] [--train_all] [--validation_force_create] [--ratio <RATIO>]
 
-Multiprocessing image resizing tool for faster image resizing.
+# Diff datasets: add new/remove old annotations
+yaya-datasetdiff -s <SOURCE> -d <DEST> [--add_new] [--remove_old]
+
+# Resize annotated images
+yaya-resize -i <DATASET_PATH> -o <OUTPUT_PATH> [--width <W>] [--height <H>] [--copy_annotations]
+
+# Benchmark detector on dataset
+yaya-benchmark -d <DATASET_PATH> --cfg_path <CFG_PATH> --weights_path <WEIGHTS_PATH> --names_path <NAMES_PATH> [--confidence <CONF>] [--nms_threshold <NMS>]
+
+# Run inference on video
+yaya-inference --video <INPUT_VIDEO> --output <OUTPUT_VIDEO> --cfg_path <CFG> --weights_path <WEIGHTS> --names_path <NAMES> [--confidence <CONF>] [--nms_threshold <NMS>] [--tracking] [--gpu]
+
+# Augment dataset (selection + augmentation flags)
+yaya-augument -i <DATASET_PATH> [selection flags] [augmentation flags] [-n <ITERATIONS>]
+
+# GUI inference (Qt5)
+yaya-inference-qt5
+
+# GUI Darknet log comparison (Qt5)
+yaya-darknet-logs-qt5 --log1 <LOG1_PATH> --log2 <LOG2_PATH>
+```
+
 
