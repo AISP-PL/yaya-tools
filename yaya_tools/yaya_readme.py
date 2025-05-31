@@ -49,7 +49,7 @@ def update_key_in_file(file_path: Path, key: str, value: str, encoding: str = "u
         logger.error(f"File not found: {file_path.resolve()}")
         raise FileNotFoundError(f"Cannot update: '{file_path}' does not exist.")
 
-    # Read all lines first
+    # Read all lines
     try:
         with file_path.open("r", encoding=encoding) as f:
             lines: List[str] = f.readlines()
@@ -57,45 +57,33 @@ def update_key_in_file(file_path: Path, key: str, value: str, encoding: str = "u
         logger.error(f"Failed to read '{file_path}': {e}")
         raise
 
-    key_line = f"{key}: {value}\n"
-    updated = False
-    new_lines: List[str] = []
+    # Find : Single line containing the key
+    found_index = -1
+    for index, line in enumerate(lines):
+        if key in line:
+            found_index = index
+            logger.info(f"Found key '{key}' in line [{found_index}]'{line.strip()}'.")
+            break
 
-    for line in lines:
-        # Check if the key appears anywhere in this line (simple substring check)
-        if (not updated) and (key in line):
-            # Replace entire line with "key: value"
-            new_lines.append(key_line)
-            updated = True
-            logger.info(f"Found existing key '{key}' in line; updated to '{key}: {value}'.")
-        else:
-            new_lines.append(line)
+    # Update : Only single line
+    new_line_text = f"{key}: {value}\n"
+    if found_index != -1:
+        lines[found_index] = new_line_text
+        logger.info(f"Updated line [{found_index}] to '{new_line_text.strip()}'.")
+    # Append : Key not found, add at EOF
+    else:
+        lines.append(new_line_text)
+        logger.warning(f"Key '{key}' not found. Appending new line: '{new_line_text.strip()}'.")
 
-    if not updated:
-        # Key was not found in any line → log an error and append new line
-        logger.error(f"Key '{key}' not found. Appending as new line at EOF.")
-        # Ensure file ends with a newline before appending, if it doesn't already
-        if len(new_lines) == 0 or not new_lines[-1].endswith("\n"):
-            new_lines[-1] = new_lines[-1] + "\n"
-        new_lines.append(key_line)
-
-    # Write everything back
+    # File : Write updated lines back to the file
     try:
         with file_path.open("w", encoding=encoding) as f:
-            f.writelines(new_lines)
+            f.writelines(lines)
     except Exception as e:
         logger.error(f"Failed to write updates to '{file_path}': {e}")
         raise
 
-    if updated:
-        logger.info(f"Successfully updated '{key}' in '{file_path.name}'.")
-    else:
-        logger.info(f"Successfully appended '{key}: {value}' to '{file_path.name}'.")
 
-
-# ----------------------------------------------------------------------
-# ARGPARSE / MAIN
-# ----------------------------------------------------------------------
 def main() -> None:
     logging_terminal_setup()
 
