@@ -5,27 +5,9 @@ import sys
 from pathlib import Path
 from typing import List
 
+from yaya_tools.helpers.terminal_logging import logging_terminal_setup
+
 logger = logging.getLogger(__name__)
-
-
-def logging_terminal_setup() -> None:
-    """
-    Setup logging for the application. Logs will be sent to the terminal
-    at DEBUG level with a simple timestamped format.
-    """
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG)
-
-    formatter = logging.Formatter("%(asctime)s %(levelname)s: %(message)s")
-    console = logging.StreamHandler(stream=sys.stdout)
-    console.setLevel(logging.DEBUG)
-    console.setFormatter(formatter)
-
-    # Avoid adding multiple handlers if this is called twice
-    if not any(isinstance(h, logging.StreamHandler) for h in root_logger.handlers):
-        root_logger.addHandler(console)
-
-    logging.info("\n\n###### Logging start of terminal session ######\n")
 
 
 def file_update_keyline(file_path: Path, key: str, value: str, encoding: str = "utf-8") -> None:
@@ -85,13 +67,8 @@ def file_update_keyline(file_path: Path, key: str, value: str, encoding: str = "
 
 
 def main() -> None:
-    """
-    Main function to parse command-line arguments and execute the update operation.
-    It sets up logging, parses arguments, and calls the file_update_keyline function
-    with the provided key and value.
-    """
+    """Main function to parse command-line arguments and execute the update operation."""
     logging_terminal_setup()
-
     parser = argparse.ArgumentParser(
         prog="yaya-readme",
         description="yaya-readme: Command‐line tool to update or append a key/value in a text file (e.g. readme.kmd).",
