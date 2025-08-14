@@ -11,6 +11,7 @@ from yaya_tools.helpers.annotations import (
     annotations_warnings_xywh_not_normalized,
     annotations_warnings_xyxy_not_normalized,
 )
+from yaya_tools.helpers.checks import get_missing_class_ids
 from yaya_tools.helpers.dataset import (
     annotations_update_save,
     dataset_copy_to,
@@ -105,6 +106,23 @@ def main() -> None:
     validations_sv, validation_negative = annotations_filter_filenames(
         all_annotations_sv, all_negatives, validation_list
     )
+
+    # Errors : Check
+    training_missing_classes, validation_missing_classes = get_missing_class_ids(
+        training_annotations_sv, validations_sv
+    )
+    if training_missing_classes:
+        logger.error(
+            "Missing class IDS in training are: %s. Please ensure all classes are defined in the names file.",
+            training_missing_classes,
+        )
+        # do nothing, just log the error
+    if validation_missing_classes:
+        logger.error(
+            "Missing class IDS in validation are: %s. Please ensure all classes are defined in the names file.",
+            validation_missing_classes,
+        )
+        # do nothing, just log the error
 
     # Dataset : Logging
     dataset_log_summary(
