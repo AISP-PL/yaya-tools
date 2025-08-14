@@ -12,6 +12,10 @@ def get_missing_class_ids(training_sv: sv.Detections, validation_sv: sv.Detectio
     Zwraca brakujące identyfikatory klas jako set[int] z natywnymi Python int,
     a nie numpy int.*
     """
+    if training_sv.class_id is None or validation_sv.class_id is None:
+        logger.error("Class IDs are missing in one of the datasets.")
+        return set(), set()
+
     classes_training: set[int] = {int(c) for c in np.unique(training_sv.class_id).tolist()}
     classes_validation: set[int] = {int(c) for c in np.unique(validation_sv.class_id).tolist()}
 
