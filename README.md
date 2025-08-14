@@ -136,19 +136,102 @@ options:
 
 ## YAYA inference
 
-# Run inference on video
-yaya-inference --video <INPUT_VIDEO> --output <OUTPUT_VIDEO> --cfg_path <CFG> --weights_path <WEIGHTS> --names_path <NAMES> [--confidence <CONF>] [--nms_threshold <NMS>] [--tracking] [--gpu]
+```bash
+usage: yaya-inference --video VIDEO --output OUTPUT --cfg_path CFG_PATH --weights_path WEIGHTS_PATH --names_path NAMES_PATH [--confidence CONFIDENCE] [--nms_threshold NMS_THRESHOLD] [--tracking] [--gpu] [-h] [-v]
+
+YAYa dataset management tool
+
+options:
+  --video VIDEO         Path to the video file
+  --output OUTPUT       Path to the output video file
+  --cfg_path CFG_PATH   Path to the configuration file
+  --weights_path WEIGHTS_PATH
+                        Path to the weights file
+  --names_path NAMES_PATH
+                        Path to the names file
+  --confidence CONFIDENCE
+                        Confidence threshold
+  --nms_threshold NMS_THRESHOLD
+                        NMS threshold
+  --tracking            If set, the detector will use tracking with ByteSORT.
+  --gpu                 If set, the detector will use the GPU for inference.
+  -h, --help            Show this help message and exit.
+  -v                    Show version and exit.
+```
 
 ## YAYA augment
 
-# Augment dataset (selection + augmentation flags)
-yaya-augument -i <DATASET_PATH> [selection flags] [augmentation flags] [-n <ITERATIONS>]
+```bash
+usage: yaya-augument -i DATASET_PATH [--select_negatives] [--select_class_id [SELECT_CLASS_ID]] [--select_equalize] [--select_horizontal] [--select_vertical] [--select_diagonal_right] [--select_diagonal_left] [--select_large]
+                     [--select_tiny] [--select_crowded] [--select_spacious] [-n [ITERATIONS]] [--flip_horizontal] [--flip_vertical] [--crop [CROP]] [--rotate [ROTATE]] [--randrotate [RANDROTATE]] [--brighten] [--sharpen] [--darken]
+                     [--clahe] [--equalize] [--colorshift] [--isonoise] [--gaussnoise] [--multi_noise] [--downsize_padding] [--compression] [--degrade] [--spatter] [--spatter_big] [--spatter_small] [--blackboxing [BLACKBOXING]]
+                     [--snow] [--rain] [--fog] [--sunflare] [--blur] [--blur_delicate] [--flip] [-mb] [--grayscale] [--sepia] [-h] [-v]
 
-# GUI inference (Qt5)
+YAYa dataset management tool
+
+options:
+  -i DATASET_PATH, --dataset_path DATASET_PATH
+                        Path to the dataset folder
+  --select_negatives    Select only negative images
+  --select_class_id [SELECT_CLASS_ID]
+                        Select class id
+  --select_equalize     Select images to equalize dataset class representation
+  --select_horizontal   Select horizontal line of detections
+  --select_vertical     Select vertical line of detections
+  --select_diagonal_right
+                        Select diagonal right line of detections
+  --select_diagonal_left
+                        Select diagonal left line of detections
+  --select_large        Select large annotations
+  --select_tiny         Select small annotations
+  --select_crowded      Select crowded scenes
+  --select_spacious     Select spacious scenes
+  -n [ITERATIONS], --iterations [ITERATIONS]
+                        Maximum number of created images
+  --flip_horizontal     Flip horizontal image.
+  --flip_vertical       Flip vertical image.
+  --crop [CROP]         Augument by random Crop image (for ex 640).
+  --rotate [ROTATE]     Augument by direct degrees rotation (for ex 90).
+  --randrotate [RANDROTATE]
+                        Random rotation from -degrees to degrees.
+  --brighten            Random make image brighten and adjust contrast.
+  --sharpen             Random make image sharpen.
+  --darken              Random make image darkne and adjust contrast.
+  --clahe               Apply CLAHE to image.
+  --equalize            Equalize image.
+  --colorshift          Random color shift in image
+  --isonoise            Random add iso noise to image. Caution!! Hard!
+  --gaussnoise          Random add gauss noise.
+  --multi_noise         Random multi gauss noise.
+  --downsize_padding    Downsize with black padding.
+  --compression         compression image quality.
+  --degrade             Degrade image quality.
+  --spatter             Spatter add.
+  --spatter_big         Spatter add.
+  --spatter_small       Spatter add.
+  --blackboxing [BLACKBOXING]
+                        Blackboxing HxH parts of image.
+  --snow                Snow add.
+  --rain                Rain add.
+  --fog                 Fog add.
+  --sunflare            Sunflare add.
+  --blur                Blur image.
+  --blur_delicate       Blur delicate image.
+  --flip                Flip randomly image.
+  -mb, --medianblur     Median blur image.
+  --grayscale           Convert image to grayscale.
+  --sepia               Convert image to sepia.
+  -h, --help            Show this help message and exit.
+  -v                    Show version and exit.
+
+```
+
+# YAYA GUI inference (Qt5)
+
 yaya-inference-qt5
 
-# GUI Darknet log comparison (Qt5)
+# YAYA GUI Darknet log comparison (Qt5)
+
 yaya-darknet-logs-qt5 --log1 <LOG1_PATH> --log2 <LOG2_PATH>
-```
 
 
