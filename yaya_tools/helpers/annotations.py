@@ -495,10 +495,10 @@ def annotations_warnings_xyxy_not_normalized(annotations_sv: sv.Detections) -> s
 
     # XYXY : fix using np.clip
     xyxy_filtered = annotations_xyxy_not_normalized.xyxy
-    xyxy_filtered[:, 0] = np.clip(xyxy_filtered[:, 0], 0.05, 0.95)
-    xyxy_filtered[:, 1] = np.clip(xyxy_filtered[:, 1], 0.05, 0.95)
-    xyxy_filtered[:, 2] = np.clip(xyxy_filtered[:, 2], 0.05, 0.95)
-    xyxy_filtered[:, 3] = np.clip(xyxy_filtered[:, 3], 0.05, 0.95)
+    xyxy_filtered[:, 0] = np.clip(xyxy_filtered[:, 0], 0.0, 0.1)
+    xyxy_filtered[:, 1] = np.clip(xyxy_filtered[:, 1], 0.0, 0.1)
+    xyxy_filtered[:, 2] = np.clip(xyxy_filtered[:, 2], 0.0, 0.1)
+    xyxy_filtered[:, 3] = np.clip(xyxy_filtered[:, 3], 0.0, 0.1)
     annotations_xyxy_not_normalized.xyxy = xyxy_filtered
 
     return annotations_xyxy_not_normalized
