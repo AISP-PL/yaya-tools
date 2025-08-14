@@ -6,10 +6,11 @@ from typing import Optional
 from yaya_tools import __version__
 from yaya_tools.helpers.annotations import (
     annotations_filter_filenames,
-    annotations_filter_invalid_height,
-    annotations_filter_invalid_width,
     annotations_load_as_sv,
     annotations_log_summary,
+    annotations_warnings_invalid_height,
+    annotations_warnings_invalid_whratio,
+    annotations_warnings_invalid_width,
     annotations_warnings_small_area,
     annotations_warnings_xywh_not_normalized,
     annotations_warnings_xyxy_not_normalized,
@@ -44,6 +45,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
     parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
     parser.add_argument("--fix_small_area", action="store_true", help="Fix too small annotation area")
+    parser.add_argument("--fix_invalid_width", action="store_true", help="Fix invalid annotation width")
+    parser.add_argument("--fix_invalid_height", action="store_true", help="Fix invalid annotation height")
+    parser.add_argument("--fix_invalid_wh_ratio", action="store_true", help="Fix invalid annotation width/height ratio")
     parser.add_argument("--fix_xywh_normalization", action="store_true", help="Fix xywh normalization")
     parser.add_argument("--fix_xyxy_normalization", action="store_true", help="Fix xyxy normalization")
     parser.add_argument("--copy_negatives_to", type=str, help="Path to copy the negative samples only")
@@ -92,6 +96,21 @@ def main() -> None:
     if args.fix_small_area:
         annotations_remove_save(dataset_path, all_annotations_sv, warnings_toosmall)
 
+    # Error: Check too small annotation width
+    warnings_invalid_width = annotations_warnings_invalid_width(all_annotations_sv)
+    if args.fix_invalid_width:
+        annotations_remove_save(dataset_path, all_annotations_sv, warnings_invalid_width)
+
+    # Error: Check too small annotation height
+    warnings_invalid_height = annotations_warnings_invalid_height(all_annotations_sv)
+    if args.fix_invalid_height:
+        annotations_remove_save(dataset_path, all_annotations_sv, warnings_invalid_height)
+
+    # Warnings : Check invalid W/H ratio
+    warnings_invalid_wh_ratio = annotations_warnings_invalid_whratio(all_annotations_sv)
+    if args.fix_invalid_wh_ratio:
+        annotations_remove_save(dataset_path, all_annotations_sv, warnings_invalid_wh_ratio)
+
     # Negatives : Extract
     if args.copy_negatives_to:
         dataset_copy_to(args.dataset_path, all_negatives, args.copy_negatives_to)
@@ -132,22 +151,6 @@ def main() -> None:
             validation_missing_classes,
         )
         # do nothing, just log the error
-
-    # Error: Check too small annotation width
-    annotations_filtered_width = annotations_filter_invalid_width(training_annotations_sv)
-    if len(annotations_filtered_width) != len(training_annotations_sv):
-        logger.error(
-            "Found %u annotations with too small width. Please check the dataset for errors.",
-            len(training_annotations_sv) - len(annotations_filtered_width),
-        )
-
-    # Error: Check too small annotation height
-    annotations_filtered_height = annotations_filter_invalid_height(training_annotations_sv)
-    if len(annotations_filtered_height) != len(training_annotations_sv):
-        logger.error(
-            "Found %u annotations with too small height. Please check the dataset for errors.",
-            len(training_annotations_sv) - len(annotations_filtered_height),
-        )
 
     # Dataset : Logging
     dataset_log_summary(

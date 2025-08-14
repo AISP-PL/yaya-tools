@@ -396,23 +396,51 @@ def annotations_filter_equalize(
     return annotations_filtered
 
 
-def annotations_filter_invalid_width(annotations_sv: sv.Detections, min_width: float = 0.0010) -> sv.Detections:
+def annotations_warnings_invalid_whratio(
+    annotations_sv: sv.Detections, min_ratio: float = 0.0010, max_ratio: float = 1000.0
+) -> sv.Detections:
+    """Filter out annotations with invalid width/height ratio from the dataset"""
+    annotations_widths = annotations_sv.xyxy[:, 2] - annotations_sv.xyxy[:, 0]  # type: ignore
+    annotations_heights = annotations_sv.xyxy[:, 3] - annotations_sv.xyxy[:, 1]  # type: ignore
+    wh_ratios = np.divide(annotations_widths, np.maximum(annotations_heights, 1e-6))  # Avoid division by zero
+
+    invalid: sv.Detections = annotations_sv[(wh_ratios < min_ratio) | (wh_ratios > max_ratio)]  # type: ignore
+    if len(invalid.xyxy) != 0:
+        logger.warning(
+            "Found %u annotations with invalid width/height ratio <%2.4f or >%2.4f",
+            len(invalid.xyxy),
+            min_ratio,
+            max_ratio,
+        )
+
+    return invalid
+
+
+def annotations_warnings_invalid_width(annotations_sv: sv.Detections, min_width: float = 0.0010) -> sv.Detections:
     """Filter out too small annotations from the dataset"""
     annotations_widths = annotations_sv.xyxy[:, 2] - annotations_sv.xyxy[:, 0]  # type: ignore
-    return annotations_sv[annotations_widths >= min_width]  # type: ignore
+    invalid: sv.Detections = annotations_sv[annotations_widths < min_width]  # type: ignore
+    if len(invalid.xyxy) != 0:
+        logger.warning("Found %u annotations with too small width <%2.4f", len(invalid.xyxy), min_width)
+
+    return invalid
 
 
-def annotations_filter_invalid_height(annotations_sv: sv.Detections, min_height: float = 0.0005) -> sv.Detections:
+def annotations_warnings_invalid_height(annotations_sv: sv.Detections, min_height: float = 0.0005) -> sv.Detections:
     """Filter out too small annotations from the dataset"""
     annotations_heights = annotations_sv.xyxy[:, 3] - annotations_sv.xyxy[:, 1]  # type: ignore
-    return annotations_sv[annotations_heights >= min_height]  # type: ignore
+    invalid: sv.Detections = annotations_sv[annotations_heights < min_height]  # type: ignore
+    if len(invalid.xyxy) != 0:
+        logger.warning("Found %u annotations with too small height <%2.4f", len(invalid.xyxy), min_height)
+
+    return invalid
 
 
 def annotations_warnings_small_area(annotations_sv: sv.Detections, too_small: float = 0.0010) -> sv.Detections:
     """Filter out too small annotations from the dataset"""
     annotations_too_small: sv.Detections = annotations_sv[annotations_sv.area <= too_small]  # type: ignore
     if len(annotations_too_small.xyxy) != 0:
-        logger.warning("Found %u too small <%2.4f annotations", len(annotations_too_small.xyxy), too_small)
+        logger.warning("Found %u too small area <%2.4f annotations", len(annotations_too_small.xyxy), too_small)
 
     return annotations_too_small
 
