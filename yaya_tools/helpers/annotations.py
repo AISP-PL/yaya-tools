@@ -436,11 +436,15 @@ def annotations_warnings_invalid_height(annotations_sv: sv.Detections, min_heigh
     return invalid
 
 
-def annotations_warnings_small_area(annotations_sv: sv.Detections, too_small: float = 0.0010) -> sv.Detections:
+def annotations_warnings_small_area(annotations_sv: sv.Detections, too_small: float = 1e-5) -> sv.Detections:
     """Filter out too small annotations from the dataset"""
     annotations_too_small: sv.Detections = annotations_sv[annotations_sv.area <= too_small]  # type: ignore
     if len(annotations_too_small.xyxy) != 0:
-        logger.warning("Found %u too small area <%2.4f annotations", len(annotations_too_small.xyxy), too_small)
+        logger.warning(
+            "Found %u annotations with too small area (approx %upx for 1024x1024 image)!",
+            len(annotations_too_small.xyxy),
+            too_small * 1024 * 1024,
+        )
 
     return annotations_too_small
 
