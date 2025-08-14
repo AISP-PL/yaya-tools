@@ -8,7 +8,7 @@ def object_to_yolo(
     xyxy: np.ndarray,
     class_id: int,
     image_shape: Tuple[int, int, int],
-    precision: int = 6,
+    precision: int = 7,
 ) -> str:
     """Convert bounding box coordinates to YOLO format."""
     h, w, _ = image_shape
@@ -24,7 +24,7 @@ def object_to_yolo(
 def detections_to_yolo_annotations(
     detections: Detections,
     image_shape: tuple[int, int, int],
-    precision: int = 6,
+    precision: int = 7,
 ) -> list[str]:
     """
     Convert detections to YOLO format annotations.

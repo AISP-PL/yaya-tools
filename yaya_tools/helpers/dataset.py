@@ -207,7 +207,6 @@ def annotations_update_save(dirpath: str, annotations_all: sv.Detections, annota
         lines = detections_to_yolo_annotations(
             detections=file_annotations_merged,
             image_shape=[1, 1, 3],  # type: ignore
-            precision=6,
         )
 
         # Save : Annotations to .txt file
@@ -239,7 +238,6 @@ def annotations_remove_save(dirpath: str, annotations_all: sv.Detections, annota
         lines = detections_to_yolo_annotations(
             detections=file_annotations_merged,
             image_shape=[1, 1, 3],  # type: ignore
-            precision=6,
         )
 
         # Save : Annotations to .txt file
