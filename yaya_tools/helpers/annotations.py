@@ -416,22 +416,30 @@ def annotations_warnings_invalid_whratio(
     return invalid
 
 
-def annotations_warnings_invalid_width(annotations_sv: sv.Detections, min_width: float = 0.0010) -> sv.Detections:
+def annotations_warnings_invalid_width(annotations_sv: sv.Detections, min_width: float = 0.009) -> sv.Detections:
     """Filter out too small annotations from the dataset"""
     annotations_widths = annotations_sv.xyxy[:, 2] - annotations_sv.xyxy[:, 0]  # type: ignore
     invalid: sv.Detections = annotations_sv[annotations_widths < min_width]  # type: ignore
     if len(invalid.xyxy) != 0:
-        logger.warning("Found %u annotations with too small width <%2.4f", len(invalid.xyxy), min_width)
+        logger.warning(
+            "Found %u annotations with too small width (approx %upx for 1024x1024 image)!",
+            len(invalid.xyxy),
+            min_width * 1024,
+        )
 
     return invalid
 
 
-def annotations_warnings_invalid_height(annotations_sv: sv.Detections, min_height: float = 0.0005) -> sv.Detections:
+def annotations_warnings_invalid_height(annotations_sv: sv.Detections, min_height: float = 0.005) -> sv.Detections:
     """Filter out too small annotations from the dataset"""
     annotations_heights = annotations_sv.xyxy[:, 3] - annotations_sv.xyxy[:, 1]  # type: ignore
     invalid: sv.Detections = annotations_sv[annotations_heights < min_height]  # type: ignore
     if len(invalid.xyxy) != 0:
-        logger.warning("Found %u annotations with too small height <%2.4f", len(invalid.xyxy), min_height)
+        logger.warning(
+            "Found %u annotations with too small height(approx %upx for 1024x1024 image)",
+            len(invalid.xyxy),
+            min_height * 1024,
+        )
 
     return invalid
 
