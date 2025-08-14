@@ -10,10 +10,10 @@ from typing import Optional
 import numpy as np
 import supervision as sv
 import tqdm
-from supervision.dataset.formats.yolo import detections_to_yolo_annotations
 from supervision.utils.file import save_text_file
 
 from yaya_tools.helpers.files import is_image_file  # type: ignore
+from yaya_tools.helpers.yolo_format import detections_to_yolo_annotations
 
 logger = logging.getLogger(__name__)
 
@@ -207,9 +207,7 @@ def annotations_update_save(dirpath: str, annotations_all: sv.Detections, annota
         lines = detections_to_yolo_annotations(
             detections=file_annotations_merged,
             image_shape=[1, 1, 3],  # type: ignore
-            min_image_area_percentage=0.0,
-            max_image_area_percentage=1.0,
-            approximation_percentage=0,
+            precision=6,
         )
 
         # Save : Annotations to .txt file
@@ -241,9 +239,7 @@ def annotations_remove_save(dirpath: str, annotations_all: sv.Detections, annota
         lines = detections_to_yolo_annotations(
             detections=file_annotations_merged,
             image_shape=[1, 1, 3],  # type: ignore
-            min_image_area_percentage=0.0,
-            max_image_area_percentage=1.0,
-            approximation_percentage=0,
+            precision=6,
         )
 
         # Save : Annotations to .txt file
