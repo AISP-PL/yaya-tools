@@ -228,10 +228,21 @@ options:
 
 # YAYA GUI inference (Qt5)
 
-yaya-inference-qt5
+yaya-inference With QT5 GUI desktop application for inference on video files.
+
 
 # YAYA GUI Darknet log comparison (Qt5)
 
-yaya-darknet-logs-qt5 --log1 <LOG1_PATH> --log2 <LOG2_PATH>
 
+
+```bash
+usage: yaya-darknet-logs-qt5 [-h] [--log1 LOG1] [--log2 LOG2]
+
+Compare two Darknet logs and show previews in a Qt5 window.
+
+options:
+  -h, --help   show this help message and exit
+  --log1 LOG1  Path to log 1 file
+  --log2 LOG2  Path to log 2 file
+```
 
