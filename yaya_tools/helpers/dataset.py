@@ -194,12 +194,48 @@ def annotations_update_save(dirpath: str, annotations_all: sv.Detections, annota
         # File annotations : Get all
         file_annotations_all: sv.Detections = annotations_all[all_files == filename]  # type: ignore
         file_annotations_all.confidence = np.array([0.70] * len(file_annotations_all))  # type: ignore
+
         # File annotations : Overwrite with new annotations
         file_annotations_new: sv.Detections = annotations_new[annotations_files == filename]  # type: ignore
         file_annotations_new.confidence = np.array([0.99] * len(file_annotations_new))  # type: ignore
         file_annotations_merged = sv.Detections.merge([file_annotations_all, file_annotations_new]).with_nms()
         if len(file_annotations_merged) == 0:
+            logger.error("No annotations found for file %s, skipping.", filename)
             continue
+
+        # Supervision -> to yolo text format
+        lines = detections_to_yolo_annotations(
+            detections=file_annotations_merged,
+            image_shape=[1, 1, 3],  # type: ignore
+            min_image_area_percentage=0.0,
+            max_image_area_percentage=1.0,
+            approximation_percentage=0,
+        )
+
+        # Save : Annotations to .txt file
+        txt_filename = os.path.splitext(filename)[0] + ".txt"
+        save_text_file(lines=lines, file_path=os.path.join(dirpath, txt_filename))
+
+
+def annotations_remove_save(dirpath: str, annotations_all: sv.Detections, annotations_to_remove: sv.Detections) -> None:
+    """
+    Use annotations from sv.Detections and save as .txt files inside the dataset folder
+    """
+    annotations_files = annotations_to_remove.data.get("filepaths", np.array([]))
+    all_files = annotations_all.data.get("filepaths", np.array([]))
+    unique_files = np.unique(annotations_files)
+    for filename in unique_files:
+        # File annotations : Get all
+        file_annotations_all: sv.Detections = annotations_all[all_files == filename]  # type: ignore
+        file_annotations_all.confidence = np.array([0.70] * len(file_annotations_all))  # type: ignore
+
+        # File annotations : Overwrite with new annotations
+        file_annotations_new: sv.Detections = annotations_to_remove[annotations_files == filename]  # type: ignore
+        file_annotations_new.confidence = np.array([0.99] * len(file_annotations_new))  # type: ignore
+        file_annotations_merged = sv.Detections.merge([file_annotations_all, file_annotations_new]).with_nms()
+
+        # Remove all with confidence == 0.99 (all annotations to remove)
+        file_annotations_merged = file_annotations_merged[file_annotations_merged.confidence < 0.99]  # type: ignore
 
         # Supervision -> to yolo text format
         lines = detections_to_yolo_annotations(

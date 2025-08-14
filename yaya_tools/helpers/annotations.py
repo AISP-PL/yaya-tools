@@ -396,7 +396,19 @@ def annotations_filter_equalize(
     return annotations_filtered
 
 
-def annotations_warnings_toosmall(annotations_sv: sv.Detections, too_small: float = 0.0010) -> sv.Detections:
+def annotations_filter_invalid_width(annotations_sv: sv.Detections, min_width: float = 0.0010) -> sv.Detections:
+    """Filter out too small annotations from the dataset"""
+    annotations_widths = annotations_sv.xyxy[:, 2] - annotations_sv.xyxy[:, 0]  # type: ignore
+    return annotations_sv[annotations_widths >= min_width]  # type: ignore
+
+
+def annotations_filter_invalid_height(annotations_sv: sv.Detections, min_height: float = 0.0005) -> sv.Detections:
+    """Filter out too small annotations from the dataset"""
+    annotations_heights = annotations_sv.xyxy[:, 3] - annotations_sv.xyxy[:, 1]  # type: ignore
+    return annotations_sv[annotations_heights >= min_height]  # type: ignore
+
+
+def annotations_warnings_small_area(annotations_sv: sv.Detections, too_small: float = 0.0010) -> sv.Detections:
     """Filter out too small annotations from the dataset"""
     annotations_too_small: sv.Detections = annotations_sv[annotations_sv.area <= too_small]  # type: ignore
     if len(annotations_too_small.xyxy) != 0:

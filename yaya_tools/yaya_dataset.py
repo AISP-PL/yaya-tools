@@ -6,13 +6,17 @@ from typing import Optional
 from yaya_tools import __version__
 from yaya_tools.helpers.annotations import (
     annotations_filter_filenames,
+    annotations_filter_invalid_height,
+    annotations_filter_invalid_width,
     annotations_load_as_sv,
     annotations_log_summary,
+    annotations_warnings_small_area,
     annotations_warnings_xywh_not_normalized,
     annotations_warnings_xyxy_not_normalized,
 )
 from yaya_tools.helpers.checks import get_missing_class_ids
 from yaya_tools.helpers.dataset import (
+    annotations_remove_save,
     annotations_update_save,
     dataset_copy_to,
     dataset_create_validation,
@@ -39,7 +43,7 @@ def main() -> None:
     # Argument parser
     parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
     parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
-    parser.add_argument("--fix_toosmall", action="store_true", help="Fix too small annotations")
+    parser.add_argument("--fix_small_area", action="store_true", help="Fix too small annotation area")
     parser.add_argument("--fix_xywh_normalization", action="store_true", help="Fix xywh normalization")
     parser.add_argument("--fix_xyxy_normalization", action="store_true", help="Fix xyxy normalization")
     parser.add_argument("--copy_negatives_to", type=str, help="Path to copy the negative samples only")
@@ -73,14 +77,20 @@ def main() -> None:
     # All annotations as SV : Get
     all_annotations_sv, all_negatives = annotations_load_as_sv(all_images_annotations, dataset_path)
 
-    # Warnings : Check and get
+    # Warnings : Not normalized XYXY
     warnings_xyxy = annotations_warnings_xyxy_not_normalized(all_annotations_sv)
     if args.fix_xyxy_normalization:
         annotations_update_save(dataset_path, all_annotations_sv, warnings_xyxy)
 
+    # Warnings : Not normalized XYWH
     warnings_xywh = annotations_warnings_xywh_not_normalized(all_annotations_sv)
     if args.fix_xywh_normalization:
         annotations_update_save(dataset_path, all_annotations_sv, warnings_xywh)
+
+    # Warnings : Too small annotations
+    warnings_toosmall = annotations_warnings_small_area(all_annotations_sv)
+    if args.fix_small_area:
+        annotations_remove_save(dataset_path, all_annotations_sv, warnings_toosmall)
 
     # Negatives : Extract
     if args.copy_negatives_to:
@@ -107,22 +117,37 @@ def main() -> None:
         all_annotations_sv, all_negatives, validation_list
     )
 
-    # Errors : Check
+    # Error : Check missing class IDs
     training_missing_classes, validation_missing_classes = get_missing_class_ids(
         training_annotations_sv, validations_sv
     )
     if training_missing_classes:
         logger.error(
-            "Missing class IDS in training are: %s. Please ensure all classes are defined in the names file.",
+            "Missing class IDS in training are: %s. Please ensure all classes are defined in the training set.",
             training_missing_classes,
         )
-        # do nothing, just log the error
     if validation_missing_classes:
         logger.error(
-            "Missing class IDS in validation are: %s. Please ensure all classes are defined in the names file.",
+            "Missing class IDS in validation are: %s. Please ensure all classes are defined in the validation set.",
             validation_missing_classes,
         )
         # do nothing, just log the error
+
+    # Error: Check too small annotation width
+    annotations_filtered_width = annotations_filter_invalid_width(training_annotations_sv)
+    if len(annotations_filtered_width) != len(training_annotations_sv):
+        logger.error(
+            "Found %u annotations with too small width. Please check the dataset for errors.",
+            len(training_annotations_sv) - len(annotations_filtered_width),
+        )
+
+    # Error: Check too small annotation height
+    annotations_filtered_height = annotations_filter_invalid_height(training_annotations_sv)
+    if len(annotations_filtered_height) != len(training_annotations_sv):
+        logger.error(
+            "Found %u annotations with too small height. Please check the dataset for errors.",
+            len(training_annotations_sv) - len(annotations_filtered_height),
+        )
 
     # Dataset : Logging
     dataset_log_summary(
