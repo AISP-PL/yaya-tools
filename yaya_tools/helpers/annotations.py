@@ -473,10 +473,10 @@ def annotations_warnings_xywh_not_normalized(annotations_sv: sv.Detections) -> s
     # XYWH : fix using np.clip
     xyxy_filtered = annotations_xywh_not_normalized.xyxy
     xywh_filtered = xyxy_to_xywh(xyxy_filtered)
-    xywh_filtered[:, 0] = np.clip(xywh_filtered[:, 0], 0, 1)
-    xywh_filtered[:, 1] = np.clip(xywh_filtered[:, 1], 0, 1)
-    xywh_filtered[:, 2] = np.clip(xywh_filtered[:, 2], 0, 1)
-    xywh_filtered[:, 3] = np.clip(xywh_filtered[:, 3], 0, 1)
+    xywh_filtered[:, 0] = np.clip(xywh_filtered[:, 0], 0.0, 1.0)
+    xywh_filtered[:, 1] = np.clip(xywh_filtered[:, 1], 0.0, 1.0)
+    xywh_filtered[:, 2] = np.clip(xywh_filtered[:, 2], 0.0, 1.0)
+    xywh_filtered[:, 3] = np.clip(xywh_filtered[:, 3], 0.0, 1.0)
     annotations_xywh_not_normalized.xyxy = xywh_to_xyxy(xywh_filtered)
 
     return annotations_xywh_not_normalized
