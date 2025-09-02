@@ -41,7 +41,7 @@ def detections_to_yolo_annotations(
 
     """
     annotation = []
-    for xyxy, mask, _, class_id, _, _ in detections:
+    for xyxy, _mask, _, class_id, _, _ in detections:
         if class_id is None:
             raise ValueError("Class ID is required for YOLO annotations.")
 
