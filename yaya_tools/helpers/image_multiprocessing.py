@@ -21,15 +21,28 @@ from yaya_tools.helpers.hashing import get_random_sha1
 logger = logging.getLogger(__name__)
 
 
-def threaded_resize_image(args: tuple[str, str, str, int, int, int, bool]) -> tuple[str, bool]:
-    image_name, source_directory, target_directory, new_width, new_height, interpolation, copy_annotations = args
+def threaded_resize_image(args: tuple[str, str, str, int, int, bool, int, bool]) -> tuple[str, bool]:
     """Threded Resize image"""
+    image_name, source_directory, target_directory, new_width, new_height, keep_aspect_ratio, interpolation, copy_annotations = args
+
     try:
         source_path = os.path.join(source_directory, image_name)
         image = cv2.imread(source_path)
         if image is None:
             logger.error(f"Could not read image {image_name}")
             return image_name, False
+
+        original_height, original_width = image.shape[:2]
+
+        if keep_aspect_ratio:
+            # Compute scale factor
+            aspect_ratio = original_width / original_height
+            if (new_width / new_height) > aspect_ratio:
+                # Height is the limiting factor
+                new_width = int(new_height * aspect_ratio)
+            else:
+                # Width is the limiting factor
+                new_height = int(new_width / aspect_ratio)
 
         resized_image = cv2.resize(image, (new_width, new_height), interpolation=interpolation)
         target_path = os.path.join(target_directory, image_name)
@@ -56,6 +69,7 @@ def multiprocess_resize(
     images_names: list[str],
     new_width: int = 640,
     new_height: int = 640,
+    keep_aspect_ratio: bool = False,
     pool_size: int = 5,
     interpolation: int = cv2.INTER_NEAREST,
     copy_annotations: bool = False,
@@ -96,6 +110,7 @@ def multiprocess_resize(
                             target_directory,
                             new_width,
                             new_height,
+                            keep_aspect_ratio,
                             interpolation,
                             copy_annotations,
                         )

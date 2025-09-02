@@ -38,6 +38,9 @@ def main() -> None:
     parser.add_argument("--width", type=int, default=640, help="Width of the resized image")
     parser.add_argument("--height", type=int, default=640, help="Height of the resized image")
     parser.add_argument(
+        "--keep_aspect_ratio", action="store_true", help="Keep aspect ratio of the resized image (default: False)"
+    )
+    parser.add_argument(
         "--copy_annotations", action="store_true", help="Copy annotations if found to the output folder"
     )
     parser.add_argument("-h", "--help", action="help", help="Show this help message and exit.")
@@ -55,6 +58,7 @@ def main() -> None:
         images_names=images_annotated,
         new_width=args.width,
         new_height=args.height,
+        keep_aspect_ratio=args.keep_aspect_ratio,
         copy_annotations=args.copy_annotations,
     )
 

@@ -94,7 +94,7 @@ options:
 ## YAYA resize
 
 ```bash
-usage: yaya-resize -i DATASET_PATH -o OUTPUT_PATH [--width WIDTH] [--height HEIGHT] [--copy_annotations] [-h] [-v]
+usage: yaya-resize -i DATASET_PATH -o OUTPUT_PATH [--width WIDTH] [--height HEIGHT] [--keep_aspect_ratio] [--copy_annotations] [-h] [-v]
 
 YAYa dataset management tool
 
@@ -105,6 +105,7 @@ options:
                         Path to the output folder
   --width WIDTH         Width of the resized image
   --height HEIGHT       Height of the resized image
+  --keep_aspect_ratio   Keep aspect ratio of the resized image
   --copy_annotations    Copy annotations if found to the output folder
   -h, --help            Show this help message and exit.
   -v                    Show version and exit.
