@@ -400,7 +400,7 @@ def transform_props_make() -> Augumentation:
     transformation = A.Compose(
         [
             PropsAugmentation(
-                prop_dir="data/props",
+                prop_dir="yaya_tools/data/props",
                 n_props=(1, 2),
                 opacity=(0.90, 1.0),  # <- class parameter
                 autoscale=True,  # <- class parameter
@@ -411,7 +411,7 @@ def transform_props_make() -> Augumentation:
                 p=1.0,
             ),
         ],
-        bbox_params=A.BboxParams(format="albumentations", label_fields=["labels"], min_area=100, min_visibility=0.3),
+        bbox_params=A.BboxParams(format="albumentations", min_area=100, min_visibility=0.3),
     )
     return Augumentation(transform=transformation, is_bboxes=True)
 
