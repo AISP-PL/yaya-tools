@@ -5,6 +5,8 @@ from typing import NamedTuple, Optional
 import albumentations as A  # type: ignore
 import cv2
 
+from yaya_tools.augmentations.prop import PropsAugmentation
+
 
 class Augumentation(NamedTuple):
     """This class is used to store the transformation and the type of the transformation"""
@@ -393,6 +395,27 @@ def transform_sepia_make() -> Augumentation:
     return Augumentation(transform=transformation, is_bboxes=False)
 
 
+def transform_props_make() -> Augumentation:
+    """Add random props from yaya_tools/data/props"""
+    transformation = A.Compose(
+        [
+            PropsAugmentation(
+                prop_dir="data/props",
+                n_props=(1, 2),
+                opacity=(0.90, 1.0),  # <- class parameter
+                autoscale=True,  # <- class parameter
+                scale_range=(0.25, 0.5),  # fraction of min(H, W) for prop's longer side
+                rotate_limit=5,
+                flip_prob=0.5,
+                remove_bbox_if_covered_gt=0.70,
+                p=1.0,
+            ),
+        ],
+        bbox_params=A.BboxParams(format="albumentations", label_fields=["labels"], min_area=100, min_visibility=0.3),
+    )
+    return Augumentation(transform=transformation, is_bboxes=True)
+
+
 def augmentation_select(args: argparse.Namespace) -> Optional[Augumentation]:
     """Select any of augmentation, None if not set."""
     if args.flip_horizontal:
@@ -455,5 +478,7 @@ def augmentation_select(args: argparse.Namespace) -> Optional[Augumentation]:
         return transform_grayscale_make()
     if args.sepia:
         return transform_sepia_make()
+    if args.props:
+        return transform_props_make()
 
     return None

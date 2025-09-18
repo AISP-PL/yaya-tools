@@ -17,9 +17,7 @@ from yaya_tools.helpers.annotations import (
     annotations_log_summary,
 )
 from yaya_tools.helpers.augmentations import Augumentation, augmentation_select
-from yaya_tools.helpers.dataset import (
-    load_directory_images_annotatations,
-)
+from yaya_tools.helpers.dataset import load_directory_images_annotatations
 from yaya_tools.helpers.image_multiprocessing import multiprocess_augment
 from yaya_tools.helpers.terminal_logging import logging_terminal_setup
 
@@ -192,6 +190,7 @@ def main() -> None:
         default=-1,
         help="Blackboxing HxH parts of image.",
     )
+    parser.add_argument("--props", action="store_true", required=False, help="Add random props to image.")
     parser.add_argument("--snow", action="store_true", required=False, help="Snow add.")
     parser.add_argument("--rain", action="store_true", required=False, help="Rain add.")
     parser.add_argument("--fog", action="store_true", required=False, help="Fog add.")
