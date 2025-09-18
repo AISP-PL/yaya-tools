@@ -173,4 +173,8 @@ tests/test_dataset/validation.txt
 tests/test_resized/*.jpg
 .results
 tests/test_video/output.mp4
-tests/test_dataset/generated/
+tests/test_dataset/generated/*
+tests/test_dataset/*.detector
+tests/test_dataset/*.json
+
+temp/*

@@ -69,9 +69,18 @@ class PropsAugmentation(DualTransform):
         self.rotate_limit = float(rotate_limit)
         self.flip_prob = float(flip_prob)
         self.remove_bbox_if_covered_gt = float(remove_bbox_if_covered_gt)
+        # Temporary calculated params
+        self._last_params: dict[str, Any] = {}
+        # Image counter
+        self._image_count = 0
+        # Is debug enabled?
+        self._is_debug = False
 
+        # Prop images : RGBA and binary mask
         self._props_rgba: List[np.ndarray] = []
+        # Prop masks : binary mask
         self._props_mask: List[np.ndarray] = []
+        # Load props now
         self._load_props()
 
     def _load_props(self) -> None:
@@ -212,8 +221,8 @@ class PropsAugmentation(DualTransform):
             else:
                 H, W = int(shape[0]), int(shape[1])
             seed = int(params.get("seed", np.random.randint(0, 2**31 - 1)))
-            params_all = self.get_params_dependent_on_targets({"image": image, "seed": seed, "shape": (H, W)})
-            placements = params_all.get("placements", [])
+            self._last_params = self.get_params_dependent_on_targets({"image": image, "seed": seed, "shape": (H, W)})
+            placements = self._last_params.get("placements", [])
 
         if not placements:
             return image
@@ -256,10 +265,9 @@ class PropsAugmentation(DualTransform):
         bboxes: array of shape (N, 4+) in pascal_voc pixel coords.
         Returns an array with boxes removed if occluded > threshold.
         """
-        occlusion_mask = params.get("occlusion_mask", None)
-        H = int(params.get("rows", 0))
-        W = int(params.get("cols", 0))
-
+        occlusion_mask = params.get("occlusion_mask", self._last_params.get("occlusion_mask", None))
+        H = int(params.get("rows", self._last_params.get("rows", None)))
+        W = int(params.get("cols", self._last_params.get("cols", None)))
         if occlusion_mask is None or bboxes is None or len(bboxes) == 0:
             # Ensure ndarray out
             return np.asarray(bboxes) if not isinstance(bboxes, np.ndarray) else bboxes
@@ -272,30 +280,51 @@ class PropsAugmentation(DualTransform):
             occlusion_mask = cv2.resize(occlusion_mask, (W, H), interpolation=cv2.INTER_NEAREST)
             Hm, Wm = H, W
 
-        b = np.asarray(bboxes, dtype=np.float32)
-        keep_mask = np.ones((b.shape[0],), dtype=bool)
+        # XYXY : Convert to pixel coords
+        xyxy = bboxes[:, :4].copy()
+        xyxy[:, 0] *= W
+        xyxy[:, 2] *= W
+        xyxy[:, 1] *= H
+        xyxy[:, 3] *= H
+        xyxy = xyxy.astype(np.int32)
 
-        for i, (x1, y1, x2, y2, *_rest) in enumerate(b):
-            xi1 = int(max(0, min(Wm - 1, np.floor(x1))))
-            yi1 = int(max(0, min(Hm - 1, np.floor(y1))))
-            xi2 = int(max(0, min(Wm, np.ceil(x2))))
-            yi2 = int(max(0, min(Hm, np.ceil(y2))))
+        # Clip to image bounds
+        xyxy[:, 0] = np.clip(xyxy[:, 0], 0, Wm - 1)
+        xyxy[:, 1] = np.clip(xyxy[:, 1], 0, Hm - 1)
+        xyxy[:, 2] = np.clip(xyxy[:, 2], 0, Wm - 1)
+        xyxy[:, 3] = np.clip(xyxy[:, 3], 0, Hm - 1)
 
-            w = max(0, xi2 - xi1)
-            h = max(0, yi2 - yi1)
+        keep_mask = np.ones((bboxes.shape[0],), dtype=bool)
+        for i, (x1, y1, x2, y2) in enumerate(xyxy):
+            w = max(0, x2 - x1)
+            h = max(0, y2 - y1)
             area = max(1, w * h)
             if w == 0 or h == 0:
                 keep_mask[i] = False
                 continue
 
-            sub = occlusion_mask[yi1:yi2, xi1:xi2]
+            sub = occlusion_mask[y1:y2, x1:x2]
             covered = int(sub.sum())
             coverage = covered / float(area)
 
+            # Keep: remove if covered > threshold
             if coverage > self.remove_bbox_if_covered_gt:
                 keep_mask[i] = False
 
-        return b[keep_mask]
+            # Debug : Logging and visualization
+            if self._is_debug and not keep_mask[i]:
+                logger.info(f"Removing bbox {bboxes[i]} due to coverage {coverage:.3f}")
+
+                # Save occlusion mask as image with painted cv2.rectangle of XYXY
+                mask_vis = cv2.cvtColor(occlusion_mask * 255, cv2.COLOR_GRAY2BGR)
+                cv2.rectangle(mask_vis, (x1, y1), (x2, y2), (0, 0, 255), 2)
+                cv2.imwrite(f"temp/mask_im{self._image_count}_b{i}.png", mask_vis)
+
+        # Increment image counter
+        self._image_count += 1
+
+        # Return only kept boxes
+        return bboxes[keep_mask]
 
     def get_transform_init_args_names(self) -> Tuple[str, ...]:
         # For serialization
