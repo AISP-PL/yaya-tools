@@ -84,8 +84,6 @@ class PropsAugmentation(DualTransform):
             img = cv2.imread(pth, cv2.IMREAD_UNCHANGED)  # HxWx(3|4)
             if img is None:
                 continue
-            if img.ndim == 2:  # grayscale -> RGB
-                img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGRA)
             elif img.shape[2] == 3:
                 # No alpha channel; synthesize fully-opaque alpha
                 bgr = img
@@ -96,7 +94,7 @@ class PropsAugmentation(DualTransform):
             else:
                 continue
 
-            rgba = cv2.cvtColor(img, cv2.COLOR_BGRA2RGBA)
+            rgba = img  # cv2.cvtColor(img, cv2.COLOR_BGRA2RGBA)
             alpha = rgba[..., 3]
             # Binary mask: non-zero alpha -> 1
             mask = (alpha > 0).astype(np.uint8)
