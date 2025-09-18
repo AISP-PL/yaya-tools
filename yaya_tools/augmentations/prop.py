@@ -275,7 +275,7 @@ class PropsAugmentation(DualTransform):
         b = np.asarray(bboxes, dtype=np.float32)
         keep_mask = np.ones((b.shape[0],), dtype=bool)
 
-        for i, (x1, y1, x2, y2, *rest) in enumerate(b):
+        for i, (x1, y1, x2, y2, *_rest) in enumerate(b):
             xi1 = int(max(0, min(Wm - 1, np.floor(x1))))
             yi1 = int(max(0, min(Hm - 1, np.floor(y1))))
             xi2 = int(max(0, min(Wm, np.ceil(x2))))
