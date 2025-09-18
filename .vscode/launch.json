@@ -104,7 +104,7 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/yaya_tools/yaya_augument.py",
-            "args": ["--dataset_path", "tests/test_dataset", "--props"],
+            "args": ["--dataset_path", "tests/test_dataset", "--big_props"],
             "console": "integratedTerminal",
             "justMyCode": false
         },
