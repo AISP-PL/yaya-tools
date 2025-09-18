@@ -191,6 +191,7 @@ def main() -> None:
         help="Blackboxing HxH parts of image.",
     )
     parser.add_argument("--props", action="store_true", required=False, help="Add random props to image.")
+    parser.add_argument("--big_props", action="store_true", required=False, help="Add big random props to image.")
     parser.add_argument("--snow", action="store_true", required=False, help="Snow add.")
     parser.add_argument("--rain", action="store_true", required=False, help="Rain add.")
     parser.add_argument("--fog", action="store_true", required=False, help="Fog add.")

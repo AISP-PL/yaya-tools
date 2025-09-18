@@ -2,7 +2,7 @@
 import glob
 import logging
 import os
-from typing import Any, List, Sequence, Tuple, Union
+from typing import Any, List, Tuple, Union
 
 import cv2
 import numpy as np
