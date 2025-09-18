@@ -401,7 +401,7 @@ def transform_multi_props_make() -> Augumentation:
         [
             PropsAugmentation(
                 prop_dir="yaya_tools/data/props",
-                n_props=(2, 6),
+                n_props=(3, 7),
                 opacity=(0.80, 1.0),  # <- class parameter
                 autoscale=True,  # <- class parameter
                 scale_range=(0.25, 0.5),  # fraction of min(H, W) for prop's longer side
