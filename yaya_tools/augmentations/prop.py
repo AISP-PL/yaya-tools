@@ -95,7 +95,7 @@ class PropsAugmentation(DualTransform):
                 continue
 
             rgba = img  # cv2.cvtColor(img, cv2.COLOR_BGRA2RGBA)
-            alpha = rgba[..., 3]
+            alpha = rgba[..., 3]  # type: ignore
             # Binary mask: non-zero alpha -> 1
             mask = (alpha > 0).astype(np.uint8)
             self._props_rgba.append(rgba)
@@ -132,7 +132,7 @@ class PropsAugmentation(DualTransform):
             borderMode=cv2.BORDER_CONSTANT,
             borderValue=(0, 0, 0, 0),
         )
-        rotated_mask = cv2.warpAffine(
+        rotated_mask = cv2.warpAffine(  # type: ignore
             mask,
             M,
             (new_w, new_h),
