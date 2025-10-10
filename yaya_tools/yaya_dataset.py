@@ -17,6 +17,7 @@ from yaya_tools.helpers.annotations import (
     annotations_warnings_small_area,
     annotations_warnings_xywh_not_normalized,
     annotations_warnings_xyxy_not_normalized,
+    annotations_remap_classes,
 )
 from yaya_tools.helpers.checks import get_missing_class_ids
 from yaya_tools.helpers.coco_format import (
@@ -61,6 +62,14 @@ def main() -> None:
         type=str,
         required=True,
         help="Path to the dataset folder",
+    )
+    parser.add_argument(
+        "--class_remap_yaml_path",
+        type=str,
+        help="Path to the class remapping YAML file",
+    )
+    parser.add_argument(
+        "--exclude_unmapped", action="store_true", help="Exclude unmapped annotations"
     )
     parser.add_argument(
         "--fix_small_area", action="store_true", help="Fix too small annotation area"
@@ -132,6 +141,16 @@ def main() -> None:
     all_annotations_sv, all_negatives = annotations_load_as_sv(
         all_images_annotations, dataset_path
     )
+
+    if args.class_remap_yaml_path:
+        class_remap_yaml_path: str = args.class_remap_yaml_path
+
+        detections_remapped = annotations_remap_classes(
+            all_annotations_sv,
+            class_remap_yaml_path,
+            exclude_unmapped=args.exclude_unmapped,
+        )
+        annotations_update_save(dataset_path, all_annotations_sv, detections_remapped)
 
     # Warnings : Not normalized XYXY
     warnings_xyxy = annotations_warnings_xyxy_not_normalized(all_annotations_sv)
