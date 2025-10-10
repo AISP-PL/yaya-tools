@@ -245,6 +245,7 @@ def main() -> None:
     # Validation list : Logging
     annotations_log_summary("Valid", validations_sv, validation_negative)
 
+    # convert dataset to COCO format
     if args.coco_format:
         if not args.data_yaml_path:
             logger.error("COCO format requires passing --data_yaml_path")
@@ -257,10 +258,12 @@ def main() -> None:
 
         coco_dataset = convert_dataset_to_coco_format(dataset_path, data_yaml_path)
 
+        # split dataset into train, valid and test datasets
         coco_dataset_train, coco_dataset_valid, coco_dataset_test = (
             train_valid_test_split(coco_dataset)
         )
 
+        # save dataset under the same path with _coco suffix
         original_dataset_path = Path(dataset_path)
         coco_dataset_path = original_dataset_path.with_name(
             f"{original_dataset_path.name}_coco"
