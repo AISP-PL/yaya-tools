@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 """
     COCO format required by e.g RFDETR
-    
+
     dataset/
     ├── train/
     │   ├── _annotations.coco.json

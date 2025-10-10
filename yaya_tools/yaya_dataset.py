@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
+from tqdm import tqdm
 
 from yaya_tools import __version__
 from yaya_tools.helpers.annotations import (
@@ -253,41 +254,62 @@ def main() -> None:
 
         data_yaml_path: str = args.data_yaml_path
 
-        # dataset cannot contain images with alpha channel -> convert RGBA to RGB
-        convert_rgba_to_rgb(dataset_path)
+        with tqdm(
+            desc="Converting dataset to COCO format", total=6, unit="step"
+        ) as pbar:
+            # dataset cannot contain images with alpha channel -> convert RGBA to RGB
+            pbar.set_description("Converting RGBA to RGB")
+            convert_rgba_to_rgb(dataset_path)
+            pbar.update()
 
-        coco_dataset = convert_dataset_to_coco_format(dataset_path, data_yaml_path)
+            pbar.set_description("Converting dataset to COCO format")
+            coco_dataset = convert_dataset_to_coco_format(dataset_path, data_yaml_path)
+            pbar.update()
 
-        # split dataset into train, valid and test datasets
-        coco_dataset_train, coco_dataset_valid, coco_dataset_test = (
-            train_valid_test_split(coco_dataset)
-        )
+            # split dataset into train, valid and test datasets
+            pbar.set_description(
+                "Splitting dataset into train, valid and test datasets"
+            )
+            coco_dataset_train, coco_dataset_valid, coco_dataset_test = (
+                train_valid_test_split(coco_dataset)
+            )
+            pbar.update()
 
-        # save dataset under the same path with _coco suffix
-        original_dataset_path = Path(dataset_path)
-        coco_dataset_path = original_dataset_path.with_name(
-            f"{original_dataset_path.name}_coco"
-        )
+            # save dataset under the same path with _coco suffix
+            original_dataset_path = Path(dataset_path)
+            coco_dataset_path = original_dataset_path.with_name(
+                f"{original_dataset_path.name}_coco"
+            )
 
-        save_dataset_coco_format(
-            dataset=coco_dataset_train,
-            images_path=str(coco_dataset_path / "train"),
-            annotations_path=str(
-                coco_dataset_path / "train" / "_annotations.coco.json"
-            ),
-        )
-        save_dataset_coco_format(
-            dataset=coco_dataset_valid,
-            images_path=str(coco_dataset_path / "valid"),
-            annotations_path=str(
-                coco_dataset_path / "valid" / "_annotations.coco.json"
-            ),
-        )
-        save_dataset_coco_format(
-            dataset=coco_dataset_test,
-            images_path=str(coco_dataset_path / "test"),
-            annotations_path=str(coco_dataset_path / "test" / "_annotations.coco.json"),
-        )
+            pbar.set_description("Saving training dataset in COCO format")
+            save_dataset_coco_format(
+                dataset=coco_dataset_train,
+                images_path=str(coco_dataset_path / "train"),
+                annotations_path=str(
+                    coco_dataset_path / "train" / "_annotations.coco.json"
+                ),
+            )
+            pbar.update()
+
+            pbar.set_description("Saving valid dataset in COCO format")
+            save_dataset_coco_format(
+                dataset=coco_dataset_valid,
+                images_path=str(coco_dataset_path / "valid"),
+                annotations_path=str(
+                    coco_dataset_path / "valid" / "_annotations.coco.json"
+                ),
+            )
+            pbar.update()
+
+            pbar.set_description("Saving test dataset in COCO format")
+            save_dataset_coco_format(
+                dataset=coco_dataset_test,
+                images_path=str(coco_dataset_path / "test"),
+                annotations_path=str(
+                    coco_dataset_path / "test" / "_annotations.coco.json"
+                ),
+            )
+            pbar.update()
 
 
 if __name__ == "__main__":
