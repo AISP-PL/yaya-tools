@@ -394,7 +394,7 @@ def annotations_filter_orientation(
     unique_files = np.unique(annotations_files)
     files_orientation: np.ndarray = np.array(
         [
-            get_detections_orientation(annotations[annotations_files == filename])
+            get_detections_orientation(annotations[annotations_files == filename])  # type: ignore
             for filename in unique_files
         ],
         dtype=int,  # type: ignore
@@ -617,12 +617,12 @@ def annotations_remap_classes(
     if exclude_unmapped:
         filtered_class_ids = list(class_ids_from_to.keys())
         all_annotations_sv = all_annotations_sv[
-            np.isin(all_annotations_sv.class_id, filtered_class_ids)
+            np.isin(all_annotations_sv.class_id, filtered_class_ids)  # type: ignore
         ]
 
     new_class_ids = [
         class_ids_from_to.get(class_id, class_id)
-        for class_id in all_annotations_sv.class_id
+        for class_id in all_annotations_sv.class_id  # type: ignore
     ]
     all_annotations_sv.class_id = np.array(new_class_ids)
 
