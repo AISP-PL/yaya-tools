@@ -5,6 +5,27 @@ import cv2
 import supervision as sv
 from tqdm import tqdm
 
+"""
+    COCO format required by e.g RFDETR
+    
+    dataset/
+    ├── train/
+    │   ├── _annotations.coco.json
+    │   ├── image1.jpg
+    │   ├── image2.jpg
+    │   └── ... (other image files)
+    ├── valid/
+    │   ├── _annotations.coco.json
+    │   ├── image1.jpg
+    │   ├── image2.jpg
+    │   └── ... (other image files)
+    └── test/
+        ├── _annotations.coco.json
+        ├── image1.jpg
+        ├── image2.jpg
+        └── ... (other image files)
+"""
+
 
 def convert_rgba_to_rgb(dataset_path: str):
     """Converts all RGBA images in a dataset to RGB format.
