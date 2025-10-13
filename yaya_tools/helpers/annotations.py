@@ -54,9 +54,7 @@ def file_annotations_to_sv(imagepath: str) -> Optional[sv.Detections]:
     )
 
     # Image name : Add the file path
-    file_detections.data["filepaths"] = np.array(
-        [imagepath] * len(file_detections.xyxy)
-    )
+    file_detections.data["filepaths"] = np.array([imagepath] * len(file_detections.xyxy))
 
     return file_detections
 
@@ -83,9 +81,7 @@ def annotations_sv_to_yolo_file(imagepath: str, annotations_sv: sv.Detections) -
     annotations_path = Path(imagepath).with_suffix(".txt")
 
     # Lines : Convert the annotations to YOLO format
-    lines: list[str] = detections_to_yolo_annotations(
-        annotations_sv, image_shape=(1, 1, 3)
-    )
+    lines: list[str] = detections_to_yolo_annotations(annotations_sv, image_shape=(1, 1, 3))
 
     # Annotations : Save the annotations
     with open(str(annotations_path), "w") as file:
@@ -126,9 +122,7 @@ def annotations_load_as_sv(
             if image_path in filter_filenames
         }
 
-    for image_name, annotations_name in tqdm.tqdm(
-        filtered_images_annotations.items(), desc="Loading annotations"
-    ):
+    for image_name, annotations_name in tqdm.tqdm(filtered_images_annotations.items(), desc="Loading annotations"):
         # Skip images without annotations
         if annotations_name is None:
             continue
@@ -150,18 +144,14 @@ def annotations_load_as_sv(
             continue
 
         # Annotated sample : Add the file path
-        file_detections.data["filepaths"] = np.array(
-            [image_name] * len(file_detections.xyxy)
-        )
+        file_detections.data["filepaths"] = np.array([image_name] * len(file_detections.xyxy))
         sv_detections_list.append(file_detections)
 
     detections = sv.Detections.merge(sv_detections_list)
     return detections, negative_samples
 
 
-def annotations_log_summary(
-    dataset_name: str, annotations_sv: sv.Detections, negative_samples: list[str]
-) -> None:
+def annotations_log_summary(dataset_name: str, annotations_sv: sv.Detections, negative_samples: list[str]) -> None:
     """
     Log a summary of the annotations, how many classes, how many annotations,
     For each class log count/all and %% of the total annotations, add horizontal bar
@@ -174,16 +164,9 @@ def annotations_log_summary(
     # Data : parse
     unique_classes = np.unique(annotations_sv.class_id)
     total_annotations = len(annotations_sv.xyxy)
-    total_files = np.unique(annotations_sv.data.get("filepaths", np.ndarray([]))).shape[
-        0
-    ] + len(negative_samples)
+    total_files = np.unique(annotations_sv.data.get("filepaths", np.ndarray([]))).shape[0] + len(negative_samples)
 
-    logger.info(
-        "%s has %u annotations based on %u files.",
-        dataset_name,
-        total_annotations,
-        total_files,
-    )
+    logger.info("%s has %u annotations based on %u files.", dataset_name,  total_annotations,  total_files)
     logger.info("%s dataset has %u classes.", dataset_name, len(unique_classes))
     for class_id in unique_classes:
         class_count = (annotations_sv.class_id == class_id).sum()
@@ -245,16 +228,10 @@ def annotations_diff(
     common_files = np.intersect1d(source_files_unique, dest_files_unique)
 
     # Filter : Only common files
-    source_annotations_filtered: sv.Detections = source_annotations[
-        np.isin(source_files, common_files)
-    ]  # type: ignore
-    dest_annotations_filtered: sv.Detections = dest_annotations[
-        np.isin(dest_files, common_files)
-    ]  # type: ignore
+    source_annotations_filtered: sv.Detections = source_annotations[np.isin(source_files, common_files)]  # type: ignore
+    dest_annotations_filtered: sv.Detections = dest_annotations[np.isin(dest_files, common_files)]  # type: ignore
 
-    source_filtered_files = source_annotations_filtered.data.get(
-        "filepaths", np.array([])
-    )
+    source_filtered_files = source_annotations_filtered.data.get("filepaths", np.array([]))
     dest_filtered_files = dest_annotations_filtered.data.get("filepaths", np.array([]))
 
     # Diff : Find the difference
@@ -327,9 +304,7 @@ def annotations_append(dataset_path: str, new_annotations: sv.Detections) -> Non
             file_annotations_sv = sv.Detections.empty()
 
         # Filter : File new annotations
-        file_new_annotations: sv.Detections = new_annotations[
-            annotations_files == filename
-        ]  # type: ignore
+        file_new_annotations: sv.Detections = new_annotations[annotations_files == filename]  # type: ignore
 
         # Merge : Append new annotations
         file_annotations_sv = sv.Detections.merge(
@@ -340,48 +315,33 @@ def annotations_append(dataset_path: str, new_annotations: sv.Detections) -> Non
         )
 
         # Save : Annotations
-        annotations_sv_to_yolo_file(
-            imagepath=os.path.join(dataset_path, filename),
-            annotations_sv=file_annotations_sv,
-        )
+        annotations_sv_to_yolo_file(imagepath=os.path.join(dataset_path, filename), annotations_sv=file_annotations_sv)
 
 
-def annotations_filter_large(
-    annotations: sv.Detections, min_area: float = 0.20
-) -> sv.Detections:
+def annotations_filter_large(annotations: sv.Detections, min_area: float = 0.20) -> sv.Detections:
     """Filter out large annotations from the dataset"""
     return annotations[annotations.area >= min_area]  # type: ignore
 
 
-def annotations_filter_tiny(
-    annotations: sv.Detections, max_area: float = 0.01
-) -> sv.Detections:
+def annotations_filter_tiny(annotations: sv.Detections, max_area: float = 0.01) -> sv.Detections:
     """Filter out large annotations from the dataset"""
     return annotations[annotations.area > max_area]  # type: ignore
 
 
-def annotations_filter_crowded(
-    annotations: sv.Detections, min_objects: int = 7
-) -> sv.Detections:
+def annotations_filter_crowded(annotations: sv.Detections, min_objects: int = 7) -> sv.Detections:
     """Filter out large annotations from the dataset"""
     annotations_files = annotations.data.get("filepaths", np.array([], dtype=str))
     unique_files = np.unique(annotations_files)
-    files_sum = np.array(
-        [np.sum(annotations_files == filename) for filename in unique_files]
-    )
+    files_sum = np.array([np.sum(annotations_files == filename) for filename in unique_files])
     files_approved = unique_files[files_sum >= min_objects]
     return annotations[np.isin(annotations_files, files_approved)]  # type: ignore
 
 
-def annotations_filter_spacious(
-    annotations: sv.Detections, max_objects: int = 4
-) -> sv.Detections:
+def annotations_filter_spacious(annotations: sv.Detections, max_objects: int = 4) -> sv.Detections:
     """Filter out large annotations from the dataset"""
     annotations_files = annotations.data.get("filepaths", np.array([]))
     unique_files = np.unique(annotations_files)
-    files_sum = np.array(
-        [np.sum(annotations_files == filename) for filename in unique_files]
-    )
+    files_sum = np.array([np.sum(annotations_files == filename) for filename in unique_files])
     files_approved = unique_files[files_sum < max_objects]
     return annotations[np.isin(annotations_files, files_approved)]  # type: ignore
 
@@ -393,11 +353,7 @@ def annotations_filter_orientation(
     annotations_files = annotations.data.get("filepaths", np.array([]))
     unique_files = np.unique(annotations_files)
     files_orientation: np.ndarray = np.array(
-        [
-            get_detections_orientation(annotations[annotations_files == filename])  # type: ignore
-            for filename in unique_files
-        ],
-        dtype=int,  # type: ignore
+        [get_detections_orientation(annotations[annotations_files == filename]) for filename in unique_files], dtype=int  # type: ignore
     )
     files_approved = unique_files[files_orientation == int(orientation)]
     return annotations[np.isin(annotations_files, files_approved)]  # type: ignore
@@ -426,25 +382,15 @@ def annotations_filter_equalize(
     # Inverted stats : Create as 100% - class_ratio
     # - this are probabilities of the class to be selected
     max_class_ratio = max(dataset_stats.values())
-    differences = {
-        class_id: max_class_ratio - class_ratio
-        for class_id, class_ratio in dataset_stats.items()
-    }
+    differences = {class_id: max_class_ratio - class_ratio for class_id, class_ratio in dataset_stats.items()}
 
     # Normalize differences to probabilities suming to 1
     total_differences = sum(differences.values())
-    class_id_probabilities = {
-        class_id: difference / total_differences
-        for class_id, difference in differences.items()
-    }
+    class_id_probabilities = {class_id: difference / total_differences for class_id, difference in differences.items()}
 
     # Based on class_id probabilities, calculate the annotations probabilities, then normalize to sum to 1
-    annotations_probabilities = np.array(
-        [class_id_probabilities[class_id] for class_id in annotations_sv.class_id]
-    )
-    annotations_probabilities = (
-        annotations_probabilities / annotations_probabilities.sum()
-    )
+    annotations_probabilities = np.array([class_id_probabilities[class_id] for class_id in annotations_sv.class_id])
+    annotations_probabilities = annotations_probabilities / annotations_probabilities.sum()
 
     # Filter : Create equalized subset of max_length with probabilities of selected class_id
     selected_indexes = np.random.choice(
@@ -465,13 +411,9 @@ def annotations_warnings_invalid_whratio(
     """Filter out annotations with invalid width/height ratio from the dataset"""
     annotations_widths = annotations_sv.xyxy[:, 2] - annotations_sv.xyxy[:, 0]  # type: ignore
     annotations_heights = annotations_sv.xyxy[:, 3] - annotations_sv.xyxy[:, 1]  # type: ignore
-    wh_ratios = np.divide(
-        annotations_widths, np.maximum(annotations_heights, 1e-6)
-    )  # Avoid division by zero
+    wh_ratios = np.divide(annotations_widths, np.maximum(annotations_heights, 1e-6))  # Avoid division by zero
 
-    invalid: sv.Detections = annotations_sv[
-        (wh_ratios < min_ratio) | (wh_ratios > max_ratio)
-    ]  # type: ignore
+    invalid: sv.Detections = annotations_sv[(wh_ratios < min_ratio) | (wh_ratios > max_ratio)]  # type: ignore
     if len(invalid.xyxy) != 0:
         logger.warning(
             "Found %u annotations with invalid width/height ratio <%2.4f or >%2.4f",
@@ -483,9 +425,7 @@ def annotations_warnings_invalid_whratio(
     return invalid
 
 
-def annotations_warnings_invalid_width(
-    annotations_sv: sv.Detections, min_width: float = 0.009
-) -> sv.Detections:
+def annotations_warnings_invalid_width(annotations_sv: sv.Detections, min_width: float = 0.009) -> sv.Detections:
     """Filter out too small annotations from the dataset"""
     annotations_widths = annotations_sv.xyxy[:, 2] - annotations_sv.xyxy[:, 0]  # type: ignore
     invalid: sv.Detections = annotations_sv[annotations_widths < min_width]  # type: ignore
@@ -499,9 +439,7 @@ def annotations_warnings_invalid_width(
     return invalid
 
 
-def annotations_warnings_invalid_height(
-    annotations_sv: sv.Detections, min_height: float = 0.005
-) -> sv.Detections:
+def annotations_warnings_invalid_height(annotations_sv: sv.Detections, min_height: float = 0.005) -> sv.Detections:
     """Filter out too small annotations from the dataset"""
     annotations_heights = annotations_sv.xyxy[:, 3] - annotations_sv.xyxy[:, 1]  # type: ignore
     invalid: sv.Detections = annotations_sv[annotations_heights < min_height]  # type: ignore
@@ -515,13 +453,9 @@ def annotations_warnings_invalid_height(
     return invalid
 
 
-def annotations_warnings_small_area(
-    annotations_sv: sv.Detections, too_small: float = 1e-5
-) -> sv.Detections:
+def annotations_warnings_small_area(annotations_sv: sv.Detections, too_small: float = 1e-5) -> sv.Detections:
     """Filter out too small annotations from the dataset"""
-    annotations_too_small: sv.Detections = annotations_sv[
-        annotations_sv.area <= too_small
-    ]  # type: ignore
+    annotations_too_small: sv.Detections = annotations_sv[annotations_sv.area <= too_small]  # type: ignore
     if len(annotations_too_small.xyxy) != 0:
         logger.warning(
             "Found %u annotations with too small area (approx %upx for 1024x1024 image)!",
@@ -532,9 +466,7 @@ def annotations_warnings_small_area(
     return annotations_too_small
 
 
-def annotations_warnings_xywh_not_normalized(
-    annotations_sv: sv.Detections,
-) -> sv.Detections:
+def annotations_warnings_xywh_not_normalized(annotations_sv: sv.Detections,) -> sv.Detections:
     """Filter not normalized annotations (XYWH)"""
     xyxy: np.ndarray = annotations_sv.xyxy
     xywh: np.ndarray = xyxy_to_xywh(xyxy)
@@ -544,8 +476,7 @@ def annotations_warnings_xywh_not_normalized(
     ]  # type: ignore
     if len(annotations_xywh_not_normalized.xyxy) != 0:
         logger.warning(
-            "Found %u not normalized 0..1 XYWH annotations boxes!",
-            len(annotations_xywh_not_normalized.xyxy),
+            "Found %u not normalized 0..1 XYWH annotations boxes!", len(annotations_xywh_not_normalized.xyxy),
         )
 
     # XYWH : fix using np.clip
@@ -560,9 +491,7 @@ def annotations_warnings_xywh_not_normalized(
     return annotations_xywh_not_normalized
 
 
-def annotations_warnings_xyxy_not_normalized(
-    annotations_sv: sv.Detections,
-) -> sv.Detections:
+def annotations_warnings_xyxy_not_normalized(annotations_sv: sv.Detections,) -> sv.Detections:
     """Filter not normalized annotations (XYXY)"""
     xyxy: np.ndarray = annotations_sv.xyxy
     annotations_xyxy_not_normalized: sv.Detections = annotations_sv[
@@ -570,8 +499,7 @@ def annotations_warnings_xyxy_not_normalized(
     ]  # type: ignore
     if len(annotations_xyxy_not_normalized.xyxy) != 0:
         logger.warning(
-            "Found %u not normalized 0..1 XYXY annotations boxes!",
-            len(annotations_xyxy_not_normalized.xyxy),
+            "Found %u not normalized 0..1 XYXY annotations boxes!", len(annotations_xyxy_not_normalized.xyxy),
         )
 
     # XYXY : fix using np.clip
