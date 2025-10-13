@@ -53,73 +53,24 @@ def main() -> None:
     """
     logging_terminal_setup()
     # Argument parser
-    parser = argparse.ArgumentParser(
-        add_help=False, description="YAYa dataset management tool"
-    )
-    parser.add_argument(
-        "-i",
-        "--dataset_path",
-        type=str,
-        required=True,
-        help="Path to the dataset folder",
-    )
-    parser.add_argument(
-        "--class_remap_yaml_path",
-        type=str,
-        help="Path to the class remapping YAML file",
-    )
-    parser.add_argument(
-        "--exclude_unmapped", action="store_true", help="Exclude unmapped annotations"
-    )
-    parser.add_argument(
-        "--fix_small_area", action="store_true", help="Fix too small annotation area"
-    )
-    parser.add_argument(
-        "--fix_invalid_width", action="store_true", help="Fix invalid annotation width"
-    )
-    parser.add_argument(
-        "--fix_invalid_height",
-        action="store_true",
-        help="Fix invalid annotation height",
-    )
-    parser.add_argument(
-        "--fix_invalid_wh_ratio",
-        action="store_true",
-        help="Fix invalid annotation width/height ratio",
-    )
-    parser.add_argument(
-        "--fix_xywh_normalization", action="store_true", help="Fix xywh normalization"
-    )
-    parser.add_argument(
-        "--fix_xyxy_normalization", action="store_true", help="Fix xyxy normalization"
-    )
-    parser.add_argument(
-        "--copy_negatives_to", type=str, help="Path to copy the negative samples only"
-    )
-    parser.add_argument(
-        "--train_all", action="store_true", help="Use all images for training dataset"
-    )
-    parser.add_argument(
-        "--validation_force_create",
-        action="store_true",
-        help="Recreate the validation.txt file from the dataset folder",
-    )
-    parser.add_argument(
-        "--ratio",
-        type=float,
-        default=0.2,
-        help="Validation ratio (default=0.2)",
-    )
-    parser.add_argument(
-        "--coco_format", action="store_true", help="Convert dataset to COCO format"
-    )
+    parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
+    parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
+    parser.add_argument("--class_remap_yaml_path", type=str, help="Path to the class remapping YAML file")
+    parser.add_argument("--exclude_unmapped", action="store_true", help="Exclude unmapped annotations")
+    parser.add_argument("--fix_small_area", action="store_true", help="Fix too small annotation area")
+    parser.add_argument("--fix_invalid_width", action="store_true", help="Fix invalid annotation width")
+    parser.add_argument("--fix_invalid_height", action="store_true", help="Fix invalid annotation height")
+    parser.add_argument("--fix_invalid_wh_ratio", action="store_true", help="Fix invalid annotation width/height ratio")
+    parser.add_argument("--fix_xywh_normalization", action="store_true", help="Fix xywh normalization")
+    parser.add_argument("--fix_xyxy_normalization", action="store_true", help="Fix xyxy normalization")
+    parser.add_argument("--copy_negatives_to", type=str, help="Path to copy the negative samples only")
+    parser.add_argument("--train_all", action="store_true", help="Use all images for training dataset")
+    parser.add_argument("--validation_force_create", action="store_true", help="Recreate the validation.txt file from the dataset folder")
+    parser.add_argument("--ratio", type=float, default=0.2, help="Validation ratio (default=0.2)")
+    parser.add_argument("--coco_format", action="store_true", help="Convert dataset to COCO format")
     parser.add_argument("--data_yaml_path", type=str, help="Path to data yaml file")
-    parser.add_argument(
-        "-h", "--help", action="help", help="Show this help message and exit."
-    )
-    parser.add_argument(
-        "-v", action="version", version=__version__, help="Show version and exit."
-    )
+    parser.add_argument("-h", "--help", action="help", help="Show this help message and exit.")
+    parser.add_argument("-v", action="version", version=__version__, help="Show version and exit.")
     args = parser.parse_args()
 
     dataset_path: str = args.dataset_path
@@ -127,20 +78,14 @@ def main() -> None:
     # Training : List of filenames
     train_list: list[str] = load_file_to_list(os.path.join(dataset_path, "train.txt"))
     # Validation : List of filenames
-    validation_list: list[str] = load_file_to_list(
-        os.path.join(dataset_path, "validation.txt")
-    )
+    validation_list: list[str] = load_file_to_list(os.path.join(dataset_path, "validation.txt"))
     # All images : with optional annotation filename
-    all_images_annotations: dict[str, Optional[str]] = (
-        load_directory_images_annotatations(dataset_path)
-    )
+    all_images_annotations: dict[str, Optional[str]] = (load_directory_images_annotatations(dataset_path))
     # Images annotated : Filter only
     images_annotated: list[str] = get_images_annotated(all_images_annotations)
 
     # All annotations as SV : Get
-    all_annotations_sv, all_negatives = annotations_load_as_sv(
-        all_images_annotations, dataset_path
-    )
+    all_annotations_sv, all_negatives = annotations_load_as_sv(all_images_annotations, dataset_path)
 
     if args.class_remap_yaml_path:
         class_remap_yaml_path: str = args.class_remap_yaml_path
@@ -170,23 +115,17 @@ def main() -> None:
     # Error: Check too small annotation width
     warnings_invalid_width = annotations_warnings_invalid_width(all_annotations_sv)
     if args.fix_invalid_width:
-        annotations_remove_save(
-            dataset_path, all_annotations_sv, warnings_invalid_width
-        )
+        annotations_remove_save(dataset_path, all_annotations_sv, warnings_invalid_width)
 
     # Error: Check too small annotation height
     warnings_invalid_height = annotations_warnings_invalid_height(all_annotations_sv)
     if args.fix_invalid_height:
-        annotations_remove_save(
-            dataset_path, all_annotations_sv, warnings_invalid_height
-        )
+        annotations_remove_save(dataset_path, all_annotations_sv, warnings_invalid_height)
 
     # Warnings : Check invalid W/H ratio
     warnings_invalid_wh_ratio = annotations_warnings_invalid_whratio(all_annotations_sv)
     if args.fix_invalid_wh_ratio:
-        annotations_remove_save(
-            dataset_path, all_annotations_sv, warnings_invalid_wh_ratio
-        )
+        annotations_remove_save(dataset_path, all_annotations_sv, warnings_invalid_wh_ratio)
 
     # Negatives : Extract
     if args.copy_negatives_to:
@@ -195,18 +134,14 @@ def main() -> None:
     # Validation : Recreate
     if args.validation_force_create:
         # Validation dataset  : Create as list of files
-        validation_list = dataset_create_validation(
-            all_annotations_sv, all_negatives, ratio=args.ratio
-        )
+        validation_list = dataset_create_validation(all_annotations_sv, all_negatives, ratio=args.ratio)
 
     # Training list : Set to all annotated images when --train_all is True, else remove validation images
     train_list_orig = train_list.copy()
     if args.train_all:
         train_list = images_annotated
     else:
-        train_list = [
-            img_path for img_path in images_annotated if img_path not in validation_list
-        ]
+        train_list = [img_path for img_path in images_annotated if img_path not in validation_list]
     train_diff = len(train_list_orig) - len(train_list)
 
     # Train and val annotations : Filter
