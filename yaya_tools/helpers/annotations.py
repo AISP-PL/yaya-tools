@@ -166,7 +166,7 @@ def annotations_log_summary(dataset_name: str, annotations_sv: sv.Detections, ne
     total_annotations = len(annotations_sv.xyxy)
     total_files = np.unique(annotations_sv.data.get("filepaths", np.ndarray([]))).shape[0] + len(negative_samples)
 
-    logger.info("%s has %u annotations based on %u files.", dataset_name, total_annotations,  total_files)
+    logger.info("%s has %u annotations based on %u files.", dataset_name, total_annotations, total_files)
     logger.info("%s dataset has %u classes.", dataset_name, len(unique_classes))
     for class_id in unique_classes:
         class_count = (annotations_sv.class_id == class_id).sum()
@@ -468,7 +468,7 @@ def annotations_warnings_xywh_not_normalized(annotations_sv: sv.Detections) -> s
     ]  # type: ignore
     if len(annotations_xywh_not_normalized.xyxy) != 0:
         logger.warning(
-            "Found %u not normalized 0..1 XYWH annotations boxes!", len(annotations_xywh_not_normalized.xyxy),
+            "Found %u not normalized 0..1 XYWH annotations boxes!", len(annotations_xywh_not_normalized.xyxy)
         )
 
     # XYWH : fix using np.clip
@@ -491,7 +491,7 @@ def annotations_warnings_xyxy_not_normalized(annotations_sv: sv.Detections) -> s
     ]  # type: ignore
     if len(annotations_xyxy_not_normalized.xyxy) != 0:
         logger.warning(
-            "Found %u not normalized 0..1 XYXY annotations boxes!", len(annotations_xyxy_not_normalized.xyxy),
+            "Found %u not normalized 0..1 XYXY annotations boxes!", len(annotations_xyxy_not_normalized.xyxy)
         )
 
     # XYXY : fix using np.clip
