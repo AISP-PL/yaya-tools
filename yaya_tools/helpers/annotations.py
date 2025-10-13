@@ -166,7 +166,7 @@ def annotations_log_summary(dataset_name: str, annotations_sv: sv.Detections, ne
     total_annotations = len(annotations_sv.xyxy)
     total_files = np.unique(annotations_sv.data.get("filepaths", np.ndarray([]))).shape[0] + len(negative_samples)
 
-    logger.info("%s has %u annotations based on %u files.", dataset_name,  total_annotations,  total_files)
+    logger.info("%s has %u annotations based on %u files.", dataset_name, total_annotations,  total_files)
     logger.info("%s dataset has %u classes.", dataset_name, len(unique_classes))
     for class_id in unique_classes:
         class_count = (annotations_sv.class_id == class_id).sum()
@@ -239,12 +239,8 @@ def annotations_diff(
     source_removed_annotations: list[sv.Detections] = []
     source_fitting_annotations: list[sv.Detections] = []
     for file_path in tqdm.tqdm(common_files, desc="Calculating annotations diff"):
-        source_annotations_file: sv.Detections = source_annotations_filtered[
-            source_filtered_files == file_path
-        ]  # type: ignore
-        dest_annotations_file: sv.Detections = dest_annotations_filtered[
-            dest_filtered_files == file_path
-        ]  # type: ignore
+        source_annotations_file: sv.Detections = source_annotations_filtered[source_filtered_files == file_path]  # type: ignore
+        dest_annotations_file: sv.Detections = dest_annotations_filtered[dest_filtered_files == file_path]  # type: ignore
 
         # Check : Empty
         if source_annotations_file.xyxy.size == 0:
@@ -297,9 +293,7 @@ def annotations_append(dataset_path: str, new_annotations: sv.Detections) -> Non
     unique_files = np.unique(annotations_files)
     for filename in tqdm.tqdm(unique_files, desc="Appending annotations"):
         # Dataset : Load annotations from this file inside dataset, fallback to empty
-        file_annotations_sv = file_annotations_to_sv(
-            imagepath=os.path.join(dataset_path, filename)
-        )
+        file_annotations_sv = file_annotations_to_sv(imagepath=os.path.join(dataset_path, filename))
         if file_annotations_sv is None:
             file_annotations_sv = sv.Detections.empty()
 
@@ -346,9 +340,7 @@ def annotations_filter_spacious(annotations: sv.Detections, max_objects: int = 4
     return annotations[np.isin(annotations_files, files_approved)]  # type: ignore
 
 
-def annotations_filter_orientation(
-    annotations: sv.Detections, orientation: DetectionsOrientation
-) -> sv.Detections:
+def annotations_filter_orientation(annotations: sv.Detections, orientation: DetectionsOrientation) -> sv.Detections:
     """Filter out horizontal annotations from the dataset"""
     annotations_files = annotations.data.get("filepaths", np.array([]))
     unique_files = np.unique(annotations_files)
@@ -466,7 +458,7 @@ def annotations_warnings_small_area(annotations_sv: sv.Detections, too_small: fl
     return annotations_too_small
 
 
-def annotations_warnings_xywh_not_normalized(annotations_sv: sv.Detections,) -> sv.Detections:
+def annotations_warnings_xywh_not_normalized(annotations_sv: sv.Detections) -> sv.Detections:
     """Filter not normalized annotations (XYWH)"""
     xyxy: np.ndarray = annotations_sv.xyxy
     xywh: np.ndarray = xyxy_to_xywh(xyxy)
@@ -491,7 +483,7 @@ def annotations_warnings_xywh_not_normalized(annotations_sv: sv.Detections,) -> 
     return annotations_xywh_not_normalized
 
 
-def annotations_warnings_xyxy_not_normalized(annotations_sv: sv.Detections,) -> sv.Detections:
+def annotations_warnings_xyxy_not_normalized(annotations_sv: sv.Detections) -> sv.Detections:
     """Filter not normalized annotations (XYXY)"""
     xyxy: np.ndarray = annotations_sv.xyxy
     annotations_xyxy_not_normalized: sv.Detections = annotations_sv[
