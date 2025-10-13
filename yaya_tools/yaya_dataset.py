@@ -1,7 +1,10 @@
 import argparse
 import logging
 import os
+from pathlib import Path
 from typing import Optional
+
+from tqdm import tqdm
 
 from yaya_tools import __version__
 from yaya_tools.helpers.annotations import (
@@ -14,8 +17,16 @@ from yaya_tools.helpers.annotations import (
     annotations_warnings_small_area,
     annotations_warnings_xywh_not_normalized,
     annotations_warnings_xyxy_not_normalized,
+    annotations_remap_classes,
 )
 from yaya_tools.helpers.checks import get_missing_class_ids
+from yaya_tools.helpers.coco_format import (
+    convert_rgba_to_rgb,
+    convert_dataset_to_coco_format,
+    train_valid_test_split,
+    save_dataset_coco_format,
+)
+
 from yaya_tools.helpers.dataset import (
     annotations_remove_save,
     annotations_update_save,
@@ -44,6 +55,8 @@ def main() -> None:
     # Argument parser
     parser = argparse.ArgumentParser(add_help=False, description="YAYa dataset management tool")
     parser.add_argument("-i", "--dataset_path", type=str, required=True, help="Path to the dataset folder")
+    parser.add_argument("--class_remap_yaml_path", type=str, help="Path to the class remapping YAML file")
+    parser.add_argument("--exclude_unmapped", action="store_true", help="Exclude unmapped annotations")
     parser.add_argument("--fix_small_area", action="store_true", help="Fix too small annotation area")
     parser.add_argument("--fix_invalid_width", action="store_true", help="Fix invalid annotation width")
     parser.add_argument("--fix_invalid_height", action="store_true", help="Fix invalid annotation height")
@@ -63,11 +76,13 @@ def main() -> None:
         default=0.2,
         help="Validation ratio (default=0.2)",
     )
+    parser.add_argument("--coco_format", action="store_true", help="Convert dataset to COCO format")
+    parser.add_argument("--data_yaml_path", type=str, help="Path to data yaml file")
     parser.add_argument("-h", "--help", action="help", help="Show this help message and exit.")
     parser.add_argument("-v", action="version", version=__version__, help="Show version and exit.")
     args = parser.parse_args()
 
-    dataset_path = args.dataset_path
+    dataset_path: str = args.dataset_path
 
     # Training : List of filenames
     train_list: list[str] = load_file_to_list(os.path.join(dataset_path, "train.txt"))
@@ -80,6 +95,16 @@ def main() -> None:
 
     # All annotations as SV : Get
     all_annotations_sv, all_negatives = annotations_load_as_sv(all_images_annotations, dataset_path)
+
+    if args.class_remap_yaml_path:
+        class_remap_yaml_path: str = args.class_remap_yaml_path
+
+        detections_remapped = annotations_remap_classes(
+            all_annotations_sv,
+            class_remap_yaml_path,
+            exclude_unmapped=args.exclude_unmapped,
+        )
+        annotations_update_save(dataset_path, all_annotations_sv, detections_remapped)
 
     # Warnings : Not normalized XYXY
     warnings_xyxy = annotations_warnings_xyxy_not_normalized(all_annotations_sv)
@@ -183,6 +208,71 @@ def main() -> None:
 
     # Validation list : Logging
     annotations_log_summary("Valid", validations_sv, validation_negative)
+
+    # convert dataset to COCO format
+    if args.coco_format:
+        if not args.data_yaml_path:
+            logger.error("COCO format requires passing --data_yaml_path")
+            raise ValueError("Missing required argument --data_yaml_path")
+
+        data_yaml_path: str = args.data_yaml_path
+
+        with tqdm(
+            desc="Converting dataset to COCO format", total=6, unit="step"
+        ) as pbar:
+            # dataset cannot contain images with alpha channel -> convert RGBA to RGB
+            pbar.set_description("Converting RGBA to RGB")
+            convert_rgba_to_rgb(dataset_path)
+            pbar.update()
+
+            pbar.set_description("Converting dataset to COCO format")
+            coco_dataset = convert_dataset_to_coco_format(dataset_path, data_yaml_path)
+            pbar.update()
+
+            # split dataset into train, valid and test datasets
+            pbar.set_description(
+                "Splitting dataset into train, valid and test datasets"
+            )
+            coco_dataset_train, coco_dataset_valid, coco_dataset_test = (
+                train_valid_test_split(coco_dataset)
+            )
+            pbar.update()
+
+            # save dataset under the same path with _coco suffix
+            original_dataset_path = Path(dataset_path)
+            coco_dataset_path = original_dataset_path.with_name(
+                f"{original_dataset_path.name}_coco"
+            )
+
+            pbar.set_description("Saving training dataset in COCO format")
+            save_dataset_coco_format(
+                dataset=coco_dataset_train,
+                images_path=str(coco_dataset_path / "train"),
+                annotations_path=str(
+                    coco_dataset_path / "train" / "_annotations.coco.json"
+                ),
+            )
+            pbar.update()
+
+            pbar.set_description("Saving valid dataset in COCO format")
+            save_dataset_coco_format(
+                dataset=coco_dataset_valid,
+                images_path=str(coco_dataset_path / "valid"),
+                annotations_path=str(
+                    coco_dataset_path / "valid" / "_annotations.coco.json"
+                ),
+            )
+            pbar.update()
+
+            pbar.set_description("Saving test dataset in COCO format")
+            save_dataset_coco_format(
+                dataset=coco_dataset_test,
+                images_path=str(coco_dataset_path / "test"),
+                annotations_path=str(
+                    coco_dataset_path / "test" / "_annotations.coco.json"
+                ),
+            )
+            pbar.update()
 
 
 if __name__ == "__main__":

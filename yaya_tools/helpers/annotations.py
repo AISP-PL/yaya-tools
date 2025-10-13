@@ -1,3 +1,4 @@
+import yaml
 import logging
 import os
 from pathlib import Path
@@ -502,3 +503,47 @@ def annotations_warnings_xyxy_not_normalized(annotations_sv: sv.Detections) -> s
     annotations_xyxy_not_normalized.xyxy = xyxy_filtered
 
     return annotations_xyxy_not_normalized
+
+
+def annotations_remap_classes(
+    all_annotations_sv: sv.Detections,
+    class_remap_yaml_path: str,
+    exclude_unmapped: bool = False,
+) -> sv.Detections:
+    """Remap class IDs in a `supervision.Detections` object using a YAML mapping file.
+    The YAML file should define a dictionary mapping original class IDs to new class IDs.
+    For example:
+        0: 0
+        12: 0
+        14: 1
+        25: 2
+
+    Args:
+        all_annotations_sv (sv.Detections):
+            The `supervision.Detections` object containing all annotations.
+        class_remap_yaml_path (str):
+            Path to the YAML file specifying the class ID remapping.
+        exclude_unmapped (bool, optional):
+            Whether to keep annotations whose class IDs are not present in the mapping.
+            If True, only annotations with class IDs found in the mapping will be kept.
+            Defaults to False.
+
+    Returns:
+        sv.Detections: A new `sv.Detections` object with remapped class IDs.
+    """
+    with open(class_remap_yaml_path, "r") as f:
+        class_ids_from_to = yaml.safe_load(f)
+
+    if exclude_unmapped:
+        filtered_class_ids = list(class_ids_from_to.keys())
+        all_annotations_sv = all_annotations_sv[
+            np.isin(all_annotations_sv.class_id, filtered_class_ids)  # type: ignore
+        ]
+
+    new_class_ids = [
+        class_ids_from_to.get(class_id, class_id)
+        for class_id in all_annotations_sv.class_id  # type: ignore
+    ]
+    all_annotations_sv.class_id = np.array(new_class_ids)
+
+    return all_annotations_sv
