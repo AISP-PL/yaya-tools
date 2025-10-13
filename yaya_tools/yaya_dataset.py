@@ -65,8 +65,16 @@ def main() -> None:
     parser.add_argument("--fix_xyxy_normalization", action="store_true", help="Fix xyxy normalization")
     parser.add_argument("--copy_negatives_to", type=str, help="Path to copy the negative samples only")
     parser.add_argument("--train_all", action="store_true", help="Use all images for training dataset")
-    parser.add_argument("--validation_force_create", action="store_true", help="Recreate the validation.txt file from the dataset folder")
-    parser.add_argument("--ratio", type=float, default=0.2, help="Validation ratio (default=0.2)")
+    parser.add_argument(
+        "--validation_force_create",
+        action="store_true",
+        help="Recreate the validation.txt file from the dataset folder"
+    )
+    parser.add_argument(
+        "--ratio",
+        type=float, default=0.2,
+        help="Validation ratio (default=0.2)"
+    )
     parser.add_argument("--coco_format", action="store_true", help="Convert dataset to COCO format")
     parser.add_argument("--data_yaml_path", type=str, help="Path to data yaml file")
     parser.add_argument("-h", "--help", action="help", help="Show this help message and exit.")
@@ -80,7 +88,7 @@ def main() -> None:
     # Validation : List of filenames
     validation_list: list[str] = load_file_to_list(os.path.join(dataset_path, "validation.txt"))
     # All images : with optional annotation filename
-    all_images_annotations: dict[str, Optional[str]] = (load_directory_images_annotatations(dataset_path))
+    all_images_annotations: dict[str, Optional[str]] = load_directory_images_annotatations(dataset_path)
     # Images annotated : Filter only
     images_annotated: list[str] = get_images_annotated(all_images_annotations)
 
