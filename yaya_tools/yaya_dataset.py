@@ -68,12 +68,13 @@ def main() -> None:
     parser.add_argument(
         "--validation_force_create",
         action="store_true",
-        help="Recreate the validation.txt file from the dataset folder"
+        help="Recreate the validation.txt file from the dataset folder",
     )
     parser.add_argument(
         "--ratio",
-        type=float, default=0.2,
-        help="Validation ratio (default=0.2)"
+        type=float,
+        default=0.2,
+        help="Validation ratio (default=0.2)",
     )
     parser.add_argument("--coco_format", action="store_true", help="Convert dataset to COCO format")
     parser.add_argument("--data_yaml_path", type=str, help="Path to data yaml file")
